@@ -1,0 +1,16 @@
+{
+  "name": "paperless",
+  "version": "1.0.0",
+  "description": "Paperless project with taskmaster-ai integration",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "task-master-ai": "^0.24.0"
+  }
+}

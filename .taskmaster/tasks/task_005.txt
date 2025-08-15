@@ -1,0 +1,37 @@
+# Task ID: 5
+# Title: Station Workflow Engine
+# Status: pending
+# Dependencies: 4
+# Priority: high
+# Description: Implement core station workflow processing and pass/fail logic
+# Details:
+Create workflow engine that handles station-specific processes, pass/fail criteria validation, automatic checkbox marking for pass, failure criteria selection for fail, and note requirements for F/B panels.
+
+# Test Strategy:
+Workflow state tests, pass/fail logic tests, criteria validation tests
+
+# Subtasks:
+## 1. Design Workflow State Machine [pending]
+### Dependencies: None
+### Description: Create the core state machine for panel workflow through stations
+### Details:
+Design state machine with states: SCANNED, IN_PROGRESS, PASSED, FAILED, REWORK_NEEDED. Define transitions, validate state changes, and implement state persistence. Include panel routing logic between stations and lines.
+
+## 2. Implement Pass/Fail Validation Engine [pending]
+### Dependencies: None
+### Description: Build the core validation system for pass/fail criteria
+### Details:
+Create validation engine that processes station-specific criteria, handles one-touch Pass (auto-check all), manages Fail with criteria selection, enforces required notes for F/B panels, and supports 'Other' category for unlisted defects.
+
+## 3. Build Station-Specific Criteria Configuration [pending]
+### Dependencies: None
+### Description: Create configurable criteria system for each station and line
+### Details:
+Implement station criteria configuration supporting Station 1-4 specific requirements, Line 1/2 differences (mirror examination, second EL test), N/A handling for line-specific tests, and dynamic criteria loading from database configuration.
+
+## 4. Implement Workflow Transition and Routing Logic [pending]
+### Dependencies: None
+### Description: Build the routing system for panel flow between stations
+### Details:
+Create routing logic for normal workflow progression (Station 1→2→3→4), rework routing to failure point, queue management for each station, automatic line assignment based on panel type, and workflow completion handling.
+

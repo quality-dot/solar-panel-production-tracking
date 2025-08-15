@@ -1,0 +1,11 @@
+# Task ID: 4
+# Title: Barcode Processing and Validation System
+# Status: pending
+# Dependencies: 2
+# Priority: high
+# Description: Implement barcode parsing, validation, and line assignment logic
+# Details:
+Create system to parse CRSYYFBPP##### barcode format, validate components, determine panel type, and automatically assign to correct production line (Line 1: 36,40,60,72; Line 2: 144).
+
+# Test Strategy:
+Barcode parsing tests, validation logic tests, line assignment tests

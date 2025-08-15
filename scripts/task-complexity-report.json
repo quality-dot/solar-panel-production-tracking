@@ -1,0 +1,130 @@
+{
+  "analysisDate": "2025-01-27T00:00:00.000Z",
+  "projectName": "Paperless",
+  "totalTasks": 12,
+  "tasksWithSubtasks": 11,
+  "tasksNeedingExpansion": 6,
+  "complexityThreshold": 7,
+  "recommendations": [
+    {
+      "taskId": 2,
+      "title": "Technical Architecture Design",
+      "currentSubtasks": 4,
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "reason": "High complexity due to multiple architectural concerns, security requirements, and compliance needs",
+      "expansionPrompt": "Break down the technical architecture design into more granular components including: 1) Detailed system component design with microservices architecture, 2) Database optimization and indexing strategies, 3) API versioning and documentation standards, 4) Security compliance mapping (GDPR/HIPAA), 5) Performance and scalability planning, 6) Integration architecture with third-party services",
+      "priority": "high"
+    },
+    {
+      "taskId": 4,
+      "title": "Document Upload & Storage System",
+      "currentSubtasks": 4,
+      "complexityScore": 9,
+      "recommendedSubtasks": 7,
+      "reason": "Critical system with complex file processing, OCR integration, and cloud storage requirements",
+      "expansionPrompt": "Expand document upload system to include: 1) File validation and virus scanning, 2) OCR engine selection and integration, 3) File compression and optimization, 4) Cloud storage with multiple providers, 5) File processing queue management, 6) Metadata extraction and indexing, 7) Upload progress and error handling",
+      "priority": "high"
+    },
+    {
+      "taskId": 5,
+      "title": "Document Organization & Categorization",
+      "currentSubtasks": 4,
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "reason": "AI-powered system requiring machine learning integration and complex categorization logic",
+      "expansionPrompt": "Break down AI categorization system into: 1) Machine learning model selection and training, 2) Document preprocessing and feature extraction, 3) Category prediction algorithms, 4) Tag generation and relevance scoring, 5) User feedback and model improvement, 6) Custom category training and management",
+      "priority": "high"
+    },
+    {
+      "taskId": 6,
+      "title": "Search & Retrieval Engine",
+      "currentSubtasks": 4,
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "reason": "Complex search system requiring integration with search engines and performance optimization",
+      "expansionPrompt": "Expand search engine to include: 1) Search engine selection and configuration (Elasticsearch/PostgreSQL), 2) Search algorithm implementation and ranking, 3) Faceted search and filtering, 4) Search result caching and optimization, 5) Search analytics and user behavior tracking, 6) Advanced search features (fuzzy search, synonyms)",
+      "priority": "high"
+    },
+    {
+      "taskId": 7,
+      "title": "Web Frontend Development",
+      "currentSubtasks": 5,
+      "complexityScore": 7,
+      "recommendedSubtasks": 8,
+      "reason": "Large frontend application with multiple complex interfaces and state management",
+      "expansionPrompt": "Break down frontend development into: 1) Project setup and build configuration, 2) Component library and design system, 3) State management and data flow, 4) Document viewer and editor components, 5) Search interface and filters, 6) User management and settings, 7) Responsive design and accessibility, 8) Performance optimization and lazy loading",
+      "priority": "medium"
+    },
+    {
+      "taskId": 8,
+      "title": "Security & Backup Systems",
+      "currentSubtasks": 4,
+      "complexityScore": 9,
+      "recommendedSubtasks": 7,
+      "reason": "Critical security system requiring encryption, compliance, and disaster recovery",
+      "expansionPrompt": "Expand security system to include: 1) Encryption key management and rotation, 2) Access control and role-based permissions, 3) Audit logging and compliance reporting, 4) Backup strategies and disaster recovery, 5) Security monitoring and threat detection, 6) Penetration testing and vulnerability assessment, 7) Compliance validation (GDPR/HIPAA)",
+      "priority": "high"
+    }
+  ],
+  "tasksWithGoodSubtasks": [
+    {
+      "taskId": 3,
+      "title": "Backend Development - Core Infrastructure",
+      "currentSubtasks": 4,
+      "complexityScore": 6,
+      "reason": "Well-balanced subtasks covering all major backend concerns",
+      "recommendation": "Current breakdown is sufficient"
+    },
+    {
+      "taskId": 9,
+      "title": "Mobile Application Development",
+      "currentSubtasks": 4,
+      "complexityScore": 6,
+      "reason": "Good coverage of mobile development phases",
+      "recommendation": "Current breakdown is sufficient"
+    },
+    {
+      "taskId": 10,
+      "title": "Testing & Quality Assurance",
+      "currentSubtasks": 4,
+      "complexityScore": 5,
+      "reason": "Comprehensive testing coverage",
+      "recommendation": "Current breakdown is sufficient"
+    },
+    {
+      "taskId": 11,
+      "title": "Deployment & DevOps",
+      "currentSubtasks": 4,
+      "complexityScore": 5,
+      "reason": "Good DevOps coverage",
+      "recommendation": "Current breakdown is sufficient"
+    },
+    {
+      "taskId": 12,
+      "title": "Documentation & User Training",
+      "currentSubtasks": 4,
+      "complexityScore": 4,
+      "reason": "Simple documentation tasks",
+      "recommendation": "Current breakdown is sufficient"
+    }
+  ],
+  "complexityDistribution": {
+    "low": 3,
+    "medium": 3,
+    "high": 6
+  },
+  "nextActions": [
+    "Expand Task 2 (Technical Architecture Design) to 6 subtasks",
+    "Expand Task 4 (Document Upload & Storage System) to 7 subtasks",
+    "Expand Task 5 (Document Organization & Categorization) to 6 subtasks",
+    "Expand Task 6 (Search & Retrieval Engine) to 6 subtasks",
+    "Expand Task 7 (Web Frontend Development) to 8 subtasks",
+    "Expand Task 8 (Security & Backup Systems) to 7 subtasks"
+  ],
+  "estimatedTimeline": {
+    "currentEstimate": "6 months",
+    "withExpansion": "7-8 months",
+    "reason": "More granular tasks will provide better estimation accuracy and reduce risk"
+  }
+} 

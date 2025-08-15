@@ -1,0 +1,11 @@
+# Task ID: 20
+# Title: Label and Sticker Printing Integration
+# Status: pending
+# Dependencies: 9, 12
+# Priority: medium
+# Description: Implement label printing for panels and pallets
+# Details:
+Integrate with Zebra ZT410 or similar label printers for long sticker printing at Station 4 on pass, pallet label generation, and network printer integration for pallet sheets.
+
+# Test Strategy:
+Printer integration tests, label format tests, network printing tests

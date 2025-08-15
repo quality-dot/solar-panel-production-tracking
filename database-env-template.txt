@@ -1,0 +1,32 @@
+# Database Configuration Template
+# Copy this to .env and update with your actual values
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=solar_panel_tracking
+DB_USER=postgres
+DB_PASSWORD=your_password_here
+DB_SSL=false
+
+# Application Configuration
+NODE_ENV=development
+PORT=3000
+
+# JWT Configuration
+JWT_SECRET=your_super_secret_jwt_key_here
+JWT_EXPIRE=4h
+JWT_REFRESH_EXPIRE=7d
+
+# Security Configuration
+BCRYPT_ROUNDS=12
+SESSION_TIMEOUT=14400
+RATE_LIMIT_WINDOW=900000
+RATE_LIMIT_MAX=100
+
+# Pallet Configuration
+DEFAULT_PALLET_SIZE=25
+PALLET_SIZE_OVERRIDE=26
+
+# System Configuration
+AUDIT_LOG_RETENTION_DAYS=2555
+MO_ALERT_THRESHOLD=50

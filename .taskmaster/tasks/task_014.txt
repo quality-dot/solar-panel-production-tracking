@@ -1,0 +1,11 @@
+# Task ID: 14
+# Title: Barcode Scanning Integration
+# Status: pending
+# Dependencies: 13
+# Priority: high
+# Description: Implement camera-based barcode scanning for station tablets
+# Details:
+Integrate html5-qrcode or QuaggaJS for barcode scanning using tablet cameras, implement audio/visual feedback for successful scans, handle scan errors, and provide manual entry fallback.
+
+# Test Strategy:
+Barcode scanning tests, camera integration tests, fallback mechanism tests

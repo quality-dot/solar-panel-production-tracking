@@ -1,0 +1,11 @@
+# Task ID: 21
+# Title: Real-time Production Monitoring System
+# Status: pending
+# Dependencies: 16, 17
+# Priority: medium
+# Description: Implement real-time tracking and monitoring across dual lines
+# Details:
+Create real-time monitoring system for all 8 stations (4 per line), production progress tracking, bottleneck identification, live status updates, and performance metrics dashboard.
+
+# Test Strategy:
+Real-time update tests, monitoring accuracy tests, performance metric tests

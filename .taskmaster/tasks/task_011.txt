@@ -1,0 +1,31 @@
+# Task ID: 11
+# Title: Rework Flow Management System
+# Status: pending
+# Dependencies: 5
+# Priority: medium
+# Description: Implement rework routing and re-entry workflow
+# Details:
+Create rework system that routes failed panels to rework station, enables re-entry at point of failure (not Station 1), automatic queue reinsertion on rescan, failure reason tracking, and maintains process cycle history.
+
+# Test Strategy:
+Rework routing tests, re-entry point tests, queue management tests
+
+# Subtasks:
+## 1. Implement Rework Routing and Queue Management [pending]
+### Dependencies: None
+### Description: Build rework routing system for failed panels
+### Details:
+Create rework routing logic that directs failed panels to rework station, implements queue management for rework items, tracks failure reasons, and maintains separate rework queues per failure type.
+
+## 2. Build Re-entry Point Determination Logic [pending]
+### Dependencies: None
+### Description: Create system to determine correct re-entry station after rework
+### Details:
+Implement logic to determine re-entry station based on failure point (not Station 1), validate rework completion, automatically route to appropriate next station, and handle special cases for multi-station failures.
+
+## 3. Create Process Cycle History Tracking [pending]
+### Dependencies: None
+### Description: Implement comprehensive rework history and tracking
+### Details:
+Build process cycle history that tracks all attempts, failure reasons, rework actions taken, completion times, and maintains complete audit trail for each panel through multiple rework cycles.
+

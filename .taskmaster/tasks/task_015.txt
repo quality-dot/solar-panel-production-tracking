@@ -1,0 +1,31 @@
+# Task ID: 15
+# Title: Station Inspector UI Implementation
+# Status: pending
+# Dependencies: 14
+# Priority: high
+# Description: Create touch-friendly station interface for inspectors
+# Details:
+Build responsive station UI with large touch buttons for pass/fail, clear status indicators, station navigation dropdown, barcode scan feedback, offline indicator, manual entry fields, and N/A handling for line-specific tests.
+
+# Test Strategy:
+UI component tests, touch interaction tests, responsive design tests
+
+# Subtasks:
+## 1. Create Station Selection and Navigation [pending]
+### Dependencies: None
+### Description: Build station selection dropdown and navigation system
+### Details:
+Create station dropdown component with Line 1 (Stations 1-4) and Line 2 (Stations 1-4) options, implement station routing, add current station indicator, and include offline status indicator with visual feedback
+
+## 2. Implement Pass/Fail Touch Interface [pending]
+### Dependencies: None
+### Description: Create large touch-friendly pass/fail buttons and criteria interface
+### Details:
+Design large Pass/Fail buttons for tablet touch, implement one-touch Pass functionality that auto-checks all criteria, create Fail button that opens criteria selection modal, add visual feedback for button presses, and include N/A handling for line-specific tests
+
+## 3. Build Manual Entry and Notes Interface [pending]
+### Dependencies: None
+### Description: Create manual entry fields and note-taking interface
+### Details:
+Build Wattage (Pmax) manual entry field for Station 4, create notes interface for F/B panel failures with required note validation, implement 'Other' category for unlisted defects, add virtual keyboard support for tablet use, and include data validation
+

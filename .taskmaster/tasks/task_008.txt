@@ -1,0 +1,11 @@
+# Task ID: 8
+# Title: Station 3 - Junction Box Implementation
+# Status: pending
+# Dependencies: 5
+# Priority: medium
+# Description: Implement Station 3 specific workflow and pass/fail criteria
+# Details:
+Create Station 3 workflow for Junction Box with pass/fail criteria: potting gel applied, J-box soldered, J-box capped, EL tested, barcode verified, EVA and backsheet alignment.
+
+# Test Strategy:
+Station workflow tests, junction box criteria tests, EL test integration tests

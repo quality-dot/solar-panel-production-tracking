@@ -1,0 +1,835 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Database Schema Design and Implementation",
+        "description": "Design and implement the PostgreSQL database schema for the solar panel production tracking system",
+        "details": "Create comprehensive database schema including tables for panels, stations, inspections, manufacturing orders, pallets, users, and audit logs. Implement proper relationships, constraints, and indexes for optimal performance.",
+        "priority": "high",
+        "status": "pending",
+        "dependencies": [],
+        "testStrategy": "Unit tests for database migrations, integration tests for CRUD operations, performance tests for concurrent access scenarios",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Setup PostgreSQL Database and Environment",
+            "description": "Install and configure PostgreSQL database instance",
+            "details": "Install PostgreSQL 15+, create database 'solar_panel_tracking', set up database user with appropriate permissions, configure connection parameters, and create initial database with UTF-8 encoding.",
+            "status": "in-progress",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 2,
+            "title": "Create Database Migration System",
+            "description": "Set up database migration framework and initial structure",
+            "details": "Set up database migration system (using pg-migrate, Prisma migrate, or Knex.js), create migration folder structure, establish versioning system, and create initial migration template.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 3,
+            "title": "Define Database Schema Constants and Enums",
+            "description": "Create all enum types and constants used throughout the schema",
+            "details": "Create PostgreSQL enum types: user_role_type (STATION_INSPECTOR, PRODUCTION_SUPERVISOR, QC_MANAGER, SYSTEM_ADMIN), panel_status_type (PENDING, IN_PROGRESS, PASSED, FAILED, REWORK), station_type (ASSEMBLY_EL, FRAMING, JUNCTION_BOX, PERFORMANCE), line_type (LINE_1, LINE_2), and panel_type_enum (TYPE_36, TYPE_40, TYPE_60, TYPE_72, TYPE_144).",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 4,
+            "title": "Create Users Table and Authentication Schema",
+            "description": "Design and implement the users table with authentication fields",
+            "details": "Create users table with fields: id (UUID, primary key), username (VARCHAR, unique), email (VARCHAR, unique), password_hash (TEXT), role (user_role_type), station_assignments (JSONB), is_active (BOOLEAN), created_at (TIMESTAMP), updated_at (TIMESTAMP), last_login (TIMESTAMP). Add indexes on username, email, and role.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 5,
+            "title": "Create Stations Configuration Table",
+            "description": "Design table for station definitions and criteria configuration",
+            "details": "Create stations table with fields: id (SERIAL, primary key), name (VARCHAR), station_type (station_type), line (line_type), station_number (INTEGER), criteria_config (JSONB), is_active (BOOLEAN), created_at (TIMESTAMP). Add unique constraint on (line, station_number) and index on station_type.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 6,
+            "title": "Create Panels Table with Barcode Schema",
+            "description": "Design comprehensive panels table for tracking individual panels",
+            "details": "Create panels table with fields: id (UUID, primary key), barcode (VARCHAR, unique), panel_type (panel_type_enum), line_assignment (line_type), current_station_id (INTEGER, FK to stations), status (panel_status_type), mo_id (INTEGER, FK to manufacturing_orders), wattage_pmax (DECIMAL), vmp (DECIMAL), imp (DECIMAL), created_at (TIMESTAMP), updated_at (TIMESTAMP), completed_at (TIMESTAMP). Add indexes on barcode, mo_id, status, and current_station_id.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 7,
+            "title": "Create Manufacturing Orders Table",
+            "description": "Design MO table for production order tracking",
+            "details": "Create manufacturing_orders table with fields: id (SERIAL, primary key), order_number (VARCHAR, unique), panel_type (panel_type_enum), target_quantity (INTEGER), completed_quantity (INTEGER), failed_quantity (INTEGER), status (VARCHAR), created_by (UUID, FK to users), created_at (TIMESTAMP), started_at (TIMESTAMP), completed_at (TIMESTAMP), notes (TEXT). Add indexes on order_number, status, and panel_type.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 8,
+            "title": "Create Pallets and Pallet Assignment Tables",
+            "description": "Design pallet management schema for automated pallet tracking",
+            "details": "Create pallets table: id (SERIAL, primary key), mo_id (INTEGER, FK), pallet_number (VARCHAR), panel_count (INTEGER), max_capacity (INTEGER), status (VARCHAR), created_at (TIMESTAMP), completed_at (TIMESTAMP). Create pallet_panels junction table: pallet_id (INTEGER, FK), panel_id (UUID, FK), position (INTEGER), assigned_at (TIMESTAMP). Add indexes and unique constraints.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 9,
+            "title": "Create Inspections and Criteria Results Table",
+            "description": "Design comprehensive inspection tracking with detailed results",
+            "details": "Create inspections table: id (UUID, primary key), panel_id (UUID, FK), station_id (INTEGER, FK), inspector_id (UUID, FK), pass_fail (BOOLEAN), criteria_results (JSONB), notes (TEXT), inspection_type (VARCHAR), duration_seconds (INTEGER), created_at (TIMESTAMP). Include indexes on panel_id, station_id, inspector_id, and created_at for performance.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 10,
+            "title": "Create Comprehensive Audit Log Table",
+            "description": "Design audit trail system for all data changes and user actions",
+            "details": "Create audit_log table: id (UUID, primary key), entity_type (VARCHAR), entity_id (VARCHAR), action (VARCHAR - INSERT/UPDATE/DELETE), user_id (UUID, FK), old_values (JSONB), new_values (JSONB), ip_address (INET), user_agent (TEXT), session_id (VARCHAR), created_at (TIMESTAMP). Add indexes on entity_type, entity_id, user_id, and created_at with partitioning strategy for performance.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 11,
+            "title": "Create System Configuration and Settings Table",
+            "description": "Design flexible system configuration storage",
+            "details": "Create system_config table: id (SERIAL, primary key), config_key (VARCHAR, unique), config_value (TEXT), data_type (VARCHAR), description (TEXT), category (VARCHAR), is_sensitive (BOOLEAN), updated_by (UUID, FK to users), created_at (TIMESTAMP), updated_at (TIMESTAMP). Pre-populate with default settings for pallet sizes, alert thresholds, session timeouts, etc.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 12,
+            "title": "Create Station Criteria Configuration Table",
+            "description": "Design flexible criteria definition system for each station",
+            "details": "Create station_criteria table: id (SERIAL, primary key), station_id (INTEGER, FK), criteria_name (VARCHAR), criteria_description (TEXT), is_required (BOOLEAN), line_specific (line_type), display_order (INTEGER), is_active (BOOLEAN), created_at (TIMESTAMP). Pre-populate with all station-specific criteria from PRD requirements.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 13,
+            "title": "Create Foreign Key Relationships and Constraints",
+            "description": "Establish all foreign key relationships and data integrity constraints",
+            "details": "Add all foreign key constraints: panels.current_station_id → stations.id, panels.mo_id → manufacturing_orders.id, inspections.panel_id → panels.id, inspections.station_id → stations.id, inspections.inspector_id → users.id, etc. Include ON DELETE/UPDATE rules, check constraints for data validation, and ensure referential integrity.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 14,
+            "title": "Create Performance Indexes and Query Optimization",
+            "description": "Add comprehensive indexing strategy for optimal query performance",
+            "details": "Create composite indexes for common query patterns: (panel_id, created_at) for inspections, (mo_id, status) for panels, (station_id, pass_fail) for inspections, (user_id, created_at) for audit_log. Add partial indexes for frequently filtered data. Analyze query performance and optimize based on expected usage patterns.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 15,
+            "title": "Create Database Triggers and Stored Procedures",
+            "description": "Implement automated database logic for audit trails and data consistency",
+            "details": "Create triggers for automatic audit logging on INSERT/UPDATE/DELETE operations, updated_at timestamp triggers, automatic panel status transitions, MO progress calculation triggers. Create stored procedures for complex operations like pallet assignment, panel routing logic, and data archival processes.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 16,
+            "title": "Populate Initial Data and Create Test Dataset",
+            "description": "Create seed data and comprehensive test dataset for development",
+            "details": "Create initial data: default admin user, station configurations (8 stations - 4 per line), default system configuration values, station criteria definitions. Generate test dataset: sample MOs, test panels with various statuses, sample inspection records, user accounts for different roles. Include data validation and constraint testing.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 1
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Backend API Framework Setup",
+        "description": "Set up Node.js Express backend with core middleware and project structure",
+        "details": "Initialize Node.js project with Express framework, configure CORS, authentication middleware, logging, error handling, and establish project structure with proper separation of concerns.",
+        "priority": "high",
+        "status": "pending",
+        "dependencies": [
+          "1"
+        ],
+        "testStrategy": "API endpoint tests, middleware validation tests, error handling tests",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Initialize Project Structure and Dependencies",
+            "description": "Set up Node.js project foundation with proper architecture",
+            "details": "Initialize Node.js project, install Express and core dependencies, set up folder structure (controllers, services, models, middleware, routes), configure package.json scripts, and establish development/production environments.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 2
+          },
+          {
+            "id": 2,
+            "title": "Configure Core Middleware Stack",
+            "description": "Set up essential middleware for security, logging, and request handling",
+            "details": "Configure CORS for PWA access, body parsing middleware, request logging with Morgan, error handling middleware, rate limiting, helmet for security headers, and compression middleware for performance.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 2
+          },
+          {
+            "id": 3,
+            "title": "Design API Route Architecture",
+            "description": "Create RESTful API routes and controller structure",
+            "details": "Design RESTful routes for panels, stations, inspections, MOs, pallets, users. Create controller pattern with proper separation of concerns, implement route parameter validation, API versioning strategy, and response standardization.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 2
+          },
+          {
+            "id": 4,
+            "title": "Setup Database Connection and ORM",
+            "description": "Configure PostgreSQL connection and database abstraction layer",
+            "details": "Set up PostgreSQL connection with pg or Prisma ORM, configure connection pooling, environment-based database configuration, migration system setup, and database health check endpoints.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 2
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Authentication and Authorization System",
+        "description": "Implement user authentication and role-based access control",
+        "details": "Create JWT-based authentication system with role-based authorization for Station Inspectors, Production Supervisors, Quality Control Managers, and System Administrators. Include session management and security features.",
+        "priority": "high",
+        "status": "pending",
+        "dependencies": [
+          "2"
+        ],
+        "testStrategy": "Authentication flow tests, authorization permission tests, security vulnerability tests",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Setup JWT Libraries and Configuration",
+            "description": "Install and configure JWT dependencies and environment setup",
+            "details": "Install jsonwebtoken and bcryptjs packages, configure JWT secrets in environment variables, set up token expiration times (access: 15min, refresh: 7days), and create JWT utility functions for sign/verify operations.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 2,
+            "title": "Create User Model and Password Hashing",
+            "description": "Implement user data model with secure password handling",
+            "details": "Create User model with fields (id, username, email, password_hash, role, station_assignments, created_at, last_login), implement bcrypt password hashing with salt rounds (12), and create password validation utilities.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 3,
+            "title": "Build Login/Logout API Endpoints",
+            "description": "Create authentication endpoints with proper validation",
+            "details": "Implement POST /auth/login with username/password validation, create logout endpoint that invalidates tokens, implement refresh token endpoint, add input validation and sanitization, and return appropriate HTTP status codes and error messages.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 4,
+            "title": "Define Role System and Permissions Matrix",
+            "description": "Create comprehensive role definitions and permission structure",
+            "details": "Define 4 roles: STATION_INSPECTOR (station operations), PRODUCTION_SUPERVISOR (monitoring, basic admin), QC_MANAGER (quality reports, advanced admin), SYSTEM_ADMIN (full access). Create permissions matrix for API endpoints, UI components, and data access levels.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 5,
+            "title": "Create Authorization Middleware",
+            "description": "Build middleware for route protection and permission checking",
+            "details": "Create JWT verification middleware, role-based route protection middleware, permission checking functions, station assignment validation for inspectors, and authorization error handling with proper HTTP responses.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 6,
+            "title": "Implement Station Assignment Logic",
+            "description": "Create station assignment system for inspector users",
+            "details": "Build station assignment model linking users to specific stations/lines, implement assignment validation (inspector can only access assigned stations), create assignment management API endpoints, and add assignment checking in station workflows.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 7,
+            "title": "Implement Security Protection Features",
+            "description": "Add rate limiting, brute force protection, and security headers",
+            "details": "Implement rate limiting (10 login attempts per 15 minutes), brute force protection with account lockout, secure HTTP headers with helmet.js, CSRF protection for state-changing operations, and IP-based blocking for repeated failed attempts.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 8,
+            "title": "Build Session Management and Audit Logging",
+            "description": "Create comprehensive session handling and security audit trail",
+            "details": "Implement session timeout handling (4 hours idle), multi-device session management, session invalidation on password change, security audit logging (login/logout/failed attempts), and session monitoring dashboard for admins.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 9,
+            "title": "Create Frontend Authentication Components",
+            "description": "Build React components for authentication and role-based UI",
+            "details": "Create login form component with validation, implement token storage in localStorage/sessionStorage, build role-based component rendering, create authentication context/hooks, implement automatic token refresh, and add logout functionality with session cleanup.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Barcode Processing and Validation System",
+        "description": "Implement barcode parsing, validation, and line assignment logic",
+        "details": "Create system to parse CRSYYFBPP##### barcode format, validate components, determine panel type, and automatically assign to correct production line (Line 1: 36,40,60,72; Line 2: 144).",
+        "priority": "high",
+        "status": "pending",
+        "dependencies": [
+          "2"
+        ],
+        "testStrategy": "Barcode parsing tests, validation logic tests, line assignment tests",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Station Workflow Engine",
+        "description": "Implement core station workflow processing and pass/fail logic",
+        "details": "Create workflow engine that handles station-specific processes, pass/fail criteria validation, automatic checkbox marking for pass, failure criteria selection for fail, and note requirements for F/B panels.",
+        "priority": "high",
+        "status": "pending",
+        "dependencies": [
+          "4"
+        ],
+        "testStrategy": "Workflow state tests, pass/fail logic tests, criteria validation tests",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design Workflow State Machine",
+            "description": "Create the core state machine for panel workflow through stations",
+            "details": "Design state machine with states: SCANNED, IN_PROGRESS, PASSED, FAILED, REWORK_NEEDED. Define transitions, validate state changes, and implement state persistence. Include panel routing logic between stations and lines.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 5
+          },
+          {
+            "id": 2,
+            "title": "Implement Pass/Fail Validation Engine",
+            "description": "Build the core validation system for pass/fail criteria",
+            "details": "Create validation engine that processes station-specific criteria, handles one-touch Pass (auto-check all), manages Fail with criteria selection, enforces required notes for F/B panels, and supports 'Other' category for unlisted defects.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 5
+          },
+          {
+            "id": 3,
+            "title": "Build Station-Specific Criteria Configuration",
+            "description": "Create configurable criteria system for each station and line",
+            "details": "Implement station criteria configuration supporting Station 1-4 specific requirements, Line 1/2 differences (mirror examination, second EL test), N/A handling for line-specific tests, and dynamic criteria loading from database configuration.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 5
+          },
+          {
+            "id": 4,
+            "title": "Implement Workflow Transition and Routing Logic",
+            "description": "Build the routing system for panel flow between stations",
+            "details": "Create routing logic for normal workflow progression (Station 1→2→3→4), rework routing to failure point, queue management for each station, automatic line assignment based on panel type, and workflow completion handling.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 5
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Station 1 - Assembly & EL Implementation",
+        "description": "Implement Station 1 specific workflow and pass/fail criteria",
+        "details": "Create Station 1 workflow for Assembly & EL with pass/fail criteria: solder joints, string spacing, polarity, nubs trimmed, insulation, mirror examination (Line 1 only). Include N/A handling for Line 2.",
+        "priority": "medium",
+        "status": "pending",
+        "dependencies": [
+          "5"
+        ],
+        "testStrategy": "Station-specific workflow tests, line-specific criteria tests, N/A handling tests",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Station 2 - Framing Implementation",
+        "description": "Implement Station 2 specific workflow and pass/fail criteria",
+        "details": "Create Station 2 workflow for Framing with pass/fail criteria: panel trimmed, panel sufficiently cleaned, barcode verified, no visible flaws.",
+        "priority": "medium",
+        "status": "pending",
+        "dependencies": [
+          "5"
+        ],
+        "testStrategy": "Station workflow tests, criteria validation tests, barcode verification tests",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Station 3 - Junction Box Implementation",
+        "description": "Implement Station 3 specific workflow and pass/fail criteria",
+        "details": "Create Station 3 workflow for Junction Box with pass/fail criteria: potting gel applied, J-box soldered, J-box capped, EL tested, barcode verified, EVA and backsheet alignment.",
+        "priority": "medium",
+        "status": "pending",
+        "dependencies": [
+          "5"
+        ],
+        "testStrategy": "Station workflow tests, junction box criteria tests, EL test integration tests",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Station 4 - Performance & Final Inspection Implementation",
+        "description": "Implement Station 4 workflow with manual wattage entry and extensive pass/fail criteria",
+        "details": "Create Station 4 workflow with manual Wattage (Pmax) entry and comprehensive pass/fail criteria including wattage verification, high pot test, second EL test (Line 2 only), labeling, and quality checks. Include sticker printing functionality.",
+        "priority": "medium",
+        "status": "pending",
+        "dependencies": [
+          "5"
+        ],
+        "testStrategy": "Manual entry validation tests, comprehensive criteria tests, sticker printing tests",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Manufacturing Order (MO) Management System",
+        "description": "Implement MO creation, tracking, and management functionality",
+        "details": "Create system for MO creation with panel type and quantity, BOM verification, progress tracking with alerts at 50 panels remaining, automatic closure, and historical data access.",
+        "priority": "high",
+        "status": "pending",
+        "dependencies": [
+          "4"
+        ],
+        "testStrategy": "MO lifecycle tests, progress tracking tests, alert system tests",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement MO Creation and BOM Verification",
+            "description": "Build MO creation system with validation",
+            "details": "Create MO creation interface, validate panel type against available configurations, BOM verification against barcode templates, quantity validation, automatic MO number generation, and initial status setup.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 10
+          },
+          {
+            "id": 2,
+            "title": "Build Progress Tracking and Alert System",
+            "description": "Implement real-time MO progress monitoring with alerts",
+            "details": "Create progress calculation based on completed panels, implement alert system for 50 panels remaining, real-time progress updates, completion percentage tracking, and bottleneck identification for MO workflow.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 10
+          },
+          {
+            "id": 3,
+            "title": "Implement Automatic MO Closure Logic",
+            "description": "Build automated MO completion and closure system",
+            "details": "Create automatic MO closure when all panels completed, generate completion reports, calculate final statistics (pass/fail rates, rework counts), archive completed MO data, and trigger pallet finalization processes.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 10
+          },
+          {
+            "id": 4,
+            "title": "Create Historical Data and Reporting Interface",
+            "description": "Build MO history and reporting functionality",
+            "details": "Implement historical MO data access, F/B panel reporting by MO, production metrics calculation, export capabilities for MO reports, data retention management for 7-year compliance, and search/filter functionality.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 10
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Rework Flow Management System",
+        "description": "Implement rework routing and re-entry workflow",
+        "details": "Create rework system that routes failed panels to rework station, enables re-entry at point of failure (not Station 1), automatic queue reinsertion on rescan, failure reason tracking, and maintains process cycle history.",
+        "priority": "medium",
+        "status": "pending",
+        "dependencies": [
+          "5"
+        ],
+        "testStrategy": "Rework routing tests, re-entry point tests, queue management tests",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Rework Routing and Queue Management",
+            "description": "Build rework routing system for failed panels",
+            "details": "Create rework routing logic that directs failed panels to rework station, implements queue management for rework items, tracks failure reasons, and maintains separate rework queues per failure type.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 11
+          },
+          {
+            "id": 2,
+            "title": "Build Re-entry Point Determination Logic",
+            "description": "Create system to determine correct re-entry station after rework",
+            "details": "Implement logic to determine re-entry station based on failure point (not Station 1), validate rework completion, automatically route to appropriate next station, and handle special cases for multi-station failures.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 11
+          },
+          {
+            "id": 3,
+            "title": "Create Process Cycle History Tracking",
+            "description": "Implement comprehensive rework history and tracking",
+            "details": "Build process cycle history that tracks all attempts, failure reasons, rework actions taken, completion times, and maintains complete audit trail for each panel through multiple rework cycles.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 11
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Pallet Management System",
+        "description": "Implement automated pallet generation and management",
+        "details": "Create pallet system with automatic prompts every 25/26 panels (configurable), manual generation option, custom quantity override, pallet sheet generation with serial numbers, wattage data, timestamps, and total counts.",
+        "priority": "medium",
+        "status": "pending",
+        "dependencies": [
+          "9"
+        ],
+        "testStrategy": "Automated pallet tests, manual override tests, pallet sheet generation tests",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Frontend PWA Foundation Setup",
+        "description": "Set up React PWA foundation with offline capabilities",
+        "details": "Initialize React PWA with Vite, configure service workers for offline functionality, set up Dexie.js for IndexedDB storage, configure Tailwind CSS, and establish component structure.",
+        "priority": "high",
+        "status": "pending",
+        "dependencies": [],
+        "testStrategy": "PWA functionality tests, offline capability tests, service worker tests",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Initialize React PWA with Vite",
+            "description": "Set up the basic React PWA structure using Vite",
+            "details": "Create new React project with Vite, configure PWA plugin, set up manifest.json, configure service worker for caching, and establish basic routing structure with React Router",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 13
+          },
+          {
+            "id": 2,
+            "title": "Configure Offline Storage with Dexie.js",
+            "description": "Set up IndexedDB with Dexie.js for offline data storage",
+            "details": "Install and configure Dexie.js, define database schemas for panels, inspections, queue data, and sync status. Create stores for offline inspection data, sync queue, and user session data",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 13
+          },
+          {
+            "id": 3,
+            "title": "Setup Tailwind CSS and Component Structure",
+            "description": "Configure styling and establish component architecture",
+            "details": "Install and configure Tailwind CSS, create responsive breakpoints for tablet usage, establish component folder structure, create reusable UI components (buttons, forms, modals), and set up touch-friendly design tokens",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 13
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "title": "Barcode Scanning Integration",
+        "description": "Implement camera-based barcode scanning for station tablets",
+        "details": "Integrate html5-qrcode or QuaggaJS for barcode scanning using tablet cameras, implement audio/visual feedback for successful scans, handle scan errors, and provide manual entry fallback.",
+        "priority": "high",
+        "status": "pending",
+        "dependencies": [
+          "13"
+        ],
+        "testStrategy": "Barcode scanning tests, camera integration tests, fallback mechanism tests",
+        "subtasks": []
+      },
+      {
+        "id": 15,
+        "title": "Station Inspector UI Implementation",
+        "description": "Create touch-friendly station interface for inspectors",
+        "details": "Build responsive station UI with large touch buttons for pass/fail, clear status indicators, station navigation dropdown, barcode scan feedback, offline indicator, manual entry fields, and N/A handling for line-specific tests.",
+        "priority": "high",
+        "status": "pending",
+        "dependencies": [
+          "14"
+        ],
+        "testStrategy": "UI component tests, touch interaction tests, responsive design tests",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Station Selection and Navigation",
+            "description": "Build station selection dropdown and navigation system",
+            "details": "Create station dropdown component with Line 1 (Stations 1-4) and Line 2 (Stations 1-4) options, implement station routing, add current station indicator, and include offline status indicator with visual feedback",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 15
+          },
+          {
+            "id": 2,
+            "title": "Implement Pass/Fail Touch Interface",
+            "description": "Create large touch-friendly pass/fail buttons and criteria interface",
+            "details": "Design large Pass/Fail buttons for tablet touch, implement one-touch Pass functionality that auto-checks all criteria, create Fail button that opens criteria selection modal, add visual feedback for button presses, and include N/A handling for line-specific tests",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 15
+          },
+          {
+            "id": 3,
+            "title": "Build Manual Entry and Notes Interface",
+            "description": "Create manual entry fields and note-taking interface",
+            "details": "Build Wattage (Pmax) manual entry field for Station 4, create notes interface for F/B panel failures with required note validation, implement 'Other' category for unlisted defects, add virtual keyboard support for tablet use, and include data validation",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 15
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "title": "Admin Dashboard Frontend",
+        "description": "Build comprehensive admin dashboard for system management",
+        "details": "Create admin dashboard with real-time production monitoring, MO management interface, station configuration controls, user management, analytics and reporting, dual-line production views, and data sync status overview.",
+        "priority": "medium",
+        "status": "pending",
+        "dependencies": [
+          "13"
+        ],
+        "testStrategy": "Dashboard functionality tests, real-time update tests, user interface tests",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Build Real-time Production Monitoring Dashboard",
+            "description": "Create live production monitoring interface",
+            "details": "Implement real-time dashboard with dual-line production views, live station status indicators, current panel locations, throughput metrics, bottleneck identification, and WebSocket integration for live updates.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 16
+          },
+          {
+            "id": 2,
+            "title": "Create MO Management Interface",
+            "description": "Build comprehensive MO management UI",
+            "details": "Create MO creation form, active MO monitoring grid, progress tracking visualizations, alert management interface, MO search and filtering, historical MO view, and bulk operations for MO management.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 16
+          },
+          {
+            "id": 3,
+            "title": "Implement User Management and Station Assignment",
+            "description": "Build user administration and role management interface",
+            "details": "Create user CRUD interface, role-based permission management (Inspector, Supervisor, QC Manager, Admin), station assignment interface, user activity monitoring, authentication status management, and access control configuration.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 16
+          },
+          {
+            "id": 4,
+            "title": "Build Analytics and Reporting Components",
+            "description": "Create comprehensive analytics and reporting interface",
+            "details": "Implement analytics dashboard with production metrics, quality statistics, F/B panel reports, pallet tracking, data export controls, custom report builder, data visualization components (charts, graphs), and performance trend analysis.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 16
+          }
+        ]
+      },
+      {
+        "id": 17,
+        "title": "Offline Data Storage and Sync System",
+        "description": "Implement robust offline storage with automatic synchronization",
+        "details": "Create IndexedDB storage system using Dexie.js for all inspection data, implement background sync service using navigator.onLine, handle conflict resolution by timestamp, and provide manual sync options.",
+        "priority": "high",
+        "status": "pending",
+        "dependencies": [
+          "15"
+        ],
+        "testStrategy": "Offline storage tests, sync mechanism tests, conflict resolution tests",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement IndexedDB Storage with Dexie.js",
+            "description": "Set up local database storage for offline operations",
+            "details": "Configure Dexie.js with schemas for inspections, panels, sync_queue, user_sessions. Implement CRUD operations, data encryption for sensitive fields, storage limits management (800 panels), and database versioning/migrations.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 17
+          },
+          {
+            "id": 2,
+            "title": "Build Background Sync Service",
+            "description": "Create automatic synchronization system for online/offline transitions",
+            "details": "Implement background service using navigator.onLine, sync queue management, automatic retry logic with exponential backoff, network status monitoring, and 30-second sync speed requirement compliance.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 17
+          },
+          {
+            "id": 3,
+            "title": "Implement Conflict Resolution System",
+            "description": "Handle data conflicts during synchronization",
+            "details": "Create conflict resolution using timestamp priority, data integrity validation, merge strategies for concurrent edits, conflict logging and reporting, and manual conflict resolution interface for admin users.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 17
+          },
+          {
+            "id": 4,
+            "title": "Build Offline State Management",
+            "description": "Manage application state during offline operations",
+            "details": "Implement offline state indicators, queue status display, manual sync options, data validation and error recovery, graceful degradation of features, and offline operation logging for debugging.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 17
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "title": "Data Export and USB Transfer System",
+        "description": "Implement multi-format data export capabilities",
+        "details": "Create export system supporting CSV, XLSX, PDF formats for panel data, production reports, pallet sheets, and F/B panel lists. Include USB transfer capability and automated export scheduling.",
+        "priority": "medium",
+        "status": "pending",
+        "dependencies": [
+          "17"
+        ],
+        "testStrategy": "Export format tests, USB transfer tests, automated scheduling tests",
+        "subtasks": []
+      },
+      {
+        "id": 19,
+        "title": "External Data Import System",
+        "description": "Implement multi-format data import for test equipment integration",
+        "details": "Create import system supporting CSV, XLSX, PDF formats for test equipment/Sun Simulator data, implement barcode/serial number mapping, and update MO data with imported electrical values.",
+        "priority": "medium",
+        "status": "pending",
+        "dependencies": [
+          "10"
+        ],
+        "testStrategy": "Import parsing tests, data mapping tests, MO update tests",
+        "subtasks": []
+      },
+      {
+        "id": 20,
+        "title": "Label and Sticker Printing Integration",
+        "description": "Implement label printing for panels and pallets",
+        "details": "Integrate with Zebra ZT410 or similar label printers for long sticker printing at Station 4 on pass, pallet label generation, and network printer integration for pallet sheets.",
+        "priority": "medium",
+        "status": "pending",
+        "dependencies": [
+          "9",
+          "12"
+        ],
+        "testStrategy": "Printer integration tests, label format tests, network printing tests",
+        "subtasks": []
+      },
+      {
+        "id": 21,
+        "title": "Real-time Production Monitoring System",
+        "description": "Implement real-time tracking and monitoring across dual lines",
+        "details": "Create real-time monitoring system for all 8 stations (4 per line), production progress tracking, bottleneck identification, live status updates, and performance metrics dashboard.",
+        "priority": "medium",
+        "status": "pending",
+        "dependencies": [
+          "16",
+          "17"
+        ],
+        "testStrategy": "Real-time update tests, monitoring accuracy tests, performance metric tests",
+        "subtasks": []
+      },
+      {
+        "id": 22,
+        "title": "Security and Audit Trail Implementation",
+        "description": "Implement comprehensive security and audit logging",
+        "details": "Create audit trail for all operations, implement secure data transmission, local data encryption, user activity logging, and compliance reporting for 7-year data retention requirements.",
+        "priority": "medium",
+        "status": "pending",
+        "dependencies": [
+          "3"
+        ],
+        "testStrategy": "Security penetration tests, audit trail tests, encryption validation tests",
+        "subtasks": []
+      },
+      {
+        "id": 23,
+        "title": "Performance Optimization and Scalability",
+        "description": "Optimize system performance for production requirements",
+        "details": "Optimize for <2 second barcode scan to workflow response time, support 800 panels with full data in local storage, ensure 30-second sync speed, and handle 8 concurrent station users.",
+        "priority": "medium",
+        "status": "pending",
+        "dependencies": [
+          "17",
+          "21"
+        ],
+        "testStrategy": "Performance load tests, concurrent user tests, response time tests",
+        "subtasks": []
+      },
+      {
+        "id": 24,
+        "title": "Docker Containerization and Deployment Setup",
+        "description": "Containerize application and set up deployment infrastructure",
+        "details": "Create Docker containers for frontend and backend, set up docker-compose for local development, configure NGINX reverse proxy, prepare VPS deployment scripts, and establish CI/CD pipeline.",
+        "priority": "medium",
+        "status": "pending",
+        "dependencies": [
+          "2",
+          "13"
+        ],
+        "testStrategy": "Container deployment tests, infrastructure tests, CI/CD pipeline tests",
+        "subtasks": []
+      },
+      {
+        "id": 25,
+        "title": "Integration Testing and System Validation",
+        "description": "Comprehensive system testing and validation",
+        "details": "Conduct end-to-end testing of complete workflows, validate dual-line operations, test offline/online transitions, verify data integrity, perform user acceptance testing, and validate compliance requirements.",
+        "priority": "high",
+        "status": "pending",
+        "dependencies": [
+          "20",
+          "21",
+          "22",
+          "23"
+        ],
+        "testStrategy": "End-to-end tests, integration tests, user acceptance tests, compliance validation tests",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-08-14T19:23:36.047Z",
+      "updated": "2025-08-14T20:02:40.700Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

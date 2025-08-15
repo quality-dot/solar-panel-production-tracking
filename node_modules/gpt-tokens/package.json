@@ -1,0 +1,46 @@
+{
+    "name": "gpt-tokens",
+    "version": "1.3.14",
+    "description": "Calculate the token consumption and amount of openai gpt message",
+    "keywords": [
+        "gpt",
+        "chatGPT",
+        "openai",
+        "tiktoken",
+        "token",
+        "tokens",
+        "consumption",
+        "amount"
+    ],
+    "scripts": {
+        "test": "node tests/index.js",
+        "test:perf": "node tests/perf.js",
+        "build": "npm i && rm -rf dist && tsc && npm run test"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.js"
+        }
+    },
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "module": "dist/index.ts",
+    "repository": "https://github.com/Cainier/gpt-tokens",
+    "author": "Cainier <xingrong.dev@gmail.com>",
+    "license": "MIT",
+    "dependencies": {
+        "decimal.js": "^10.4.3",
+        "js-tiktoken": "^1.0.15",
+        "openai-chat-tokens": "^0.2.8"
+    },
+    "devDependencies": {
+        "@types/node": "^12.20.0",
+        "openai": "^4.28.0",
+        "typescript": "^5.0.4"
+    },
+    "files": [
+        "dist"
+    ]
+}

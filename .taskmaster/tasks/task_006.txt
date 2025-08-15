@@ -1,0 +1,11 @@
+# Task ID: 6
+# Title: Station 1 - Assembly & EL Implementation
+# Status: pending
+# Dependencies: 5
+# Priority: medium
+# Description: Implement Station 1 specific workflow and pass/fail criteria
+# Details:
+Create Station 1 workflow for Assembly & EL with pass/fail criteria: solder joints, string spacing, polarity, nubs trimmed, insulation, mirror examination (Line 1 only). Include N/A handling for Line 2.
+
+# Test Strategy:
+Station-specific workflow tests, line-specific criteria tests, N/A handling tests

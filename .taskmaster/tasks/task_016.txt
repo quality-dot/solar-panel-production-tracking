@@ -1,0 +1,37 @@
+# Task ID: 16
+# Title: Admin Dashboard Frontend
+# Status: pending
+# Dependencies: 13
+# Priority: medium
+# Description: Build comprehensive admin dashboard for system management
+# Details:
+Create admin dashboard with real-time production monitoring, MO management interface, station configuration controls, user management, analytics and reporting, dual-line production views, and data sync status overview.
+
+# Test Strategy:
+Dashboard functionality tests, real-time update tests, user interface tests
+
+# Subtasks:
+## 1. Build Real-time Production Monitoring Dashboard [pending]
+### Dependencies: None
+### Description: Create live production monitoring interface
+### Details:
+Implement real-time dashboard with dual-line production views, live station status indicators, current panel locations, throughput metrics, bottleneck identification, and WebSocket integration for live updates.
+
+## 2. Create MO Management Interface [pending]
+### Dependencies: None
+### Description: Build comprehensive MO management UI
+### Details:
+Create MO creation form, active MO monitoring grid, progress tracking visualizations, alert management interface, MO search and filtering, historical MO view, and bulk operations for MO management.
+
+## 3. Implement User Management and Station Assignment [pending]
+### Dependencies: None
+### Description: Build user administration and role management interface
+### Details:
+Create user CRUD interface, role-based permission management (Inspector, Supervisor, QC Manager, Admin), station assignment interface, user activity monitoring, authentication status management, and access control configuration.
+
+## 4. Build Analytics and Reporting Components [pending]
+### Dependencies: None
+### Description: Create comprehensive analytics and reporting interface
+### Details:
+Implement analytics dashboard with production metrics, quality statistics, F/B panel reports, pallet tracking, data export controls, custom report builder, data visualization components (charts, graphs), and performance trend analysis.
+
