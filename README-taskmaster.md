@@ -2,7 +2,7 @@
 
 This project has been initialized with TaskMaster AI, a powerful task management system for AI-driven development.
 
-## What is TaskMaster AI?
+## What is TaskMaster AI??
 
 TaskMaster AI is an intelligent task management system that helps you:
 - Break down complex projects into manageable tasks
