@@ -1,131 +1,23 @@
-# Solar Panel Production Tracking System
+# Node modules
+node_modules/
 
-A comprehensive digital production tracking system for dual-line solar panel manufacturing that replaces paper assembly sheets with barcode-based Pass/Fail tracking.
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-## 🌟 Overview
+# Environment variables
+.env
+.env.local
+.env.*.local
 
-This system digitizes the solar panel production process across 8 stations (4 per line) with:
-- **Barcode-triggered workflows** at each station
-- **Pass/Fail quality control** with one-touch functionality
-- **Dual-line production** with automatic routing
-- **Offline capability** with automatic sync
-- **Real-time production monitoring**
-- **Automated pallet management**
+# Build output
+dist/
+build/
+.next/
+out/
 
-## 🏗️ Architecture
-
-### Tech Stack
-- **Frontend**: React PWA with Vite
-- **Backend**: Node.js + Express + PostgreSQL
-- **Offline Storage**: Dexie.js (IndexedDB)
-- **Styling**: Tailwind CSS
-- **Authentication**: JWT with role-based access
-- **Deployment**: Docker containers on VPS
-
-### Database Schema
-- **Users**: 4-role authentication system
-- **Stations**: 8-station dual-line configuration
-- **Manufacturing Orders**: Production tracking
-- **Panels**: Individual panel lifecycle
-- **Inspections**: Detailed pass/fail criteria
-- **Pallets**: Automated 25/26 panel management
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 16+
-- PostgreSQL 15+
-- Git
-
-### Database Setup
-```bash
-# Create database
-psql -U postgres -f database/scripts/init-database.sql
-
-# Run migrations
-psql -U solar_panel_user -d solar_panel_tracking
-\i database/migrations/001_create_enums.sql
-\i database/migrations/002_create_users_table.sql
-\i database/migrations/003_create_stations_table.sql
-\i database/migrations/004_create_manufacturing_orders_table.sql
-```
-
-### Environment Setup
-```bash
-# Copy environment template
-cp database-env-template.txt .env
-
-# Update with your database credentials
-# Edit .env file with your settings
-```
-
-## 📊 Project Status
-
-### ✅ Completed
-- [x] Task Master project setup and planning (25 main tasks, 41 subtasks)
-- [x] Database schema design (4/16 subtasks complete)
-- [x] PostgreSQL enum types and core tables
-- [x] User authentication system design
-- [x] Station configuration (8 stations)
-- [x] Manufacturing order tracking
-
-### 🔄 In Progress
-- [ ] Remaining database tables (panels, inspections, pallets)
-- [ ] Backend API framework
-- [ ] Frontend PWA foundation
-
-### 📋 Development Roadmap
-1. **Database Schema** (25% complete)
-2. **Backend API Framework**
-3. **Authentication System**
-4. **Station Workflow Engine**
-5. **Frontend PWA**
-6. **Offline Data Sync**
-7. **Production Deployment**
-
-## 🔧 Production Requirements
-
-### Hardware
-- **8 rugged tablets** (4 per production line)
-- **Barcode scanners** (camera-based or Bluetooth)
-- **Label printers** (Zebra ZT410 compatible)
-- **VPS server** (16GB RAM, 500GB storage)
-
-### Features
-- **Dual-line production**: Line 1 (36,40,60,72), Line 2 (144)
-- **Barcode format**: CRSYYFBPP##### with automatic validation
-- **Pass/fail tracking**: One-touch pass, detailed fail criteria
-- **Offline operation**: Up to 800 panels with local storage
-- **Real-time monitoring**: Live production dashboard
-- **Compliance**: 7-year audit trail retention
-
-## 📁 Project Structure
-
-```
-Paperless/
-├── .taskmaster/          # Task Master project management
-├── database/             # Database schema and migrations
-│   ├── migrations/       # SQL migration files
-│   ├── scripts/          # Setup and utility scripts
-│   └── README.md         # Database documentation
-├── src/                  # Source code (coming soon)
-├── docs/                 # Project documentation
-└── README.md             # This file
-```
-
-## 🤝 Contributing
-
-This is a production system for solar panel manufacturing. Contact the development team for contribution guidelines.
-
-## 📄 License
-
-[Add your license here]
-
-## 📞 Contact
-
-[Add contact information]
-
----
-
-Built with Task Master AI for efficient project management and development.
-node_modules
+# OS files
+.DS_Store
+Thumbs.db
