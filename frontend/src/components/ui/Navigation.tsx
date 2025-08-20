@@ -130,10 +130,10 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
           'text-white bg-blue-700': isActive && variant === 'primary',
           'text-gray-900 bg-gray-200': isActive && variant === 'secondary',
           'text-white bg-gray-800': isActive && variant === 'dark',
-          'text-gray-600 hover:text-gray-900 hover:bg-gray-50': !isActive && variant === 'default',
-          'text-blue-200 hover:text-white hover:bg-blue-700': !isActive && variant === 'primary',
-          'text-gray-700 hover:text-gray-900 hover:bg-gray-200': !isActive && variant === 'secondary',
-          'text-gray-300 hover:text-white hover:bg-gray-800': !isActive && variant === 'dark',
+          'text-gray-600 hover:text-gray-900 hover:bg-gray-50': !isActive && variant === 'default' && !item.disabled,
+          'text-blue-200 hover:text-white hover:bg-blue-700': !isActive && variant === 'primary' && !item.disabled,
+          'text-gray-700 hover:text-gray-900 hover:bg-gray-200': !isActive && variant === 'secondary' && !item.disabled,
+          'text-gray-300 hover:text-white hover:bg-gray-800': !isActive && variant === 'dark' && !item.disabled,
           'opacity-50 cursor-not-allowed': item.disabled,
           'w-full justify-between': isMobile && hasChildren,
         }
@@ -172,8 +172,11 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
             className={itemClasses}
             onClick={(e) => {
               e.preventDefault();
-              handleItemClick(item);
+              if (!item.disabled) {
+                handleItemClick(item);
+              }
             }}
+            aria-disabled={item.disabled}
           >
             {content}
           </a>
@@ -184,7 +187,11 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
         <button
           key={item.id}
           className={itemClasses}
-          onClick={() => handleItemClick(item)}
+          onClick={() => {
+            if (!item.disabled) {
+              handleItemClick(item);
+            }
+          }}
           disabled={item.disabled}
         >
           {content}

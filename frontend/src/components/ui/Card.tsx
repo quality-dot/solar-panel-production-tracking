@@ -96,11 +96,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
           </div>
         )}
         
-        <div className={cn(
-          'flex-1',
-          header && 'rounded-t-none',
-          footer && 'rounded-b-none'
-        )}>
+        <div className="flex-1">
           {children}
         </div>
         

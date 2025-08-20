@@ -112,7 +112,7 @@ export interface SelectProps
   // Selected value
   value?: string;
   // Change handler
-  onChange?: (value: string) => void;
+  onChange?: (value: string, option: SelectOption) => void;
   // Placeholder text
   placeholder?: string;
   // Whether the select is searchable
@@ -201,7 +201,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       
       // Call custom onChange if provided
       if (onChange) {
-        onChange(option.value);
+        onChange(option.value, option);
       }
       
       // Trigger native onChange event
@@ -236,6 +236,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label
             htmlFor={selectId}
+            id={`${selectId}-label`}
             className={cn(
               'block text-sm font-medium text-gray-700',
               hasError && 'text-red-700',

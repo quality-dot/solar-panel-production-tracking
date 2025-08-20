@@ -110,7 +110,7 @@ export interface CheckboxProps
   // Warning message
   warning?: string;
   // Change handler
-  onChange?: (checked: boolean) => void;
+  onChange?: (checked: boolean, event: React.ChangeEvent<HTMLInputElement>) => void;
   // Custom variant classes
   variantClasses?: string;
 }
@@ -167,7 +167,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       
       // Call custom onChange if provided
       if (onChange) {
-        onChange(newChecked);
+        onChange(newChecked, event);
       }
     };
     
@@ -185,6 +185,28 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     }, [indeterminateProp]);
     
     // Set indeterminate attribute on the input element
+    const setIndeterminate = (element: HTMLInputElement | null) => {
+      if (element) {
+        element.indeterminate = finalIndeterminate;
+      }
+    };
+
+    // Use callback ref to ensure indeterminate is set
+    const inputRef = (element: HTMLInputElement | null) => {
+      // Forward the ref
+      if (typeof ref === 'function') {
+        ref(element);
+      } else if (ref) {
+        ref.current = element;
+      }
+      
+      // Set indeterminate attribute immediately
+      if (element) {
+        element.indeterminate = finalIndeterminate;
+      }
+    };
+
+    // Also set indeterminate attribute when state changes
     useEffect(() => {
       if (ref && typeof ref === 'object' && ref.current) {
         ref.current.indeterminate = finalIndeterminate;
@@ -198,7 +220,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           {/* Checkbox Input */}
           <div className="relative flex items-center">
             <input
-              ref={ref}
+              ref={inputRef}
               id={checkboxId}
               type="checkbox"
               checked={finalChecked}

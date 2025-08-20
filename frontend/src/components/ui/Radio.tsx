@@ -109,7 +109,7 @@ export interface RadioProps
   // Selected value
   value?: string;
   // Change handler
-  onChange?: (value: string) => void;
+  onChange?: (value: string, option: RadioOption) => void;
   // Custom variant classes
   variantClasses?: string;
 }
@@ -167,7 +167,7 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
       
       // Call custom onChange if provided
       if (onChange) {
-        onChange(option.value);
+        onChange(option.value, option);
       }
     };
     
