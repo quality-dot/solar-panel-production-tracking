@@ -82,7 +82,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
         onClick={onClick}
         role={isInteractive ? 'button' : undefined}
         tabIndex={isInteractive ? 0 : undefined}
-        onKeyDown={isInteractive ? (e) => {
+        onKeyDown={isInteractive ? (e: React.KeyboardEvent) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             onClick?.();
