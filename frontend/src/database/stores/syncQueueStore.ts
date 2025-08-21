@@ -1,4 +1,4 @@
-import { db, SyncQueue, withErrorHandling } from '../config';
+import { db, type SyncQueue, withErrorHandling } from '../config';
 
 export interface SyncQueueFilters {
   operation?: SyncQueue['operation'];

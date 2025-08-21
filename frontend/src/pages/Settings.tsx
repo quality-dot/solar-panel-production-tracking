@@ -1,8 +1,37 @@
-import { WifiIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/outline'
+import { WifiIcon, DevicePhoneMobileIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+import PWAInstallPrompt from '../components/PWAInstallPrompt'
 
 export default function Settings() {
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false)
+  const [isPWAInstalled, setIsPWAInstalled] = useState(false)
+  
+  // Check if PWA is already installed
+  useEffect(() => {
+    const checkIfInstalled = () => {
+      const isInstalled = window.matchMedia('(display-mode: standalone)').matches
+      setIsPWAInstalled(isInstalled)
+      return isInstalled
+    }
+    
+    // Check immediately
+    checkIfInstalled()
+    
+    // Listen for changes (in case user installs while on this page)
+    const mediaQuery = window.matchMedia('(display-mode: standalone)')
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsPWAInstalled(e.matches)
+    }
+    
+    mediaQuery.addEventListener('change', handleChange)
+    
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange)
+    }
+  }, [])
+  
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 settings-content touch-scroll force-above-nav">
       {/* Header */}
       <div className="lg:hidden">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Settings</h1>
@@ -29,6 +58,40 @@ export default function Settings() {
           </div>
         </div>
       </div>
+
+      {/* PWA Installation - Only show if not already installed */}
+      {!isPWAInstalled && (
+        <div className="card">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Install App</h3>
+          <div className="text-center p-6">
+            <ComputerDesktopIcon className="h-12 w-12 text-green-500 mx-auto mb-3" />
+            <h4 className="text-lg font-medium text-gray-900 mb-2">Install App</h4>
+            <p className="text-gray-600 mb-4">Add to your home screen</p>
+            <button 
+              onClick={() => setShowInstallPrompt(true)}
+              className="touch-button btn-primary px-8 py-3 text-lg"
+            >
+              Install App
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* PWA Already Installed - Show success message */}
+      {isPWAInstalled && (
+        <div className="card">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">App Status</h3>
+          <div className="text-center p-6">
+            <ComputerDesktopIcon className="h-12 w-12 text-green-500 mx-auto mb-3" />
+            <h4 className="text-lg font-medium text-gray-900 mb-2">App Installed</h4>
+            <p className="text-gray-600 mb-4">You can access this app from your home screen</p>
+            <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+              <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+              Installed Successfully
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Station Configuration */}
       <div className="card">
@@ -123,6 +186,12 @@ export default function Settings() {
           </div>
         </div>
       </div>
+      
+      {/* PWA Install Prompt Modal */}
+      <PWAInstallPrompt 
+        isVisible={showInstallPrompt} 
+        onClose={() => setShowInstallPrompt(false)} 
+      />
     </div>
   )
 }

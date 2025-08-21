@@ -11,6 +11,7 @@ export { default as Grid, gridVariants, GridItem } from './Grid';
 export { default as Navigation, navigationVariants, NavigationBrand, NavigationLogo, NavigationTitle } from './Navigation';
 export { default as LoadingSpinner, loadingSpinnerVariants } from './LoadingSpinner';
 export { default as StatusIndicator, statusIndicatorVariants } from './StatusIndicator';
+export { default as SyncStatusIndicator } from './SyncStatusIndicator';
 export { default as Toast, toastVariants } from './Toast';
 export { default as Modal, modalVariants, modalContentVariants } from './Modal';
 
@@ -27,5 +28,6 @@ export type { GridProps, GridItemProps } from './Grid';
 export type { NavigationProps, NavigationItem } from './Navigation';
 export type { LoadingSpinnerProps } from './LoadingSpinner';
 export type { StatusIndicatorProps } from './StatusIndicator';
+export type { SyncStatusIndicatorProps } from './SyncStatusIndicator';
 export type { ToastProps } from './Toast';
 export type { ModalProps } from './Modal';

@@ -1,4 +1,4 @@
-import Dexie, { Table } from 'dexie';
+import Dexie from 'dexie';
 
 // Define interfaces for our database tables
 export interface Panel {

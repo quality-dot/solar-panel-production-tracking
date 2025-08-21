@@ -8,6 +8,7 @@ import Inspections from './pages/Inspections'
 import Settings from './pages/Settings'
 import UIDemo from './components/ui/UIDemo'
 import OfflineIndicator from './components/OfflineIndicator'
+import PWAInstallPrompt from './components/PWAInstallPrompt'
 
 function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine)
@@ -48,6 +49,7 @@ function App() {
     <Router>
       <div className="min-h-screen bg-gray-50">
         <OfflineIndicator isOnline={isOnline} />
+        <PWAInstallPrompt />
         <Layout>
           <Routes>
             <Route path="/" element={<Dashboard />} />

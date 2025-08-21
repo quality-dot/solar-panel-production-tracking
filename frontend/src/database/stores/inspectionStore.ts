@@ -45,44 +45,40 @@ export class InspectionStore {
       return await db.inspections
         .where('panelId')
         .equals(panelId)
-        .orderBy('timestamp')
-        .toArray();
+        .sortBy('timestamp');
     });
   }
 
   // Get inspections by station
   static async getByStation(station: string): Promise<Inspection[]> {
     return await withErrorHandling(async () => {
-      return await db.inspections
+      const results = await db.inspections
         .where('station')
         .equals(station)
-        .orderBy('timestamp')
-        .reverse()
-        .toArray();
+        .sortBy('timestamp');
+      return results.reverse();
     });
   }
 
   // Get inspections by status
   static async getByStatus(status: Inspection['status']): Promise<Inspection[]> {
     return await withErrorHandling(async () => {
-      return await db.inspections
+      const results = await db.inspections
         .where('status')
         .equals(status)
-        .orderBy('timestamp')
-        .reverse()
-        .toArray();
+        .sortBy('timestamp');
+      return results.reverse();
     });
   }
 
   // Get inspections by operator
   static async getByOperator(operator: string): Promise<Inspection[]> {
     return await withErrorHandling(async () => {
-      return await db.inspections
+      const results = await db.inspections
         .where('operator')
         .equals(operator)
-        .orderBy('timestamp')
-        .reverse()
-        .toArray();
+        .sortBy('timestamp');
+      return results.reverse();
     });
   }
 
@@ -115,7 +111,8 @@ export class InspectionStore {
         collection = collection.filter(inspection => inspection.timestamp <= filters.dateTo!);
       }
       
-      return await collection.reverse().sortBy('timestamp');
+      const results = await collection.toArray();
+      return results.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
     });
   }
 

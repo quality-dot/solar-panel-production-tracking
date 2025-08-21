@@ -9,6 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'logo.svg'],
+      strategies: 'generateSW',
       manifest: {
         name: 'Solar Panel Production Tracking',
         short_name: 'SolarTracker',
