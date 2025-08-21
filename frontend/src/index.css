@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  * {
+    @apply border-gray-200;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200;
+  }
+  
+  .btn-primary {
+    @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+  }
+  
+  .btn-secondary {
+    @apply btn bg-white text-gray-700 border-gray-300 hover:bg-gray-50 focus:ring-primary-500;
+  }
+  
+  .btn-success {
+    @apply btn bg-success-600 text-white hover:bg-success-700 focus:ring-success-500;
+  }
+  
+  .btn-warning {
+    @apply btn bg-warning-600 text-white hover:bg-warning-700 focus:ring-warning-500;
+  }
+  
+  .btn-error {
+    @apply btn bg-error-600 text-white hover:bg-error-700 focus:ring-error-500;
+  }
+  
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+  
+  .btn-xl {
+    @apply px-8 py-4 text-lg;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+  }
+  
+  .input {
+    @apply block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm;
+  }
+  
+  .input-error {
+    @apply input border-error-300 focus:ring-error-500 focus:border-error-500;
+  }
+  
+  .label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+  
+  .form-group {
+    @apply mb-4;
+  }
+  
+  /* Touch-friendly styles for tablet usage */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  .touch-button {
+    @apply touch-target px-6 py-3 text-lg font-medium;
+  }
+  
+  /* Production floor specific styles */
+  .production-card {
+    @apply card bg-white border-l-4 border-l-primary-500;
+  }
+  
+  .status-indicator {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .status-success {
+    @apply status-indicator bg-success-100 text-success-800;
+  }
+  
+  .status-warning {
+    @apply status-indicator bg-warning-100 text-warning-800;
+  }
+  
+  .status-error {
+    @apply status-indicator bg-error-100 text-error-800;
+  }
+  
+  .status-info {
+    @apply status-indicator bg-primary-100 text-primary-800;
+  }
+  
+  /* Collapsible section styles */
+  .collapsible-header {
+    @apply w-full flex items-center justify-between text-left p-0 bg-transparent border-none cursor-pointer hover:bg-gray-50 rounded-md transition-colors duration-200;
+  }
+
+  .collapsible-content {
+    @apply mt-4 transition-all duration-300 ease-in-out;
+  }
+
+  .collapsible-icon {
+    @apply h-5 w-5 text-gray-500 transition-transform duration-200;
+  }
+
+  /* Sidebar toggle button styles */
+  .sidebar-toggle {
+    @apply flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 transition-colors duration-200;
+  }
+
+  /* Collapsed sidebar styles */
+  .sidebar-collapsed {
+    @apply w-16;
+  }
+
+  .sidebar-expanded {
+    @apply w-64;
+  }
+
+  /* Tooltip for collapsed sidebar items */
+  .sidebar-item-tooltip {
+    @apply absolute left-full ml-2 px-2 py-1 text-sm text-white bg-gray-900 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50;
+  }
+
+  /* Sidebar header styles */
+  .sidebar-header {
+    @apply flex items-center justify-between px-4 py-4 border-b border-gray-200;
+  }
+
+  /* Sidebar toggle button within sidebar */
+  .sidebar-internal-toggle {
+    @apply flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 transition-all duration-200 hover:scale-105;
+  }
+
+  /* Improved sidebar positioning */
+  .sidebar-desktop {
+    @apply fixed left-0 top-16 bottom-0 bg-white border-r border-gray-200 shadow-lg;
+  }
+
+  /* Content area adjustments */
+  .content-with-sidebar {
+    @apply transition-all duration-300 ease-in-out;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Offline indicator */
+  .offline-indicator {
+    @apply fixed top-4 right-4 z-50 px-3 py-2 bg-error-600 text-white rounded-md shadow-lg;
+  }
+  
+  /* Loading spinner */
+  .spinner {
+    @apply animate-spin rounded-full border-2 border-gray-300 border-t-primary-600;
+  }
+}

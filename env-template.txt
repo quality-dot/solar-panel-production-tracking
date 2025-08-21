@@ -1,0 +1,16 @@
+# Database Configuration for Solar Panel Production Tracking System
+# Copy this to .env and update with your actual PostgreSQL settings
+
+# Database Connection Settings
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=solar_panel_tracking
+DB_USER=solar_panel_user
+DB_PASSWORD=change_this_password
+
+# PostgreSQL Superuser (for database creation)
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_postgres_password_from_installation
+
+# Optional: SSL settings for production
+# DB_SSL=false

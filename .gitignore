@@ -21,3 +21,9 @@ out/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Database files (too large for GitHub)
+postgresql-portable.zip
+postgresql/
+*.exe
+*.zip
