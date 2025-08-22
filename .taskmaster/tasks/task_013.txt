@@ -149,7 +149,7 @@ Implement sync logic to process queued operations when network is restored, hand
 ### Details:
 Implement exponential backoff retry logic, proper error handling for failed sync operations, user notification system, and graceful degradation when sync fails.
 
-## 24. Test PWA Functionality Across Devices [pending]
+## 24. Test PWA Functionality Across Devices [in-progress]
 ### Dependencies: None
 ### Description: Test PWA installation and functionality on different devices
 ### Details:
