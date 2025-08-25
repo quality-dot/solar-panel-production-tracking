@@ -6,6 +6,10 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "backend": "node backend/server.js",
+    "backend:dev": "nodemon backend/server.js",
     "db:migrate": "node database/scripts/migrate.js run",
     "db:migrate:status": "node database/scripts/migrate.js status",
     "db:migrate:rollback": "node database/scripts/migrate.js rollback",
