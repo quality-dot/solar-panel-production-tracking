@@ -30,82 +30,7 @@ router.get('/', (req, res) => {
   res.json(successResponse(apiInfo, '🏭 Solar Panel Production Tracking API'));
 });
 
-// API v1 placeholder - simple catch-all for unimplemented routes
-router.all('/api/v1/*', (req, res) => {
-  const routeInfo = {
-    '/api/v1/stations': {
-      name: 'Station Management',
-      endpoints: [
-        'GET /api/v1/stations - List all stations',
-        'GET /api/v1/stations/:id - Get station details',
-        'POST /api/v1/stations/:id/scan - Process barcode scan',
-        'POST /api/v1/stations/:id/inspect - Submit inspection results'
-      ]
-    },
-    '/api/v1/panels': {
-      name: 'Panel Tracking',
-      endpoints: [
-        'GET /api/v1/panels - List panels with filters',
-        'GET /api/v1/panels/:serialNumber - Get panel details',
-        'POST /api/v1/panels - Create new panel',
-        'PATCH /api/v1/panels/:serialNumber - Update panel status'
-      ]
-    },
-    '/api/v1/manufacturing-orders': {
-      name: 'Manufacturing Orders',
-      endpoints: [
-        'GET /api/v1/manufacturing-orders - List MOs',
-        'POST /api/v1/manufacturing-orders - Create new MO',
-        'GET /api/v1/manufacturing-orders/:moNumber - Get MO details',
-        'PATCH /api/v1/manufacturing-orders/:moNumber - Update MO'
-      ]
-    },
-    '/api/v1/inspections': {
-      name: 'Quality Inspections',
-      endpoints: [
-        'GET /api/v1/inspections - List inspections',
-        'POST /api/v1/inspections - Create inspection record',
-        'GET /api/v1/inspections/:id - Get inspection details'
-      ]
-    },
-    '/api/v1/pallets': {
-      name: 'Pallet Management',
-      endpoints: [
-        'GET /api/v1/pallets - List pallets',
-        'POST /api/v1/pallets - Create new pallet',
-        'GET /api/v1/pallets/:palletNumber - Get pallet details'
-      ]
-    },
-    '/api/v1/auth': {
-      name: 'Authentication',
-      endpoints: [
-        'POST /api/v1/auth/login - User login',
-        'POST /api/v1/auth/logout - User logout',
-        'GET /api/v1/auth/me - Get current user'
-      ]
-    }
-  };
-
-  // Find matching route info
-  const basePath = '/' + req.path.split('/').slice(1, 4).join('/'); // /api/v1/xxx
-  const routeData = routeInfo[basePath];
-
-  if (routeData) {
-    res.status(501).json(errorResponse(`${routeData.name} routes not yet implemented`, 501, {
-      plannedEndpoints: routeData.endpoints,
-      requestedPath: req.path,
-      method: req.method
-    }));
-  } else {
-    res.status(501).json(errorResponse('API endpoint not yet implemented', 501, {
-      requestedPath: req.path,
-      method: req.method,
-      availableRoutes: Object.keys(routeInfo)
-    }));
-  }
-});
-
-// Enhanced health check endpoints for production monitoring
+// Health check endpoints
 router.get('/health', async (req, res) => {
   try {
     const dbHealth = await databaseManager.getHealthStatus();
@@ -113,7 +38,7 @@ router.get('/health', async (req, res) => {
     res.status(200).json({ 
       success: true,
       status: 'healthy',
-      timestamp: req.timestamp,
+      timestamp: req.timestamp || new Date().toISOString(),
       service: 'solar-panel-tracking-api',
       version: '1.0.0',
       environment: config.environment,
@@ -129,7 +54,7 @@ router.get('/health', async (req, res) => {
       success: false,
       status: 'unhealthy',
       error: 'Health check failed',
-      timestamp: req.timestamp,
+      timestamp: req.timestamp || new Date().toISOString(),
       details: config.environment === 'development' ? error.message : undefined
     });
   }
@@ -144,7 +69,7 @@ router.get('/status', async (req, res) => {
       status: 'operational',
       version: '1.0.0',
       environment: config.environment,
-      timestamp: req.timestamp,
+      timestamp: req.timestamp || new Date().toISOString(),
       uptime: process.uptime(),
       memory: process.memoryUsage(),
       database: {
@@ -168,7 +93,7 @@ router.get('/status', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Status check failed',
-      timestamp: req.timestamp,
+      timestamp: req.timestamp || new Date().toISOString(),
       details: config.environment === 'development' ? error.message : undefined
     });
   }
@@ -183,14 +108,14 @@ router.get('/ready', async (req, res) => {
       res.status(200).json({
         success: true,
         status: 'ready',
-        timestamp: req.timestamp
+        timestamp: req.timestamp || new Date().toISOString()
       });
     } else {
       res.status(503).json({
         success: false,
         status: 'not ready',
         reason: 'Database not healthy',
-        timestamp: req.timestamp
+        timestamp: req.timestamp || new Date().toISOString()
       });
     }
   } catch (error) {
@@ -198,9 +123,101 @@ router.get('/ready', async (req, res) => {
       success: false,
       status: 'not ready',
       reason: 'Health check failed',
-      timestamp: req.timestamp
+      timestamp: req.timestamp || new Date().toISOString()
     });
   }
+});
+
+// API v1 base route with available endpoints info
+router.get('/api/v1', (req, res) => {
+  res.json(successResponse({
+    message: 'Solar Panel Production Tracking API v1',
+    availableEndpoints: {
+      stations: '/api/v1/stations',
+      panels: '/api/v1/panels', 
+      manufacturingOrders: '/api/v1/manufacturing-orders',
+      inspections: '/api/v1/inspections',
+      pallets: '/api/v1/pallets',
+      auth: '/api/v1/auth'
+    },
+    documentation: 'See individual endpoints for detailed API documentation'
+  }, 'API v1 Base'));
+});
+
+// Simple placeholder routes for API endpoints (no wildcards)
+router.get('/api/v1/stations', (req, res) => {
+  res.status(501).json(errorResponse('Station Management routes not yet implemented', 501, {
+    plannedEndpoints: [
+      'GET /api/v1/stations - List all stations',
+      'GET /api/v1/stations/:id - Get station details',
+      'POST /api/v1/stations/:id/scan - Process barcode scan',
+      'POST /api/v1/stations/:id/inspect - Submit inspection results'
+    ],
+    requestedPath: req.path,
+    method: req.method
+  }));
+});
+
+router.get('/api/v1/panels', (req, res) => {
+  res.status(501).json(errorResponse('Panel Tracking routes not yet implemented', 501, {
+    plannedEndpoints: [
+      'GET /api/v1/panels - List panels with filters',
+      'GET /api/v1/panels/:serialNumber - Get panel details',
+      'POST /api/v1/panels - Create new panel',
+      'PATCH /api/v1/panels/:serialNumber - Update panel status'
+    ],
+    requestedPath: req.path,
+    method: req.method
+  }));
+});
+
+router.get('/api/v1/manufacturing-orders', (req, res) => {
+  res.status(501).json(errorResponse('Manufacturing Orders routes not yet implemented', 501, {
+    plannedEndpoints: [
+      'GET /api/v1/manufacturing-orders - List MOs',
+      'POST /api/v1/manufacturing-orders - Create new MO',
+      'GET /api/v1/manufacturing-orders/:moNumber - Get MO details',
+      'PATCH /api/v1/manufacturing-orders/:moNumber - Update MO'
+    ],
+    requestedPath: req.path,
+    method: req.method
+  }));
+});
+
+router.get('/api/v1/inspections', (req, res) => {
+  res.status(501).json(errorResponse('Quality Inspections routes not yet implemented', 501, {
+    plannedEndpoints: [
+      'GET /api/v1/inspections - List inspections',
+      'POST /api/v1/inspections - Create inspection record',
+      'GET /api/v1/inspections/:id - Get inspection details'
+    ],
+    requestedPath: req.path,
+    method: req.method
+  }));
+});
+
+router.get('/api/v1/pallets', (req, res) => {
+  res.status(501).json(errorResponse('Pallet Management routes not yet implemented', 501, {
+    plannedEndpoints: [
+      'GET /api/v1/pallets - List pallets',
+      'POST /api/v1/pallets - Create new pallet',
+      'GET /api/v1/pallets/:palletNumber - Get pallet details'
+    ],
+    requestedPath: req.path,
+    method: req.method
+  }));
+});
+
+router.post('/api/v1/auth/login', (req, res) => {
+  res.status(501).json(errorResponse('Authentication routes not yet implemented', 501, {
+    plannedEndpoints: [
+      'POST /api/v1/auth/login - User login',
+      'POST /api/v1/auth/logout - User logout',
+      'GET /api/v1/auth/me - Get current user'
+    ],
+    requestedPath: req.path,
+    method: req.method
+  }));
 });
 
 export default router;

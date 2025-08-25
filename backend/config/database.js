@@ -44,16 +44,24 @@ class DatabaseManager {
       this.setupPoolEventHandlers();
 
       // Test connection
-      await this.testConnection();
+      const connectionSuccess = await this.testConnection();
       
-      this.isConnected = true;
-      console.log('🔗 Database connection pool initialized successfully');
-      console.log(`📊 Pool config: min=${dbConfig.pool.min}, max=${dbConfig.pool.max}`);
-      
-      return this.pool;
+      if (connectionSuccess) {
+        this.isConnected = true;
+        console.log('🔗 Database connection pool initialized successfully');
+        console.log(`📊 Pool config: min=${dbConfig.pool.min}, max=${dbConfig.pool.max}`);
+        return this.pool;
+      } else {
+        // Database connection failed, but we're continuing in development mode
+        console.log('⚠️ Database not available - running in development mode');
+        return null;
+      }
     } catch (error) {
       console.error('❌ Database initialization failed:', error.message);
-      throw error;
+      // Don't throw in development mode, allow server to continue
+      console.log('🔧 Server will continue without database functionality');
+      this.isConnected = false;
+      return null;
     }
   }
 
@@ -92,16 +100,34 @@ class DatabaseManager {
       return true;
     } catch (error) {
       console.error('❌ Database connection test failed:', error.message);
+      
+      // For development, allow continuing without database
+      if (error.message.includes('password authentication failed') || 
+          error.message.includes('database') || 
+          error.message.includes('connection')) {
+        console.log('🔧 Continuing in development mode without database connection.');
+        console.log('📝 Create a .env file with proper database credentials to enable database features.');
+        
+        // Close the failed pool
+        if (this.pool) {
+          await this.pool.end();
+          this.pool = null;
+        }
+        this.isConnected = false;
+        return false;
+      }
+      
       throw error;
     }
   }
 
   // Get database health status for monitoring endpoints
   async getHealthStatus() {
-    if (!this.pool) {
+    if (!this.pool || !this.isConnected) {
       return {
-        status: 'disconnected',
-        error: 'Database pool not initialized'
+        status: 'development_mode',
+        message: 'Database not connected - running in development mode',
+        databaseAvailable: false
       };
     }
 

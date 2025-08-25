@@ -3,37 +3,32 @@
 
 import express from 'express';
 import cors from 'cors';
-import { config, validateEnvironment } from './config/index.js';
-import { databaseManager } from './config/index.js';
-import mainRoutes from './routes/index.js';
 
+console.log('Step 1: Basic Express app');
 const app = express();
-const PORT = config.port || 3000;
 
-// Validate environment variables
+console.log('Step 2: Importing config...');
+const { config, validateEnvironment } = await import('./config/environment.js');
+console.log('✅ Config imported');
+
+console.log('Step 3: Validating environment...');
 try {
   validateEnvironment();
-  console.log('✅ Environment validation passed');
+  console.log('✅ Environment validated');
 } catch (error) {
-  console.error('❌ Environment validation failed:', error.message);
+  console.log('❌ Environment validation failed:', error.message);
   process.exit(1);
 }
 
-// Server initialization
-console.log('🏭 Solar Panel Production Tracking System');
-console.log('📡 Initializing server for dual-line manufacturing...');
+console.log('Step 4: Importing database manager...');
+const { databaseManager } = await import('./config/database.js');
+console.log('✅ Database manager imported');
 
-// Basic Express middleware setup
-app.use(express.json({ limit: '10mb' })); // JSON parsing for API requests
-app.use(express.urlencoded({ extended: true, limit: '10mb' })); // URL-encoded parsing
-
-// CORS configuration for PWA tablets
+console.log('Step 5: Adding basic middleware...');
 app.use(cors(config.cors));
-
-// Trust proxy for production environments (for rate limiting, etc.)
-if (config.environment === 'production') {
-  app.set('trust proxy', 1);
-}
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+console.log('✅ Basic middleware added');
 
 // Add request timestamp for manufacturing logging
 app.use((req, res, next) => {
@@ -41,22 +36,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// Manufacturing-specific headers middleware
-app.use((req, res, next) => {
-  // Add manufacturing-specific response headers
-  res.setHeader('X-Manufacturing-API', 'v1.0');
-  res.setHeader('X-Max-Stations', config.manufacturing.maxConcurrentStations);
-  
-  // Add station identification headers if present
-  if (req.headers['x-station-id']) {
-    res.setHeader('X-Station-Response', req.headers['x-station-id']);
-  }
-  
-  next();
-});
+console.log('Step 6: Importing routes...');
+const mainRoutes = await import('./routes/index.js');
+app.use('/', mainRoutes.default);
+console.log('✅ Routes added');
 
-// Main routes
-app.use('/', mainRoutes);
+console.log('Step 7: Starting server...');
+const PORT = config.port || 3000;
 
 // Global error handler (basic for now, will be enhanced in subtask 2.6)
 app.use((error, req, res, next) => {
@@ -77,8 +63,8 @@ app.use((error, req, res, next) => {
   });
 });
 
-// 404 handler for unknown routes
-app.use('*', (req, res) => {
+// 404 handler for unknown routes (avoiding wildcard)
+app.use((req, res) => {
   res.status(404).json({
     success: false,
     error: 'Route not found',
