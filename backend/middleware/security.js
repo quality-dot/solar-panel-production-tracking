@@ -75,13 +75,13 @@ export const manufacturingRateLimit = rateLimit({
   keyGenerator: (req, res) => {
     const stationId = req.headers['x-station-id'];
     
-    // Use station ID if available, otherwise fall back to default IP handling
+    // Use station ID if available, otherwise fall back to station IP
     if (stationId) {
       return `station-${stationId}`;
     }
     
-    // Use default IP key generation for IPv6 compatibility
-    return req.ip;
+    // Use station IP with fallback for IPv6 compatibility
+    return `ip-${req.ip}`;
   },
 
   // Skip rate limiting for health checks
@@ -110,7 +110,7 @@ export const authRateLimit = rateLimit({
   legacyHeaders: false,
   
   // Key based on IP for auth attempts (IPv6 safe)
-  keyGenerator: (req) => req.ip
+  keyGenerator: (req) => `auth-${req.ip}`
 });
 
 /**

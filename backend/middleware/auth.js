@@ -1,180 +1,448 @@
-// Authentication middleware for manufacturing system
-// JWT-based authentication for production floor tablets
+// Authentication and authorization middleware for manufacturing environment
+// JWT verification, role-based access control, and station assignment validation
 
-import jwt from 'jsonwebtoken';
-import { config } from '../config/index.js';
-import { errorResponse } from '../utils/index.js';
+import { 
+  verifyToken, 
+  extractTokenFromHeader, 
+  getTokenExpiration,
+  TOKEN_TYPES 
+} from '../utils/index.js';
+import { 
+  hasPermission, 
+  hasStationPermission, 
+  PERMISSIONS 
+} from '../utils/index.js';
+import { User } from '../models/index.js';
+import { manufacturingLogger } from './logger.js';
+import { 
+  AuthenticationError, 
+  AuthorizationError, 
+  ValidationError 
+} from './errorHandler.js';
 
 /**
- * JWT Authentication middleware
- * Validates JWT tokens for protected routes
+ * Authenticate JWT token middleware
+ * Verifies token and adds user info to request
  */
-export const authenticateJWT = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-  if (!token) {
-    return res.status(401).json(errorResponse('Access token required', 401, {
-      context: 'authentication',
-      stationId: req.station?.id || 'unknown'
-    }));
-  }
-
+export const authenticateJWT = async (req, res, next) => {
   try {
-    const decoded = jwt.verify(token, config.security.jwtSecret);
-    req.user = decoded;
-    
-    // Add user context for manufacturing logging
-    if (config.environment === 'development') {
-      console.log(`👤 User ${decoded.username} (${decoded.role}) authenticated on station ${req.station?.id || 'unknown'}`);
+    const authHeader = req.get('Authorization');
+    const token = extractTokenFromHeader(authHeader);
+
+    if (!token) {
+      throw new AuthenticationError('Authentication token required', {
+        reason: 'missing_token'
+      });
     }
-    
-    next();
-  } catch (error) {
-    console.error('🚨 JWT verification failed:', {
-      error: error.message,
-      stationId: req.station?.id || 'unknown',
-      timestamp: new Date().toISOString()
+
+    // Verify token
+    const decoded = verifyToken(token, TOKEN_TYPES.ACCESS);
+
+    // Get fresh user data from database
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      throw new AuthenticationError('User not found or inactive', {
+        reason: 'user_not_found',
+        userId: decoded.userId
+      });
+    }
+
+    // Check if token is about to expire
+    const tokenInfo = getTokenExpiration(token);
+    if (tokenInfo && tokenInfo.expiresInMinutes < 2) {
+      manufacturingLogger.warn('Token expiring soon', {
+        userId: user.id,
+        username: user.username,
+        expiresInMinutes: tokenInfo.expiresInMinutes,
+        category: 'authentication'
+      });
+    }
+
+    // Add user and token info to request
+    req.user = user;
+    req.token = {
+      raw: token,
+      decoded,
+      expiresAt: tokenInfo?.expiresAt,
+      expiresInMinutes: tokenInfo?.expiresInMinutes
+    };
+
+    manufacturingLogger.debug('User authenticated successfully', {
+      userId: user.id,
+      username: user.username,
+      role: user.role,
+      station: req.station?.id,
+      category: 'authentication'
     });
 
-    return res.status(403).json(errorResponse('Invalid or expired token', 403, {
-      context: 'authentication',
-      stationId: req.station?.id || 'unknown'
+    next();
+  } catch (error) {
+    if (error instanceof AuthenticationError) {
+      return next(error);
+    }
+
+    manufacturingLogger.error('JWT authentication failed', {
+      error: error.message,
+      path: req.path,
+      method: req.method,
+      ip: req.ip,
+      category: 'authentication'
+    });
+
+    next(new AuthenticationError('Authentication failed', {
+      reason: 'authentication_error',
+      details: error.message
     }));
+  }
+};
+
+/**
+ * Optional authentication middleware
+ * Adds user info if token is present but doesn't require it
+ */
+export const optionalAuth = async (req, res, next) => {
+  try {
+    const authHeader = req.get('Authorization');
+    const token = extractTokenFromHeader(authHeader);
+
+    if (!token) {
+      // No token provided, continue without authentication
+      req.user = null;
+      req.token = null;
+      return next();
+    }
+
+    // Try to authenticate, but don't fail if token is invalid
+    const decoded = verifyToken(token, TOKEN_TYPES.ACCESS);
+    const user = await User.findById(decoded.userId);
+
+    if (user) {
+      const tokenInfo = getTokenExpiration(token);
+      req.user = user;
+      req.token = {
+        raw: token,
+        decoded,
+        expiresAt: tokenInfo?.expiresAt,
+        expiresInMinutes: tokenInfo?.expiresInMinutes
+      };
+    }
+
+    next();
+  } catch (error) {
+    // Log warning but continue without authentication
+    manufacturingLogger.warn('Optional authentication failed', {
+      error: error.message,
+      path: req.path,
+      category: 'authentication'
+    });
+
+    req.user = null;
+    req.token = null;
+    next();
   }
 };
 
 /**
  * Role-based authorization middleware
- * Restricts access based on user roles
+ * Requires specific user roles to access the route
  */
 export const authorizeRole = (...allowedRoles) => {
   return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json(errorResponse('Authentication required', 401, {
-        context: 'authorization'
-      }));
-    }
+    try {
+      if (!req.user) {
+        throw new AuthenticationError('Authentication required', {
+          reason: 'not_authenticated'
+        });
+      }
 
-    if (!allowedRoles.includes(req.user.role)) {
-      console.warn(`🚫 Access denied for user ${req.user.username} (${req.user.role}) on station ${req.station?.id || 'unknown'}`);
-      
-      return res.status(403).json(errorResponse('Insufficient permissions', 403, {
-        context: 'authorization',
-        requiredRoles: allowedRoles,
-        userRole: req.user.role,
-        stationId: req.station?.id || 'unknown'
-      }));
-    }
+      if (!allowedRoles.includes(req.user.role)) {
+        manufacturingLogger.warn('Unauthorized role access attempt', {
+          userId: req.user.id,
+          username: req.user.username,
+          userRole: req.user.role,
+          requiredRoles: allowedRoles,
+          path: req.path,
+          method: req.method,
+          category: 'authorization'
+        });
 
-    next();
+        throw new AuthorizationError('Insufficient permissions', req.user.role, {
+          userRole: req.user.role,
+          requiredRoles: allowedRoles,
+          reason: 'insufficient_role'
+        });
+      }
+
+      manufacturingLogger.debug('Role authorization successful', {
+        userId: req.user.id,
+        role: req.user.role,
+        allowedRoles,
+        category: 'authorization'
+      });
+
+      next();
+    } catch (error) {
+      next(error);
+    }
   };
 };
 
 /**
- * Station assignment validation
- * Ensures operators can only access their assigned stations
+ * Permission-based authorization middleware
+ * Requires specific permissions to access the route
+ */
+export const requirePermission = (...permissions) => {
+  return (req, res, next) => {
+    try {
+      if (!req.user) {
+        throw new AuthenticationError('Authentication required', {
+          reason: 'not_authenticated'
+        });
+      }
+
+      // Check if user has any of the required permissions
+      const hasAnyPermission = permissions.some(permission => 
+        hasPermission(req.user.role, permission)
+      );
+
+      if (!hasAnyPermission) {
+        manufacturingLogger.warn('Unauthorized permission access attempt', {
+          userId: req.user.id,
+          username: req.user.username,
+          userRole: req.user.role,
+          requiredPermissions: permissions,
+          path: req.path,
+          method: req.method,
+          category: 'authorization'
+        });
+
+        throw new AuthorizationError('Insufficient permissions', req.user.role, {
+          userRole: req.user.role,
+          requiredPermissions: permissions,
+          reason: 'insufficient_permissions'
+        });
+      }
+
+      manufacturingLogger.debug('Permission authorization successful', {
+        userId: req.user.id,
+        role: req.user.role,
+        permissions,
+        category: 'authorization'
+      });
+
+      next();
+    } catch (error) {
+      next(error);
+    }
+  };
+};
+
+/**
+ * Station assignment validation middleware
+ * Ensures inspector users can only access assigned stations
  */
 export const validateStationAssignment = (req, res, next) => {
-  const user = req.user;
-  const requestedStationId = req.station?.id || req.params.stationId;
-
-  // Admins and supervisors can access any station
-  if (user.role === 'admin' || user.role === 'supervisor') {
-    return next();
-  }
-
-  // Operators must work on their assigned station
-  if (user.role === 'operator') {
-    if (!user.stationAssignment) {
-      return res.status(403).json(errorResponse('No station assignment found', 403, {
-        context: 'station_assignment',
-        userId: user.id,
-        username: user.username
-      }));
+  try {
+    if (!req.user) {
+      throw new AuthenticationError('Authentication required', {
+        reason: 'not_authenticated'
+      });
     }
 
-    if (requestedStationId && user.stationAssignment.toString() !== requestedStationId) {
-      console.warn(`🚫 Station assignment violation: User ${user.username} tried to access station ${requestedStationId}, assigned to ${user.stationAssignment}`);
-      
-      return res.status(403).json(errorResponse('Access denied: Wrong station assignment', 403, {
-        context: 'station_assignment',
-        assignedStation: user.stationAssignment,
-        requestedStation: requestedStationId,
-        username: user.username
-      }));
+    // Extract station ID from params, body, or query
+    const stationId = parseInt(req.params.id || req.params.stationId || req.body.stationId || req.query.stationId);
+    
+    if (!stationId || stationId < 1 || stationId > 8) {
+      throw new ValidationError('Valid station ID required', {
+        field: 'stationId',
+        value: stationId,
+        validRange: '1-8',
+        reason: 'invalid_station_id'
+      });
     }
-  }
 
-  next();
+    // Check station access
+    if (!req.user.hasStationAccess(stationId)) {
+      manufacturingLogger.warn('Unauthorized station access attempt', {
+        userId: req.user.id,
+        username: req.user.username,
+        userRole: req.user.role,
+        requestedStation: stationId,
+        assignedStations: req.user.station_assignments,
+        path: req.path,
+        method: req.method,
+        category: 'authorization'
+      });
+
+      throw new AuthorizationError('No access to this station', req.user.role, {
+        requestedStation: stationId,
+        assignedStations: req.user.station_assignments,
+        reason: 'station_not_assigned'
+      });
+    }
+
+    // Add station validation info to request
+    req.validatedStation = {
+      id: stationId,
+      hasAccess: true,
+      accessReason: req.user.role === 'STATION_INSPECTOR' ? 'assigned' : 'elevated_permissions'
+    };
+
+    manufacturingLogger.debug('Station access validated', {
+      userId: req.user.id,
+      stationId,
+      accessReason: req.validatedStation.accessReason,
+      category: 'authorization'
+    });
+
+    next();
+  } catch (error) {
+    next(error);
+  }
 };
 
 /**
- * Optional authentication middleware
- * Adds user context if token is present but doesn't require it
+ * Station-specific permission validation
+ * Combines permission checking with station assignment validation
  */
-export const optionalAuth = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (token) {
+export const requireStationPermission = (...permissions) => {
+  return (req, res, next) => {
     try {
-      const decoded = jwt.verify(token, config.security.jwtSecret);
-      req.user = decoded;
+      if (!req.user) {
+        throw new AuthenticationError('Authentication required', {
+          reason: 'not_authenticated'
+        });
+      }
+
+      // Extract station ID
+      const stationId = parseInt(req.params.id || req.params.stationId || req.body.stationId || req.query.stationId);
+      
+      if (!stationId || stationId < 1 || stationId > 8) {
+        throw new ValidationError('Valid station ID required', {
+          field: 'stationId',
+          value: stationId,
+          reason: 'invalid_station_id'
+        });
+      }
+
+      // Check if user has any of the required permissions for this station
+      const hasAnyStationPermission = permissions.some(permission => 
+        hasStationPermission(req.user, permission, stationId)
+      );
+
+      if (!hasAnyStationPermission) {
+        manufacturingLogger.warn('Unauthorized station permission access attempt', {
+          userId: req.user.id,
+          username: req.user.username,
+          userRole: req.user.role,
+          stationId,
+          requiredPermissions: permissions,
+          assignedStations: req.user.station_assignments,
+          path: req.path,
+          method: req.method,
+          category: 'authorization'
+        });
+
+        throw new AuthorizationError('Insufficient station permissions', req.user.role, {
+          stationId,
+          requiredPermissions: permissions,
+          assignedStations: req.user.station_assignments,
+          reason: 'insufficient_station_permissions'
+        });
+      }
+
+      // Add validation info to request
+      req.validatedStation = {
+        id: stationId,
+        hasAccess: true,
+        permissions,
+        accessReason: req.user.role === 'STATION_INSPECTOR' ? 'assigned' : 'elevated_permissions'
+      };
+
+      manufacturingLogger.debug('Station permission validation successful', {
+        userId: req.user.id,
+        stationId,
+        permissions,
+        category: 'authorization'
+      });
+
+      next();
     } catch (error) {
-      // Silently ignore invalid tokens for optional auth
-      console.warn('⚠️ Optional auth: Invalid token provided:', error.message);
+      next(error);
     }
-  }
-
-  next();
-};
-
-/**
- * Generate JWT token for authenticated users
- */
-export const generateToken = (user) => {
-  const payload = {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    role: user.role,
-    stationAssignment: user.station_assignment,
-    iat: Math.floor(Date.now() / 1000)
   };
-
-  return jwt.sign(payload, config.security.jwtSecret, {
-    expiresIn: config.security.jwtExpiresIn,
-    issuer: 'solar-panel-tracking-api',
-    audience: 'manufacturing-stations'
-  });
 };
 
 /**
- * Refresh token validation
- * Checks if token is close to expiry and needs refresh
+ * Token refresh check middleware
+ * Adds refresh recommendation to response headers
  */
 export const checkTokenRefresh = (req, res, next) => {
-  if (req.user) {
-    const currentTime = Math.floor(Date.now() / 1000);
-    const tokenExp = req.user.exp;
-    const timeUntilExpiry = tokenExp - currentTime;
+  if (req.token && req.token.expiresInMinutes < 5) {
+    res.setHeader('X-Token-Refresh-Recommended', 'true');
+    res.setHeader('X-Token-Expires-In-Minutes', req.token.expiresInMinutes);
     
-    // Add refresh warning if token expires in less than 30 minutes
-    if (timeUntilExpiry < 1800) {
-      res.setHeader('X-Token-Refresh-Required', 'true');
-      res.setHeader('X-Token-Expires-In', timeUntilExpiry.toString());
-    }
+    manufacturingLogger.info('Token refresh recommended', {
+      userId: req.user?.id,
+      expiresInMinutes: req.token.expiresInMinutes,
+      category: 'authentication'
+    });
   }
 
   next();
+};
+
+/**
+ * Rate limiting override for authenticated users
+ * Provides higher rate limits for authenticated manufacturing users
+ */
+export const authRateLimitOverride = (req, res, next) => {
+  if (req.user) {
+    // Set higher rate limit key for authenticated users
+    req.rateLimitKey = `auth-${req.user.id}`;
+    
+    // Add user context for rate limiting
+    req.rateLimitContext = {
+      userId: req.user.id,
+      role: req.user.role,
+      authenticated: true
+    };
+  }
+
+  next();
+};
+
+/**
+ * Legacy token generation for backwards compatibility
+ * TODO: Remove after full migration to new JWT utilities
+ */
+export const generateToken = (user) => {
+  manufacturingLogger.warn('Using legacy generateToken function', {
+    userId: user.id,
+    username: user.username,
+    category: 'authentication',
+    deprecated: true
+  });
+  
+  // Import the new utility function
+  import('../utils/index.js').then(({ generateAccessToken }) => {
+    return generateAccessToken(user);
+  }).catch(error => {
+    manufacturingLogger.error('Failed to generate token with new utility', {
+      error: error.message,
+      category: 'authentication'
+    });
+  });
 };
 
 export default {
   authenticateJWT,
-  authorizeRole,
-  validateStationAssignment,
   optionalAuth,
-  generateToken,
-  checkTokenRefresh
+  authorizeRole,
+  requirePermission,
+  validateStationAssignment,
+  requireStationPermission,
+  checkTokenRefresh,
+  authRateLimitOverride,
+  generateToken
 };

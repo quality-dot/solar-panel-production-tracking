@@ -24,11 +24,41 @@ console.log('Step 4: Importing database manager...');
 const { databaseManager } = await import('./config/database.js');
 console.log('✅ Database manager imported');
 
-console.log('Step 5: Adding basic middleware...');
+console.log('Step 5: Importing middleware...');
+const securityMiddleware = await import('./middleware/security.js');
+const loggerMiddleware = await import('./middleware/logger.js');
+const errorHandlerMiddleware = await import('./middleware/errorHandler.js');
+console.log('✅ Security, logging, and error handling middleware imported');
+
+console.log('Step 6: Adding security middleware stack...');
+// Add Helmet security headers (optimized for PWA tablets)
+app.use(securityMiddleware.helmetConfig);
+
+// Add CORS preflight handler for manufacturing efficiency  
+app.use(securityMiddleware.corsPreflightHandler);
+
+// Add standard CORS configuration
 app.use(cors(config.cors));
+
+// Add station identification and tracking
+app.use(securityMiddleware.stationIdentification);
+
+// Add rate limiting for manufacturing operations
+app.use(securityMiddleware.manufacturingRateLimit);
+
+// Add request size limiting
+app.use(securityMiddleware.requestSizeLimit);
+
+// Add body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-console.log('✅ Basic middleware added');
+console.log('✅ Security middleware stack configured for 8 concurrent stations');
+
+// Add request timing for performance monitoring
+app.use(loggerMiddleware.requestTiming);
+
+// Add HTTP request logging with manufacturing context
+app.use(loggerMiddleware.createRequestLogger());
 
 // Add request timestamp for manufacturing logging
 app.use((req, res, next) => {
@@ -36,43 +66,42 @@ app.use((req, res, next) => {
   next();
 });
 
-console.log('Step 6: Importing routes...');
+// Add manufacturing activity tracking
+app.use(loggerMiddleware.manufacturingActivityTracker);
+
+// Add health check logging
+app.use(loggerMiddleware.healthCheckLogger);
+
+console.log('Step 7: Adding response and validation middleware...');
+const responseMiddleware = await import('./middleware/response.js');
+
+// Add response standardization middleware
+app.use(responseMiddleware.responseTimer);
+app.use(responseMiddleware.addRequestContext);
+app.use(responseMiddleware.optimizeForTablets);
+app.use(responseMiddleware.apiVersioning);
+app.use(responseMiddleware.addManufacturingMetadata);
+console.log('✅ Response standardization middleware added');
+
+console.log('Step 8: Importing routes...');
 const mainRoutes = await import('./routes/index.js');
+const healthRoutes = await import('./routes/health.js');
+
+// Add health check routes first
+app.use('/', healthRoutes.default);
+
+// Add main API routes
 app.use('/', mainRoutes.default);
-console.log('✅ Routes added');
+console.log('✅ Routes and health checks added');
 
-console.log('Step 7: Starting server...');
+// Add error handling middleware (must be after routes)
+app.use(loggerMiddleware.errorLogger);
+app.use(responseMiddleware.standardizeErrors);
+app.use(errorHandlerMiddleware.globalErrorHandler);
+app.use(errorHandlerMiddleware.notFoundHandler);
+
+console.log('Step 9: Starting server...');
 const PORT = config.port || 3000;
-
-// Global error handler (basic for now, will be enhanced in subtask 2.6)
-app.use((error, req, res, next) => {
-  console.error('🚨 Unhandled error:', {
-    error: error.message,
-    stack: error.stack,
-    url: req.url,
-    method: req.method,
-    timestamp: req.timestamp,
-    stationId: req.headers['x-station-id'] || 'unknown'
-  });
-
-  res.status(500).json({
-    success: false,
-    error: 'Internal server error',
-    timestamp: req.timestamp,
-    ...(config.environment === 'development' && { details: error.message })
-  });
-});
-
-// 404 handler for unknown routes (avoiding wildcard)
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    error: 'Route not found',
-    path: req.originalUrl,
-    method: req.method,
-    timestamp: req.timestamp
-  });
-});
 
 // Graceful shutdown handling for production reliability
 const gracefulShutdown = async (signal) => {
@@ -112,6 +141,9 @@ const startServer = async () => {
     process.exit(1);
   }
 };
+
+// Setup process error handlers for production reliability
+errorHandlerMiddleware.setupProcessErrorHandlers();
 
 // Start the server
 startServer();

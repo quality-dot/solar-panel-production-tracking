@@ -68,24 +68,64 @@ class DatabaseManager {
   // Set up pool monitoring for production reliability
   setupPoolEventHandlers() {
     this.pool.on('connect', (client) => {
-      console.log('🔌 New database client connected');
+      const clientInfo = { 
+        processID: client.processID, 
+        secretKey: client.secretKey 
+      };
+      if (config.environment === 'development') {
+        console.log('🔌 New database client connected:', clientInfo);
+      }
     });
 
     this.pool.on('acquire', (client) => {
-      console.log('📥 Database client acquired from pool');
+      if (config.environment === 'development') {
+        console.log('📥 Database client acquired from pool');
+      }
+      
+      // Monitor pool utilization for manufacturing operations
+      const utilization = (this.pool.totalCount - this.pool.idleCount) / this.pool.options.max;
+      if (utilization > 0.8) { // Warn if pool is 80% utilized
+        console.warn('⚠️ High database pool utilization:', {
+          utilization: `${Math.round(utilization * 100)}%`,
+          totalConnections: this.pool.totalCount,
+          idleConnections: this.pool.idleCount,
+          waitingConnections: this.pool.waitingCount
+        });
+      }
     });
 
     this.pool.on('release', (client) => {
-      console.log('📤 Database client released back to pool');
+      if (config.environment === 'development') {
+        console.log('📤 Database client released back to pool');
+      }
     });
 
     this.pool.on('error', (err, client) => {
-      console.error('❌ Database pool error:', err.message);
-      // In production, you might want to trigger alerts here
+      console.error('❌ Database pool error:', {
+        error: err.message,
+        code: err.code,
+        clientInfo: client ? {
+          processID: client.processID,
+          database: client.database
+        } : 'No client info',
+        poolStats: {
+          totalConnections: this.pool.totalCount,
+          idleConnections: this.pool.idleCount,
+          waitingConnections: this.pool.waitingCount
+        }
+      });
+      
+      // In production, trigger alerts for critical database errors
+      if (config.environment === 'production') {
+        // TODO: Integrate with alerting system (email, Slack, monitoring service)
+        this.triggerDatabaseAlert('pool_error', err);
+      }
     });
 
     this.pool.on('remove', (client) => {
-      console.log('🗑️ Database client removed from pool');
+      if (config.environment === 'development') {
+        console.log('🗑️ Database client removed from pool');
+      }
     });
   }
 
@@ -227,6 +267,73 @@ class DatabaseManager {
   // Get the pool instance (for direct access if needed)
   getPool() {
     return this.pool;
+  }
+
+  // Trigger database alerts for production monitoring
+  triggerDatabaseAlert(alertType, error) {
+    const alertData = {
+      type: alertType,
+      timestamp: new Date().toISOString(),
+      error: error.message,
+      code: error.code,
+      poolStats: {
+        totalConnections: this.pool?.totalCount || 0,
+        idleConnections: this.pool?.idleCount || 0,
+        waitingConnections: this.pool?.waitingCount || 0
+      },
+      environment: config.environment
+    };
+
+    // Log the alert
+    console.error('🚨 DATABASE ALERT:', alertData);
+    
+    // TODO: Implement actual alerting integration
+    // Examples:
+    // - Send email notification
+    // - Post to Slack channel
+    // - Send to monitoring service (DataDog, New Relic, etc.)
+    // - Trigger PagerDuty incident
+  }
+
+  // Get detailed pool statistics for monitoring
+  getPoolStatistics() {
+    if (!this.pool) {
+      return {
+        connected: false,
+        message: 'Database pool not initialized'
+      };
+    }
+
+    return {
+      connected: this.isConnected,
+      totalConnections: this.pool.totalCount,
+      idleConnections: this.pool.idleCount,
+      waitingConnections: this.pool.waitingCount,
+      maxConnections: this.pool.options.max,
+      minConnections: this.pool.options.min,
+      utilization: Math.round(((this.pool.totalCount - this.pool.idleCount) / this.pool.options.max) * 100),
+      poolConfig: {
+        acquireTimeoutMillis: this.pool.options.acquireTimeoutMillis,
+        idleTimeoutMillis: this.pool.options.idleTimeoutMillis,
+        connectionTimeoutMillis: this.pool.options.connectionTimeoutMillis
+      }
+    };
+  }
+
+  // Execute a transaction with automatic rollback on error
+  async executeTransaction(transactionCallback) {
+    const client = await this.getClient();
+    try {
+      await client.query('BEGIN');
+      const result = await transactionCallback(client);
+      await client.query('COMMIT');
+      return result;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 }
 
