@@ -1,4 +1,10 @@
 import '@testing-library/jest-dom';
+import 'fake-indexeddb/auto';
+
+// Polyfill structuredClone for Node.js test environment
+if (typeof global.structuredClone === 'undefined') {
+  global.structuredClone = (obj: any) => JSON.parse(JSON.stringify(obj));
+}
 
 // Extend Jest matchers
 declare global {

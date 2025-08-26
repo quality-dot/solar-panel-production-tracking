@@ -30,6 +30,7 @@ export interface SyncQueue {
   createdAt: Date;
   retryCount: number;
   lastRetry?: Date;
+  error?: string;
 }
 
 // Extend Dexie to include our tables

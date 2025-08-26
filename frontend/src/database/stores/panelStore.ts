@@ -49,25 +49,25 @@ export class PanelStore {
       let collection = db.panels.toCollection();
       
       if (filters?.status) {
-        collection = collection.filter(panel => panel.status === filters.status);
+        collection = collection.filter((panel: Panel) => panel.status === filters.status);
       }
       
       if (filters?.type) {
-        collection = collection.filter(panel => panel.type === filters.type);
+        collection = collection.filter((panel: Panel) => panel.type === filters.type);
       }
       
       if (filters?.barcode) {
-        collection = collection.filter(panel => 
+        collection = collection.filter((panel: Panel) => 
           panel.barcode.toLowerCase().includes(filters.barcode!.toLowerCase())
         );
       }
       
       if (filters?.dateFrom) {
-        collection = collection.filter(panel => panel.createdAt >= filters.dateFrom!);
+        collection = collection.filter((panel: Panel) => panel.createdAt >= filters.dateFrom!);
       }
       
       if (filters?.dateTo) {
-        collection = collection.filter(panel => panel.createdAt <= filters.dateTo!);
+        collection = collection.filter((panel: Panel) => panel.createdAt <= filters.dateTo!);
       }
       
       return await collection.toArray();
@@ -95,7 +95,7 @@ export class PanelStore {
       const lowerQuery = query.toLowerCase();
       
       let results = await db.panels
-        .filter(panel => 
+        .filter((panel: Panel) => 
           panel.barcode.toLowerCase().includes(lowerQuery) ||
           panel.type.toLowerCase().includes(lowerQuery)
         )
@@ -198,7 +198,7 @@ export class PanelStore {
       const panels = await db.panels.toArray();
       const typeCounts: Record<string, number> = {};
       
-      panels.forEach(panel => {
+      panels.forEach((panel: Panel) => {
         typeCounts[panel.type] = (typeCounts[panel.type] || 0) + 1;
       });
       
@@ -239,7 +239,7 @@ export class PanelStore {
   static async getUniqueTypes(): Promise<string[]> {
     return await withErrorHandling(async () => {
       const panels = await db.panels.toArray();
-      const types = new Set(panels.map(panel => panel.type));
+      const types = new Set(panels.map((panel: Panel) => panel.type));
       return Array.from(types).sort();
     });
   }
@@ -266,7 +266,7 @@ export class PanelStore {
       const byStatus = await this.getCountByStatus();
       const byType = await this.getCountByType();
       
-      const dates = panels.map(panel => panel.createdAt).sort();
+      const dates = panels.map((panel: Panel) => panel.createdAt).sort();
       const oldest = dates.length > 0 ? dates[0] : null;
       const newest = dates.length > 0 ? dates[dates.length - 1] : null;
       

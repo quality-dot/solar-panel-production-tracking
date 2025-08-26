@@ -72,7 +72,7 @@ export const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
     showCloseButton = true, 
     closeOnOverlayClick = true,
     closeOnEscape = true,
-    preventScroll = true,
+    preventScroll = false,
     ...props 
   }, ref) => {
     const modalRef = useRef<HTMLDivElement>(null);

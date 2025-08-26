@@ -7,16 +7,91 @@
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
   }
   
   body {
     @apply bg-gray-50 text-gray-900;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
   
   * {
     @apply border-gray-200;
+  }
+  
+  /* Ensure proper scrolling on mobile/tablet */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  /* Fix for iOS momentum scrolling */
+  .ios-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Ensure Settings page content scrolls properly */
+  .settings-content {
+    min-height: 100vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Fix for touch scrolling on mobile devices */
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+  }
+  
+  /* Mobile bottom navigation spacing */
+  .mobile-content {
+    padding-bottom: 8rem !important; /* 128px - extra safe padding for bottom nav */
+    margin-bottom: 2rem !important; /* 32px - additional safety margin */
+  }
+  
+  /* Ensure bottom navigation doesn't overlap content */
+  .bottom-nav-safe {
+    margin-bottom: 6rem !important; /* 96px - safe area for bottom navigation */
+  }
+  
+  /* Bottom navigation height constant */
+  .bottom-nav-height {
+    height: 4rem; /* 64px - standard bottom navigation height */
+  }
+  
+  /* Force content above bottom navigation */
+  .force-above-nav {
+    position: relative;
+    z-index: 10;
+  }
+  
+  /* Extra bottom spacing for mobile */
+  .mobile-bottom-spacing {
+    min-height: 8rem; /* 128px minimum height at bottom */
+  }
+  
+  /* Ensure bottom navigation stays below content */
+  .bottom-nav-fixed {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Mobile content wrapper with guaranteed spacing */
+  .mobile-content-wrapper {
+    padding-bottom: 9rem !important; /* 144px - maximum safety padding */
+    min-height: calc(100vh - 9rem); /* Ensure minimum height accounts for nav */
   }
 }
 
