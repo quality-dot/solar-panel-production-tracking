@@ -13,6 +13,7 @@ import {
 import { ManufacturingLogger } from '../middleware/logger.js';
 import { optimizedDbQuery, processBarcodeOptimized } from '../utils/performanceOptimizer.js';
 import { performanceCache, createCacheKey } from '../utils/performanceCache.js';
+import { errorRecoverySystem, ManufacturingError } from '../utils/errorHandling.js';
 
 const logger = new ManufacturingLogger('PanelService');
 
@@ -42,6 +43,26 @@ export class PanelService {
    * Create a new panel from barcode with optional overrides
    */
   async createPanelFromBarcode(barcodeString, options = {}) {
+    const { overrides = {}, metadata = {}, moId = null } = options;
+    
+    return await errorRecoverySystem.executeWithRecovery(
+      async () => this._createPanelFromBarcodeInternal(barcodeString, options),
+      {
+        serviceName: 'database',
+        fallbackStrategy: 'databaseFailure',
+        retryEnabled: true,
+        circuitBreakerEnabled: true,
+        context: { 
+          operation: 'createPanelFromBarcode',
+          barcode: barcodeString.substring(0, 10) + '...',
+          moId,
+          userId: metadata.userId 
+        }
+      }
+    );
+  }
+
+  async _createPanelFromBarcodeInternal(barcodeString, options = {}) {
     const { overrides = {}, metadata = {}, moId = null } = options;
     
     try {

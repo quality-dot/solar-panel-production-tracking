@@ -61,6 +61,10 @@ app.use(loggerMiddleware.requestTiming);
 const { performanceMonitoringMiddleware } = await import('./utils/performanceOptimizer.js');
 app.use(performanceMonitoringMiddleware());
 
+// Add graceful degradation middleware
+const { gracefulDegradationMiddleware } = await import('./middleware/gracefulDegradation.js');
+app.use(gracefulDegradationMiddleware());
+
 // Add HTTP request logging with manufacturing context
 app.use(loggerMiddleware.createRequestLogger());
 
