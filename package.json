@@ -21,7 +21,9 @@
     "db:init": "psql -h ${DB_HOST:-localhost} -p ${DB_PORT:-5432} -U postgres -f database/scripts/init-database.sql",
     "db:reset": "npm run db:init && npm run db:migrate",
     "logs": "tail -f backend/logs/combined.log",
-    "logs:error": "tail -f backend/logs/error.log"
+    "logs:error": "tail -f backend/logs/error.log",
+    "generate-barcodes": "node backend/scripts/generateBarcodes.js",
+    "gen-test-data": "node backend/scripts/generateBarcodes.js test-dataset --output test-barcodes.json"
   },
   "keywords": [],
   "author": "",

@@ -6,6 +6,15 @@ import { config } from '../config/index.js';
 import { databaseManager } from '../config/index.js';
 import { successResponse, errorResponse } from '../utils/index.js';
 
+// Import route modules
+import authRoutes from './auth.js';
+import barcodeRoutes from './barcode.js';
+import panelsRoutes from './panels.js';
+import stationsRoutes from './stations.js';
+import inspectionsRoutes from './inspections.js';
+import manufacturingOrdersRoutes from './manufacturingOrders.js';
+import palletsRoutes from './pallets.js';
+
 const router = express.Router();
 
 // Root endpoint
@@ -128,8 +137,7 @@ router.get('/ready', async (req, res) => {
   }
 });
 
-// Import route modules
-const authRoutes = await import('./auth.js');
+// Dynamic route imports for modules not yet imported above
 const stationRoutes = await import('./stations.js');
 const panelRoutes = await import('./panels.js');
 const manufacturingOrderRoutes = await import('./manufacturingOrders.js');
@@ -143,6 +151,7 @@ router.get('/api/v1', (req, res) => {
     version: '1.0.0',
     availableEndpoints: {
       auth: '/api/v1/auth',
+      barcode: '/api/v1/barcode',
       stations: '/api/v1/stations',
       panels: '/api/v1/panels', 
       manufacturingOrders: '/api/v1/manufacturing-orders',
@@ -162,6 +171,7 @@ router.get('/api/v1', (req, res) => {
 
 // Mount route modules
 router.use('/api/v1/auth', authRoutes.default);
+router.use('/api/v1/barcode', barcodeRoutes);
 router.use('/api/v1/stations', stationRoutes.default);
 router.use('/api/v1/panels', panelRoutes.default);
 router.use('/api/v1/manufacturing-orders', manufacturingOrderRoutes.default);

@@ -380,12 +380,130 @@
         "description": "Implement barcode parsing, validation, and line assignment logic",
         "details": "Create system to parse CRSYYFBPP##### barcode format, validate components, determine panel type, and automatically assign to correct production line (Line 1: 36,40,60,72; Line 2: 144).",
         "priority": "high",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           "2"
         ],
         "testStrategy": "Barcode parsing tests, validation logic tests, line assignment tests",
-        "subtasks": []
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Core Barcode Parsing Engine",
+            "description": "Implement CRSYYFBPP##### format parsing and component extraction",
+            "details": "Create barcode parsing utilities that break down the CRSYYFBPP##### format into components (company prefix, year, factory, batch, panel type, sequence). Include comprehensive validation for each component and error handling for malformed barcodes.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 2,
+            "title": "Barcode Validation and Business Rules",
+            "description": "Implement comprehensive validation logic for all barcode components",
+            "details": "Create validation system that checks company prefix (CRS), year ranges, valid factory codes (W/B/T), batch codes (T/W/B), panel types (36/40/60/72/144), and sequence number format. Include business rule validation and detailed error reporting.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 3,
+            "title": "Line Assignment Logic and Routing",
+            "description": "Implement automatic line assignment based on panel type",
+            "details": "Create line assignment system that automatically routes panels to Line 1 (36,40,60,72) or Line 2 (144) based on panel type. Include station range assignment and validation of line assignments.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 4,
+            "title": "Manual Override and Correction System",
+            "description": "Implement manual specification override for damaged/incorrect barcodes",
+            "details": "Create manual override system allowing correction of nominal wattage, panel type, construction type (bifacial/monofacial), frame color, production year, and quality grade. Include validation, audit trail, and UI helper functions.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 5,
+            "title": "RESTful API Endpoints",
+            "description": "Create comprehensive API endpoints for barcode processing",
+            "details": "Implement REST API with endpoints for barcode processing, validation, line assignment, manual specification, batch processing, and specification options. Include proper error handling and response standardization.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 6,
+            "title": "Comprehensive Test Suite",
+            "description": "Create extensive test coverage for all barcode processing components",
+            "details": "Implement unit tests for parsing, validation, line assignment, manual overrides, and API endpoints. Include real-world manufacturing scenarios, edge cases, and integration test helpers.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 7,
+            "title": "Database Integration Layer",
+            "description": "Create database service layer for barcode-related operations",
+            "details": "Implement database service layer that handles panel creation from barcodes, barcode uniqueness validation, panel lookup by barcode, and integration with manufacturing orders. Include proper transaction handling and error recovery.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 8,
+            "title": "Barcode Generation Utilities",
+            "description": "Create barcode generation utilities for testing and MO setup",
+            "details": "Implement barcode generation utilities for creating valid test barcodes, MO-specific barcode ranges, and validation of manufacturing order barcode templates. Include bulk generation capabilities.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 9,
+            "title": "Performance Optimization",
+            "description": "Optimize barcode processing for production floor performance requirements",
+            "details": "Optimize barcode processing to meet <2 second response time requirement. Implement caching for validation rules, connection pooling optimization, and performance monitoring. Include load testing for 8 concurrent stations.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 10,
+            "title": "Integration with Manufacturing Orders",
+            "description": "Integrate barcode processing with manufacturing order validation",
+            "details": "Create MO integration that validates barcodes against active manufacturing orders, checks panel type consistency, validates sequence ranges, and provides MO-specific barcode generation. Include automatic MO progress tracking.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 11,
+            "title": "Error Handling and Recovery",
+            "description": "Implement robust error handling and recovery mechanisms",
+            "details": "Create comprehensive error handling for network failures, database connection issues, invalid barcode scenarios, and system recovery. Include graceful degradation, retry mechanisms, and detailed error logging.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 12,
+            "title": "Monitoring and Analytics",
+            "description": "Implement barcode processing monitoring and analytics",
+            "details": "Create monitoring system for barcode scan rates, validation success rates, error patterns, and performance metrics. Include dashboards for production floor monitoring and troubleshooting tools.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 13,
+            "title": "Documentation and Training Materials",
+            "description": "Create comprehensive documentation for barcode system",
+            "details": "Create technical documentation, API documentation, troubleshooting guides, and training materials for operators. Include barcode format examples, common error scenarios, and best practices.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 4
+          }
+        ]
       },
       {
         "id": 5,

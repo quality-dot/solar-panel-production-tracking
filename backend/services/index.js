@@ -5,6 +5,6 @@ export { default as workflowService } from './workflowService.js';
 export { default as barcodeService } from './barcodeService.js';
 export { default as validationService } from './validationService.js';
 export { default as stationService } from './stationService.js';
-export { default as panelService } from './panelService.js';
+export { panelService, PanelService, PanelServiceError } from './panelService.js';
 export { default as manufacturingOrderService } from './manufacturingOrderService.js';
 export { default as palletService } from './palletService.js';
