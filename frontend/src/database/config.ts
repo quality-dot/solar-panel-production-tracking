@@ -1,4 +1,4 @@
-import Dexie from 'dexie';
+import Dexie, { Table } from 'dexie';
 
 // Define interfaces for our database tables
 export interface Panel {
@@ -30,6 +30,7 @@ export interface SyncQueue {
   createdAt: Date;
   retryCount: number;
   lastRetry?: Date;
+  error?: string;
 }
 
 // Extend Dexie to include our tables

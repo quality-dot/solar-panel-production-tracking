@@ -9,6 +9,37 @@ jest.mock('../../database/stores/syncQueueStore');
 const mockDb = db as jest.Mocked<typeof db>;
 const mockSyncQueueStore = SyncQueueStore as jest.MockedClass<typeof SyncQueueStore>;
 
+// Setup mock methods
+beforeEach(() => {
+  // Mock SyncQueueStore methods
+  (mockSyncQueueStore.getAll as jest.Mock).mockResolvedValue([]);
+  (mockSyncQueueStore.getPendingByPriority as jest.Mock).mockResolvedValue({
+    high: [],
+    medium: [],
+    low: []
+  });
+  (mockSyncQueueStore.markSynced as jest.Mock).mockResolvedValue(undefined);
+  (mockSyncQueueStore.markFailed as jest.Mock).mockResolvedValue(undefined);
+  (mockSyncQueueStore.update as jest.Mock).mockResolvedValue(undefined);
+  (mockSyncQueueStore.getItemsNeedingRetry as jest.Mock).mockResolvedValue([]);
+  (mockSyncQueueStore.clearOldItems as jest.Mock).mockResolvedValue(0);
+  (mockSyncQueueStore.getStats as jest.Mock).mockResolvedValue({
+    total: 0,
+    pending: 0,
+    failed: 0,
+    synced: 0
+  });
+  (mockSyncQueueStore.getHealthStatus as jest.Mock).mockResolvedValue({
+    isHealthy: true,
+    issues: [],
+    recommendations: []
+  });
+
+  // Mock database methods
+  (mockDb.panels.get as jest.Mock).mockResolvedValue(null);
+  (mockDb.inspections.get as jest.Mock).mockResolvedValue(null);
+});
+
 // Mock fetch globally
 global.fetch = jest.fn();
 
@@ -74,13 +105,13 @@ describe('BackgroundSyncService Integration', () => {
         } as any);
 
       // Mock database operations
-      mockSyncQueueStore.getAll.mockResolvedValue(mockQueueItems);
-      mockSyncQueueStore.getPendingByPriority.mockResolvedValue({
+      (mockSyncQueueStore.getAll as jest.Mock).mockResolvedValue(mockQueueItems);
+      (mockSyncQueueStore.getPendingByPriority as jest.Mock).mockResolvedValue({
         high: [mockQueueItems[0]],
         medium: [mockQueueItems[1]],
         low: [mockQueueItems[2]]
       });
-      mockSyncQueueStore.markSynced.mockResolvedValue();
+      (mockSyncQueueStore.markSynced as jest.Mock).mockResolvedValue(undefined);
 
       // Track progress updates
       const progressUpdates: any[] = [];
@@ -170,7 +201,7 @@ describe('BackgroundSyncService Integration', () => {
       } as any);
 
       // Mock local data
-      mockDb.panels.get.mockResolvedValue({
+      (mockDb.panels.get as jest.Mock).mockResolvedValue({
         id: 1,
         barcode: 'PANEL001',
         status: 'manufacturing',
@@ -178,13 +209,13 @@ describe('BackgroundSyncService Integration', () => {
         updatedAt: new Date(Date.now() - 1000).toISOString()
       });
 
-      mockSyncQueueStore.getAll.mockResolvedValue(mockQueueItems);
-      mockSyncQueueStore.getPendingByPriority.mockResolvedValue({
+      (mockSyncQueueStore.getAll as jest.Mock).mockResolvedValue(mockQueueItems);
+      (mockSyncQueueStore.getPendingByPriority as jest.Mock).mockResolvedValue({
         high: mockQueueItems,
         medium: [],
         low: []
       });
-      mockSyncQueueStore.markSynced.mockResolvedValue();
+      (mockSyncQueueStore.markSynced as jest.Mock).mockResolvedValue(undefined);
 
       const result = await service.syncWhenOnline();
 
@@ -215,20 +246,20 @@ describe('BackgroundSyncService Integration', () => {
           json: jest.fn().mockResolvedValue({ id: 1, success: true })
         } as any);
 
-      mockSyncQueueStore.getAll.mockResolvedValue(mockQueueItems);
-      mockSyncQueueStore.getPendingByPriority.mockResolvedValue({
+      (mockSyncQueueStore.getAll as jest.Mock).mockResolvedValue(mockQueueItems);
+      (mockSyncQueueStore.getPendingByPriority as jest.Mock).mockResolvedValue({
         high: mockQueueItems,
         medium: [],
         low: []
       });
-      mockSyncQueueStore.markFailed.mockResolvedValue();
-      mockSyncQueueStore.markSynced.mockResolvedValue();
+      (mockSyncQueueStore.markFailed as jest.Mock).mockResolvedValue(undefined);
+      (mockSyncQueueStore.markSynced as jest.Mock).mockResolvedValue(undefined);
 
       const result = await service.syncWhenOnline();
 
       expect(result.failed).toBe(1);
       expect(result.successful).toBe(0);
-      expect(mockSyncQueueStore.markFailed).toHaveBeenCalledWith(1, expect.stringContaining('Network connectivity issue'));
+      expect(mockSyncQueueStore.markFailed as jest.Mock).toHaveBeenCalledWith(1, expect.stringContaining('Network connectivity issue'));
     });
 
     it('should handle sync with server errors and categorize them correctly', async () => {
@@ -251,18 +282,18 @@ describe('BackgroundSyncService Integration', () => {
         statusText: 'Internal Server Error'
       } as any);
 
-      mockSyncQueueStore.getAll.mockResolvedValue(mockQueueItems);
-      mockSyncQueueStore.getPendingByPriority.mockResolvedValue({
+      (mockSyncQueueStore.getAll as jest.Mock).mockResolvedValue(mockQueueItems);
+      (mockSyncQueueStore.getPendingByPriority as jest.Mock).mockResolvedValue({
         high: mockQueueItems,
         medium: [],
         low: []
       });
-      mockSyncQueueStore.markFailed.mockResolvedValue();
+      (mockSyncQueueStore.markFailed as jest.Mock).mockResolvedValue(undefined);
 
       const result = await service.syncWhenOnline();
 
       expect(result.failed).toBe(1);
-      expect(mockSyncQueueStore.markFailed).toHaveBeenCalledWith(1, 'Server error: HTTP 500: Internal Server Error');
+      expect(mockSyncQueueStore.markFailed as jest.Mock).toHaveBeenCalledWith(1, 'Server error: HTTP 500: Internal Server Error');
     });
 
     it('should handle sync with client errors and not retry', async () => {
@@ -285,18 +316,18 @@ describe('BackgroundSyncService Integration', () => {
         statusText: 'Bad Request'
       } as any);
 
-      mockSyncQueueStore.getAll.mockResolvedValue(mockQueueItems);
-      mockSyncQueueStore.getPendingByPriority.mockResolvedValue({
+      (mockSyncQueueStore.getAll as jest.Mock).mockResolvedValue(mockQueueItems);
+      (mockSyncQueueStore.getPendingByPriority as jest.Mock).mockResolvedValue({
         high: mockQueueItems,
         medium: [],
         low: []
       });
-      mockSyncQueueStore.markFailed.mockResolvedValue();
+      (mockSyncQueueStore.markFailed as jest.Mock).mockResolvedValue(undefined);
 
       const result = await service.syncWhenOnline();
 
       expect(result.failed).toBe(1);
-      expect(mockSyncQueueStore.markFailed).toHaveBeenCalledWith(1, 'Client error: HTTP 400: Bad Request');
+      expect(mockSyncQueueStore.markFailed as jest.Mock).toHaveBeenCalledWith(1, 'Client error: HTTP 400: Bad Request');
     });
   });
 
@@ -328,7 +359,7 @@ describe('BackgroundSyncService Integration', () => {
       } as any);
 
       // Mock local data
-      mockDb.panels.get.mockResolvedValue({
+      (mockDb.panels.get as jest.Mock).mockResolvedValue({
         id: 1,
         barcode: 'PANEL001',
         status: 'manufacturing',
@@ -336,13 +367,13 @@ describe('BackgroundSyncService Integration', () => {
         version: 1
       });
 
-      mockSyncQueueStore.getAll.mockResolvedValue(mockQueueItems);
-      mockSyncQueueStore.getPendingByPriority.mockResolvedValue({
+      (mockSyncQueueStore.getAll as jest.Mock).mockResolvedValue(mockQueueItems);
+      (mockSyncQueueStore.getPendingByPriority as jest.Mock).mockResolvedValue({
         high: mockQueueItems,
         medium: [],
         low: []
       });
-      mockSyncQueueStore.markSynced.mockResolvedValue();
+      (mockSyncQueueStore.markSynced as jest.Mock).mockResolvedValue(undefined);
 
       const result = await service.syncWhenOnline();
 
@@ -377,7 +408,7 @@ describe('BackgroundSyncService Integration', () => {
       } as any);
 
       // Mock local data
-      mockDb.inspections.get.mockResolvedValue({
+      (mockDb.inspections.get as jest.Mock).mockResolvedValue({
         id: 1,
         result: 'pass',
         operator: 'john_doe',
@@ -385,13 +416,13 @@ describe('BackgroundSyncService Integration', () => {
         updatedAt: new Date(Date.now() - 1000).toISOString()
       });
 
-      mockSyncQueueStore.getAll.mockResolvedValue(mockQueueItems);
-      mockSyncQueueStore.getPendingByPriority.mockResolvedValue({
+      (mockSyncQueueStore.getAll as jest.Mock).mockResolvedValue(mockQueueItems);
+      (mockSyncQueueStore.getPendingByPriority as jest.Mock).mockResolvedValue({
         high: mockQueueItems,
         medium: [],
         low: []
       });
-      mockSyncQueueStore.markSynced.mockResolvedValue();
+      (mockSyncQueueStore.markSynced as jest.Mock).mockResolvedValue(undefined);
 
       const result = await service.syncWhenOnline();
 
@@ -422,30 +453,30 @@ describe('BackgroundSyncService Integration', () => {
         json: jest.fn().mockResolvedValue({ id: 1, success: true })
       } as any);
 
-      mockSyncQueueStore.getItemsNeedingRetry.mockResolvedValue(failedItems);
-      mockSyncQueueStore.update.mockResolvedValue();
-      mockSyncQueueStore.getAll.mockResolvedValue(failedItems);
-      mockSyncQueueStore.getPendingByPriority.mockResolvedValue({
+      (mockSyncQueueStore.getItemsNeedingRetry as jest.Mock).mockResolvedValue(failedItems);
+      (mockSyncQueueStore.update as jest.Mock).mockResolvedValue(undefined);
+      (mockSyncQueueStore.getAll as jest.Mock).mockResolvedValue(failedItems);
+      (mockSyncQueueStore.getPendingByPriority as jest.Mock).mockResolvedValue({
         high: failedItems,
         medium: [],
         low: []
       });
-      mockSyncQueueStore.markSynced.mockResolvedValue();
+      (mockSyncQueueStore.markSynced as jest.Mock).mockResolvedValue(undefined);
 
       const result = await service.retryFailedItems();
 
       expect(result.processed).toBe(1);
       expect(result.successful).toBe(1);
-      expect(mockSyncQueueStore.update).toHaveBeenCalledWith(1, { retryCount: 0 });
+      expect(mockSyncQueueStore.update as jest.Mock).toHaveBeenCalledWith(1, { retryCount: 0 });
     });
 
     it('should handle cleanup operations', async () => {
-      mockSyncQueueStore.clearOldItems.mockResolvedValue(5);
+      (mockSyncQueueStore.clearOldItems as jest.Mock).mockResolvedValue(5);
 
       const count = await service.cleanupOldItems(7);
 
       expect(count).toBe(5);
-      expect(mockSyncQueueStore.clearOldItems).toHaveBeenCalledWith(7);
+      expect(mockSyncQueueStore.clearOldItems as jest.Mock).toHaveBeenCalledWith(7);
     });
 
     it('should provide accurate sync statistics', async () => {
@@ -464,8 +495,8 @@ describe('BackgroundSyncService Integration', () => {
         recommendations: ['Check network connectivity']
       };
 
-      mockSyncQueueStore.getStats.mockResolvedValue(mockStats);
-      mockSyncQueueStore.getHealthStatus.mockResolvedValue(mockHealth);
+      (mockSyncQueueStore.getStats as jest.Mock).mockResolvedValue(mockStats);
+      (mockSyncQueueStore.getHealthStatus as jest.Mock).mockResolvedValue(mockHealth);
 
       const stats = await service.getSyncStats();
 
@@ -480,7 +511,7 @@ describe('BackgroundSyncService Integration', () => {
 
   describe('Performance and Concurrency', () => {
     it('should prevent concurrent sync operations', async () => {
-      mockSyncQueueStore.getAll.mockResolvedValue([]);
+      (mockSyncQueueStore.getAll as jest.Mock).mockResolvedValue([]);
 
       // Start first sync
       const firstSync = service.syncWhenOnline();
@@ -526,13 +557,13 @@ describe('BackgroundSyncService Integration', () => {
           json: jest.fn().mockResolvedValue({ id: 2, success: true })
         } as any);
 
-      mockSyncQueueStore.getAll.mockResolvedValue(mockQueueItems);
-      mockSyncQueueStore.getPendingByPriority.mockResolvedValue({
+      (mockSyncQueueStore.getAll as jest.Mock).mockResolvedValue(mockQueueItems);
+      (mockSyncQueueStore.getPendingByPriority as jest.Mock).mockResolvedValue({
         high: [mockQueueItems[1]],
         medium: [],
         low: [mockQueueItems[0]]
       });
-      mockSyncQueueStore.markSynced.mockResolvedValue();
+      (mockSyncQueueStore.markSynced as jest.Mock).mockResolvedValue(undefined);
 
       await service.syncWhenOnline();
 

@@ -181,17 +181,80 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn']
+      },
+      mangle: {
+        safari10: true
+      }
+    },
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          ui: ['@headlessui/react', '@heroicons/react']
+          // Core React libraries
+          'react-vendor': ['react', 'react-dom'],
+          
+          // Routing
+          'router': ['react-router-dom'],
+          
+          // UI Libraries
+          'ui-components': ['@headlessui/react', '@heroicons/react'],
+          
+          // Database
+          'database': ['dexie', 'dexie-react-hooks'],
+          
+          // Utilities
+          'utils': ['class-variance-authority', 'clsx', 'tailwind-merge'],
+          
+          // PWA
+          'pwa': ['workbox-window']
+        },
+        // Optimize chunk naming for better caching
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
+          return `js/[name]-[hash].js`;
+        },
+        entryFileNames: 'js/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name.split('.');
+          const ext = info[info.length - 1];
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
+            return `images/[name]-[hash][extname]`;
+          }
+          if (/css/i.test(ext)) {
+            return `css/[name]-[hash][extname]`;
+          }
+          return `assets/[name]-[hash][extname]`;
         }
       }
-    }
+    },
+    // Performance optimizations
+    target: 'es2015',
+    cssCodeSplit: true,
+    reportCompressedSize: true,
+    chunkSizeWarningLimit: 1000
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom']
+    include: [
+      'react', 
+      'react-dom', 
+      'react-router-dom',
+      '@headlessui/react',
+      '@heroicons/react',
+      'dexie',
+      'dexie-react-hooks'
+    ],
+    exclude: ['workbox-window']
+  },
+  // Performance optimizations
+  esbuild: {
+    target: 'es2015',
+    minifyIdentifiers: true,
+    minifySyntax: true,
+    minifyWhitespace: true
   }
 })

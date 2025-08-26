@@ -3,6 +3,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { useBackgroundSync } from '../useBackgroundSync';
 import { useNetworkStatus } from '../useNetworkStatus';
 import BackgroundSyncService from '../../services/BackgroundSyncService';
+import { ToastProvider } from '../../components/ui/ToastProvider';
 
 // Mock the dependencies
 jest.mock('../useNetworkStatus');
@@ -10,6 +11,13 @@ jest.mock('../../services/BackgroundSyncService');
 
 const mockUseNetworkStatus = useNetworkStatus as jest.MockedFunction<typeof useNetworkStatus>;
 const mockBackgroundSyncService = BackgroundSyncService as jest.MockedClass<typeof BackgroundSyncService>;
+
+// Create a wrapper component for tests that need ToastProvider
+const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <ToastProvider>
+    {children}
+  </ToastProvider>
+);
 
 describe('useBackgroundSync', () => {
   let mockSyncService: any;
@@ -57,11 +65,11 @@ describe('useBackgroundSync', () => {
       isCurrentlySyncing: jest.fn().mockReturnValue(false)
     };
 
-    mockBackgroundSyncService.getInstance.mockReturnValue(mockSyncService);
+    (mockBackgroundSyncService.getInstance as jest.Mock).mockReturnValue(mockSyncService);
   });
 
   it('should initialize with default state', () => {
-    const { result } = renderHook(() => useBackgroundSync());
+    const { result } = renderHook(() => useBackgroundSync(), { wrapper: TestWrapper });
 
     expect(result.current.isSyncing).toBe(false);
     expect(result.current.progress.status).toBe('idle');
@@ -74,7 +82,7 @@ describe('useBackgroundSync', () => {
   });
 
   it('should subscribe to sync service updates on mount', () => {
-    renderHook(() => useBackgroundSync());
+    renderHook(() => useBackgroundSync(), { wrapper: TestWrapper });
 
     expect(mockSyncService.onProgress).toHaveBeenCalled();
     expect(mockSyncService.onStatus).toHaveBeenCalled();
@@ -111,7 +119,7 @@ describe('useBackgroundSync', () => {
       stopPeriodicCheck: jest.fn()
     });
 
-    const { result } = renderHook(() => useBackgroundSync({ autoSyncOnOnline: true }));
+    const { result } = renderHook(() => useBackgroundSync({ autoSyncOnOnline: true }), { wrapper: TestWrapper });
 
     // Mock successful sync
     mockSyncService.syncWhenOnline.mockResolvedValue({
@@ -159,7 +167,7 @@ describe('useBackgroundSync', () => {
     });
 
     // Re-render to trigger the effect
-    renderHook(() => useBackgroundSync({ autoSyncOnOnline: true }));
+    renderHook(() => useBackgroundSync({ autoSyncOnOnline: true }), { wrapper: TestWrapper });
 
     await waitFor(() => {
       expect(mockSyncService.syncWhenOnline).toHaveBeenCalled();
@@ -167,7 +175,7 @@ describe('useBackgroundSync', () => {
   });
 
   it('should handle manual sync trigger', async () => {
-    const { result } = renderHook(() => useBackgroundSync());
+    const { result } = renderHook(() => useBackgroundSync(), { wrapper: TestWrapper });
 
     mockSyncService.syncWhenOnline.mockResolvedValue({
       processed: 3,
@@ -199,7 +207,7 @@ describe('useBackgroundSync', () => {
   });
 
   it('should handle sync errors', async () => {
-    const { result } = renderHook(() => useBackgroundSync());
+    const { result } = renderHook(() => useBackgroundSync(), { wrapper: TestWrapper });
 
     const syncError = new Error('Network error');
     mockSyncService.syncWhenOnline.mockRejectedValue(syncError);
@@ -216,7 +224,7 @@ describe('useBackgroundSync', () => {
   });
 
   it('should handle retry failed items', async () => {
-    const { result } = renderHook(() => useBackgroundSync());
+    const { result } = renderHook(() => useBackgroundSync(), { wrapper: TestWrapper });
 
     mockSyncService.retryFailedItems.mockResolvedValue({
       processed: 2,
@@ -241,7 +249,7 @@ describe('useBackgroundSync', () => {
   });
 
   it('should refresh sync stats', async () => {
-    const { result } = renderHook(() => useBackgroundSync());
+    const { result } = renderHook(() => useBackgroundSync(), { wrapper: TestWrapper });
 
     const mockStats = {
       pending: 5,
@@ -261,7 +269,7 @@ describe('useBackgroundSync', () => {
   });
 
   it('should cleanup old items', async () => {
-    const { result } = renderHook(() => useBackgroundSync());
+    const { result } = renderHook(() => useBackgroundSync(), { wrapper: TestWrapper });
 
     mockSyncService.cleanupOldItems.mockResolvedValue(10);
     mockSyncService.getSyncStats.mockResolvedValue({
@@ -280,7 +288,7 @@ describe('useBackgroundSync', () => {
   });
 
   it('should not auto-sync when autoSyncOnOnline is false', () => {
-    renderHook(() => useBackgroundSync({ autoSyncOnOnline: false }));
+    renderHook(() => useBackgroundSync({ autoSyncOnOnline: false }), { wrapper: TestWrapper });
 
     // Switch network status to trigger auto-sync
     mockUseNetworkStatus.mockReturnValue({
@@ -312,7 +320,7 @@ describe('useBackgroundSync', () => {
     });
 
     // Re-render
-    renderHook(() => useBackgroundSync({ autoSyncOnOnline: false }));
+    renderHook(() => useBackgroundSync({ autoSyncOnOnline: false }), { wrapper: TestWrapper });
 
     expect(mockSyncService.syncWhenOnline).not.toHaveBeenCalled();
   });
@@ -327,7 +335,7 @@ describe('useBackgroundSync', () => {
         onSyncStart,
         onSyncComplete,
         onSyncError
-      })
+      }), { wrapper: TestWrapper }
     );
 
     mockSyncService.syncWhenOnline.mockResolvedValue({

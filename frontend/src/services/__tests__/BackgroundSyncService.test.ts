@@ -418,7 +418,9 @@ describe('BackgroundSyncService', () => {
         pending: 5,
         failed: 2,
         lastSync: null,
-        syncHealth: 'good'
+        syncHealth: 'good',
+        degradationLevel: 'none',
+        recommendations: []
       });
     });
 

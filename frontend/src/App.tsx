@@ -1,14 +1,24 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense, lazy } from 'react'
 import { registerSW } from 'virtual:pwa-register'
 import Layout from './components/Layout'
-import Dashboard from './pages/Dashboard'
-import PanelScan from './pages/PanelScan'
-import Inspections from './pages/Inspections'
-import Settings from './pages/Settings'
-import UIDemo from './components/ui/UIDemo'
 import OfflineIndicator from './components/OfflineIndicator'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
+import LoadingSpinner from './components/ui/LoadingSpinner'
+
+// Lazy load page components for code splitting
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const PanelScan = lazy(() => import('./pages/PanelScan'))
+const Inspections = lazy(() => import('./pages/Inspections'))
+const Settings = lazy(() => import('./pages/Settings'))
+const UIDemo = lazy(() => import('./components/ui/UIDemo'))
+
+// Loading component for Suspense fallback
+const PageLoading = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <LoadingSpinner size="lg" />
+  </div>
+)
 
 function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine)
@@ -51,13 +61,15 @@ function App() {
         <OfflineIndicator isOnline={isOnline} />
         <PWAInstallPrompt />
         <Layout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/scan" element={<PanelScan />} />
-            <Route path="/inspections" element={<Inspections />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/ui-demo" element={<UIDemo />} />
-          </Routes>
+          <Suspense fallback={<PageLoading />}>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/scan" element={<PanelScan />} />
+              <Route path="/inspections" element={<Inspections />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/ui-demo" element={<UIDemo />} />
+            </Routes>
+          </Suspense>
         </Layout>
       </div>
     </Router>

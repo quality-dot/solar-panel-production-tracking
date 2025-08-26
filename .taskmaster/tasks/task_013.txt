@@ -1,6 +1,6 @@
 # Task ID: 13
 # Title: Frontend PWA Foundation Setup
-# Status: in-progress
+# Status: done
 # Dependencies: None
 # Priority: high
 # Description: Set up React PWA foundation with offline capabilities
@@ -149,13 +149,13 @@ Implement sync logic to process queued operations when network is restored, hand
 ### Details:
 Implement exponential backoff retry logic, proper error handling for failed sync operations, user notification system, and graceful degradation when sync fails.
 
-## 24. Test PWA Functionality Across Devices [pending]
+## 24. Test PWA Functionality Across Devices [done]
 ### Dependencies: None
 ### Description: Test PWA installation and functionality on different devices
 ### Details:
 Test PWA installation on Chrome, Firefox, Safari, Edge, test on tablets, phones, and desktops, verify offline functionality, and ensure consistent behavior across platforms.
 
-## 25. Optimize Performance and Bundle Size [pending]
+## 25. Optimize Performance and Bundle Size [done]
 ### Dependencies: None
 ### Description: Optimize PWA performance and reduce bundle size
 ### Details:

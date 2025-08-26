@@ -1,0 +1,183 @@
+{
+  "totalSize": 463788,
+  "gzippedSize": 139136,
+  "totalSizeKB": 452.92,
+  "gzippedSizeKB": 135.88,
+  "chunks": [
+    {
+      "name": "js/react-vendor-CFOUl9e9.js",
+      "size": 140057,
+      "gzippedSize": 42017,
+      "sizeKB": 136.77,
+      "gzippedSizeKB": 41.03,
+      "type": "javascript"
+    },
+    {
+      "name": "js/database-995-fA6p.js",
+      "size": 94088,
+      "gzippedSize": 28226,
+      "sizeKB": 91.88,
+      "gzippedSizeKB": 27.56,
+      "type": "javascript"
+    },
+    {
+      "name": "js/UIDemo-CM3qXh1b.js",
+      "size": 70212,
+      "gzippedSize": 21064,
+      "sizeKB": 68.57,
+      "gzippedSizeKB": 20.57,
+      "type": "javascript"
+    },
+    {
+      "name": "css/index-sB2gaCu2.css",
+      "size": 47271,
+      "gzippedSize": 14181,
+      "sizeKB": 46.16,
+      "gzippedSizeKB": 13.85,
+      "type": "css"
+    },
+    {
+      "name": "js/index-B8VpzUjr.js",
+      "size": 34436,
+      "gzippedSize": 10331,
+      "sizeKB": 33.63,
+      "gzippedSizeKB": 10.09,
+      "type": "javascript"
+    },
+    {
+      "name": "js/utils-DUwdSENG.js",
+      "size": 27184,
+      "gzippedSize": 8155,
+      "sizeKB": 26.55,
+      "gzippedSizeKB": 7.96,
+      "type": "javascript"
+    },
+    {
+      "name": "js/router-C0AxcIzX.js",
+      "size": 19945,
+      "gzippedSize": 5984,
+      "sizeKB": 19.48,
+      "gzippedSizeKB": 5.84,
+      "type": "javascript"
+    },
+    {
+      "name": "js/Dashboard-BIr1PqsE.js",
+      "size": 8170,
+      "gzippedSize": 2451,
+      "sizeKB": 7.98,
+      "gzippedSizeKB": 2.39,
+      "type": "javascript"
+    },
+    {
+      "name": "js/Settings-Jw9SIlrA.js",
+      "size": 7940,
+      "gzippedSize": 2382,
+      "sizeKB": 7.75,
+      "gzippedSizeKB": 2.33,
+      "type": "javascript"
+    },
+    {
+      "name": "js/pwa-DMXp7Fa7.js",
+      "size": 5728,
+      "gzippedSize": 1718,
+      "sizeKB": 5.59,
+      "gzippedSizeKB": 1.68,
+      "type": "javascript"
+    },
+    {
+      "name": "js/Inspections-DV1KVafg.js",
+      "size": 3697,
+      "gzippedSize": 1109,
+      "sizeKB": 3.61,
+      "gzippedSizeKB": 1.08,
+      "type": "javascript"
+    },
+    {
+      "name": "js/PanelScan-QHr9pI6r.js",
+      "size": 3216,
+      "gzippedSize": 965,
+      "sizeKB": 3.14,
+      "gzippedSizeKB": 0.94,
+      "type": "javascript"
+    },
+    {
+      "name": "js/XCircleIcon-BRphcDKD.js",
+      "size": 880,
+      "gzippedSize": 264,
+      "sizeKB": 0.86,
+      "gzippedSizeKB": 0.26,
+      "type": "javascript"
+    },
+    {
+      "name": "js/CheckCircleIcon-JPmKXg1N.js",
+      "size": 877,
+      "gzippedSize": 263,
+      "sizeKB": 0.86,
+      "gzippedSizeKB": 0.26,
+      "type": "javascript"
+    },
+    {
+      "name": "js/ui-components-C6UVRJMf.js",
+      "size": 87,
+      "gzippedSize": 26,
+      "sizeKB": 0.08,
+      "gzippedSizeKB": 0.03,
+      "type": "javascript"
+    }
+  ],
+  "optimizationOpportunities": [
+    {
+      "type": "large-chunk",
+      "chunk": "js/react-vendor-CFOUl9e9.js",
+      "currentSize": 136.77,
+      "recommendation": "Consider further optimization for js/react-vendor-CFOUl9e9.js",
+      "potentialSavings": 27
+    },
+    {
+      "type": "large-chunk",
+      "chunk": "js/database-995-fA6p.js",
+      "currentSize": 91.88,
+      "recommendation": "Consider further optimization for js/database-995-fA6p.js",
+      "potentialSavings": 18
+    },
+    {
+      "type": "large-chunk",
+      "chunk": "js/UIDemo-CM3qXh1b.js",
+      "currentSize": 68.57,
+      "recommendation": "Consider further optimization for js/UIDemo-CM3qXh1b.js",
+      "potentialSavings": 14
+    },
+    {
+      "type": "code-splitting-opportunity",
+      "chunks": [
+        "js/react-vendor-CFOUl9e9.js"
+      ],
+      "recommendation": "Consider further code splitting for large chunks",
+      "potentialSavings": 41
+    },
+    {
+      "type": "heavy-dependency",
+      "dependency": "@headlessui/react",
+      "recommendation": "Consider tree-shaking or lazy loading for @headlessui/react",
+      "potentialSavings": 5
+    },
+    {
+      "type": "heavy-dependency",
+      "dependency": "@heroicons/react",
+      "recommendation": "Consider tree-shaking or lazy loading for @heroicons/react",
+      "potentialSavings": 5
+    },
+    {
+      "type": "heavy-dependency",
+      "dependency": "dexie",
+      "recommendation": "Consider tree-shaking or lazy loading for dexie",
+      "potentialSavings": 5
+    },
+    {
+      "type": "heavy-dependency",
+      "dependency": "react-router-dom",
+      "recommendation": "Consider tree-shaking or lazy loading for react-router-dom",
+      "potentialSavings": 5
+    }
+  ]
+}
