@@ -57,6 +57,10 @@ console.log('✅ Security middleware stack configured for 8 concurrent stations'
 // Add request timing for performance monitoring
 app.use(loggerMiddleware.requestTiming);
 
+// Add performance monitoring middleware
+const { performanceMonitoringMiddleware } = await import('./utils/performanceOptimizer.js');
+app.use(performanceMonitoringMiddleware());
+
 // Add HTTP request logging with manufacturing context
 app.use(loggerMiddleware.createRequestLogger());
 

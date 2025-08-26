@@ -23,7 +23,11 @@
     "logs": "tail -f backend/logs/combined.log",
     "logs:error": "tail -f backend/logs/error.log",
     "generate-barcodes": "node backend/scripts/generateBarcodes.js",
-    "gen-test-data": "node backend/scripts/generateBarcodes.js test-dataset --output test-barcodes.json"
+    "gen-test-data": "node backend/scripts/generateBarcodes.js test-dataset --output test-barcodes.json",
+    "load-test": "node backend/scripts/loadTest.js run",
+    "load-test-stress": "node backend/scripts/loadTest.js run --stations 16 --barcodes 50",
+    "benchmark": "node backend/scripts/loadTest.js benchmark",
+    "cache-test": "node backend/scripts/loadTest.js cache"
   },
   "keywords": [],
   "author": "",

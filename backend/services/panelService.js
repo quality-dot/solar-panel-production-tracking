@@ -11,6 +11,8 @@ import {
   PANEL_SPECIFICATION_CONFIG 
 } from '../utils/panelSpecificationOverride.js';
 import { ManufacturingLogger } from '../middleware/logger.js';
+import { optimizedDbQuery, processBarcodeOptimized } from '../utils/performanceOptimizer.js';
+import { performanceCache, createCacheKey } from '../utils/performanceCache.js';
 
 const logger = new ManufacturingLogger('PanelService');
 
@@ -48,8 +50,8 @@ export class PanelService {
       await client.query('BEGIN');
 
       try {
-        // Step 1: Process barcode
-        const barcodeResult = processBarcodeComplete(barcodeString);
+        // Step 1: Process barcode (optimized with caching)
+        const barcodeResult = processBarcodeOptimized(barcodeString);
         
         if (!barcodeResult.success) {
           throw new PanelServiceError(

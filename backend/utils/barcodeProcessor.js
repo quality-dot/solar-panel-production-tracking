@@ -2,6 +2,7 @@
 // Handles CRSYYFBPP##### format parsing and validation for solar panel tracking
 
 import { config } from '../config/index.js';
+import { performanceCache } from './performanceCache.js';
 
 /**
  * Barcode format: CRSYYFBPP#####
