@@ -22,6 +22,11 @@ import {
   BarcodeGenerator, 
   BarcodeGenerationError 
 } from '../utils/barcodeGenerator.js';
+import { 
+  manufacturingOrderService, 
+  MOServiceError 
+} from '../services/manufacturingOrderService.js';
+import { enhancedMOIntegration } from '../services/enhancedMOIntegration.js';
 import { createValidationMiddleware } from '../middleware/validation.js';
 
 const router = express.Router();
@@ -859,6 +864,460 @@ router.delete('/clear-cache', asyncHandler(async (req, res) => {
     
   } catch (error) {
     throw error;
+  }
+}));
+
+// ============================================================================
+// MANUFACTURING ORDER INTEGRATION ENDPOINTS
+// ============================================================================
+
+/**
+ * POST /api/v1/barcode/validate-against-mo
+ * Validate barcode against active manufacturing orders
+ */
+router.post('/validate-against-mo', asyncHandler(async (req, res) => {
+  const { barcode, moId } = req.body;
+  
+  if (!barcode) {
+    return res.status(400).json(errorResponse(
+      'Barcode is required',
+      'MISSING_BARCODE'
+    ));
+  }
+  
+  try {
+    const validation = await manufacturingOrderService.validateBarcodeAgainstMO(barcode, moId);
+    
+    res.json(successResponse(validation, 'Barcode validated against manufacturing orders'));
+    
+  } catch (error) {
+    if (error instanceof MOServiceError || error instanceof BarcodeError) {
+      const statusCode = error.code === 'NO_ACTIVE_MO' ? 404 : 400;
+      res.status(statusCode).json(errorResponse(
+        error.message,
+        error.code,
+        error.details
+      ));
+    } else {
+      throw error;
+    }
+  }
+}));
+
+/**
+ * POST /api/v1/barcode/generate-mo-next
+ * Generate next barcode for specific manufacturing order
+ */
+router.post('/generate-mo-next', asyncHandler(async (req, res) => {
+  const { moId } = req.body;
+  
+  if (!moId) {
+    return res.status(400).json(errorResponse(
+      'Manufacturing Order ID is required',
+      'MISSING_MO_ID'
+    ));
+  }
+  
+  try {
+    const result = await manufacturingOrderService.generateNextBarcode(moId);
+    
+    res.status(201).json(successResponse(result, 'Next barcode generated for MO'));
+    
+  } catch (error) {
+    if (error instanceof MOServiceError) {
+      const statusCode = error.code === 'MO_NOT_FOUND' ? 404 : 400;
+      res.status(statusCode).json(errorResponse(
+        error.message,
+        error.code,
+        error.details
+      ));
+    } else {
+      throw error;
+    }
+  }
+}));
+
+/**
+ * POST /api/v1/barcode/process-with-mo
+ * Process barcode with MO validation and create panel
+ */
+router.post('/process-with-mo', asyncHandler(async (req, res) => {
+  const { barcode, moId, overrides = {}, metadata = {} } = req.body;
+  
+  if (!barcode) {
+    return res.status(400).json(errorResponse(
+      'Barcode is required',
+      'MISSING_BARCODE'
+    ));
+  }
+  
+  try {
+    // Step 1: Validate barcode against MO
+    const validation = await manufacturingOrderService.validateBarcodeAgainstMO(barcode, moId);
+    
+    if (!validation.isValid) {
+      return res.status(400).json(errorResponse(
+        'Barcode validation failed',
+        'VALIDATION_FAILED',
+        validation
+      ));
+    }
+    
+    // Step 2: Process barcode with overrides
+    const barcodeResult = processBarcodeComplete(barcode);
+    
+    if (!barcodeResult.success) {
+      return res.status(400).json(errorResponse(
+        'Barcode processing failed',
+        'BARCODE_PROCESSING_FAILED',
+        barcodeResult.error
+      ));
+    }
+    
+    // Step 3: Create panel specification with overrides
+    const panelSpec = PanelSpecification.fromBarcodeWithOverrides(barcodeResult, overrides);
+    
+    // Add metadata
+    if (metadata.overrideReason) panelSpec.overrideReason = metadata.overrideReason;
+    if (metadata.userId) panelSpec.overrideBy = metadata.userId;
+    if (metadata.specialInstructions) panelSpec.specialInstructions = metadata.specialInstructions;
+    if (metadata.qcNotes) panelSpec.qcNotes = metadata.qcNotes;
+    
+    // Update line assignment if panel type was overridden
+    if (overrides.panelType) {
+      panelSpec.updateLineAssignment();
+    }
+    
+    const result = {
+      validation,
+      barcodeProcessing: barcodeResult,
+      specification: panelSpec.toApiFormat(),
+      manufacturingOrder: {
+        id: validation.manufacturingOrder.id,
+        orderNumber: validation.manufacturingOrder.order_number,
+        panelType: validation.manufacturingOrder.panel_type,
+        progress: {
+          completed: validation.manufacturingOrder.completed_quantity,
+          failed: validation.manufacturingOrder.failed_quantity,
+          inProgress: validation.manufacturingOrder.in_progress_quantity,
+          target: validation.manufacturingOrder.target_quantity
+        }
+      },
+      processedAt: new Date().toISOString()
+    };
+    
+    res.json(successResponse(result, 'Barcode processed with MO validation successfully'));
+    
+  } catch (error) {
+    if (error instanceof MOServiceError || error instanceof BarcodeError) {
+      const statusCode = error.code === 'NO_ACTIVE_MO' ? 404 : 400;
+      res.status(statusCode).json(errorResponse(
+        error.message,
+        error.code,
+        error.details
+      ));
+    } else {
+      throw error;
+    }
+  }
+}));
+
+/**
+ * GET /api/v1/barcode/mo-progress/:moId
+ * Get manufacturing order progress and barcode statistics
+ */
+router.get('/mo-progress/:moId', asyncHandler(async (req, res) => {
+  const { moId } = req.params;
+  
+  try {
+    const progress = await manufacturingOrderService.getMOProgress(moId);
+    
+    res.json(successResponse(progress, 'MO progress retrieved successfully'));
+    
+  } catch (error) {
+    if (error instanceof MOServiceError) {
+      const statusCode = error.code === 'MO_NOT_FOUND' ? 404 : 500;
+      res.status(statusCode).json(errorResponse(
+        error.message,
+        error.code,
+        error.details
+      ));
+    } else {
+      throw error;
+    }
+  }
+}));
+
+/**
+ * POST /api/v1/barcode/update-mo-progress
+ * Update MO progress when panels change status
+ */
+router.post('/update-mo-progress', asyncHandler(async (req, res) => {
+  const { moId, statusChange, metadata = {} } = req.body;
+  
+  if (!moId || !statusChange) {
+    return res.status(400).json(errorResponse(
+      'MO ID and status change are required',
+      'MISSING_PARAMETERS',
+      { required: ['moId', 'statusChange'] }
+    ));
+  }
+  
+  // Validate status change format
+  const validStatusTypes = ['PANEL_COMPLETED', 'PANEL_FAILED', 'PANEL_STARTED', 'PANEL_REWORK'];
+  if (!validStatusTypes.includes(statusChange.type)) {
+    return res.status(400).json(errorResponse(
+      `Invalid status change type. Valid types: ${validStatusTypes.join(', ')}`,
+      'INVALID_STATUS_CHANGE_TYPE',
+      { provided: statusChange.type, valid: validStatusTypes }
+    ));
+  }
+  
+  try {
+    const result = await manufacturingOrderService.updateMOProgress(moId, statusChange, metadata);
+    
+    res.json(successResponse(result, 'MO progress updated successfully'));
+    
+  } catch (error) {
+    if (error instanceof MOServiceError) {
+      const statusCode = error.code === 'MO_NOT_FOUND' ? 404 : 400;
+      res.status(statusCode).json(errorResponse(
+        error.message,
+        error.code,
+        error.details
+      ));
+    } else {
+      throw error;
+    }
+  }
+}));
+
+/**
+ * POST /api/v1/barcode/check-mo-consistency
+ * Check panel type consistency between barcode and manufacturing order
+ */
+router.post('/check-mo-consistency', asyncHandler(async (req, res) => {
+  const { barcode, moId } = req.body;
+  
+  if (!barcode || !moId) {
+    return res.status(400).json(errorResponse(
+      'Barcode and MO ID are required',
+      'MISSING_PARAMETERS'
+    ));
+  }
+  
+  try {
+    // Parse barcode
+    const components = parseBarcode(barcode);
+    
+    // Get MO details
+    const moProgress = await manufacturingOrderService.getMOProgress(moId);
+    const mo = moProgress.manufacturingOrder;
+    
+    // Check panel type consistency
+    const expectedPanelType = mo.panel_type.replace('TYPE_', '');
+    const barcodeConsistent = components.panelType === expectedPanelType;
+    
+    // Check other specifications if available
+    const specifications = {
+      panelType: {
+        barcode: components.panelType,
+        mo: expectedPanelType,
+        consistent: barcodeConsistent
+      },
+      year: {
+        barcode: components.year,
+        mo: mo.year_code,
+        consistent: !mo.year_code || components.year === mo.year_code
+      }
+    };
+    
+    // Overall consistency
+    const overallConsistent = Object.values(specifications).every(spec => spec.consistent);
+    
+    const result = {
+      barcode,
+      moId,
+      manufacturingOrder: {
+        id: mo.id,
+        orderNumber: mo.order_number,
+        panelType: mo.panel_type
+      },
+      specifications,
+      overallConsistent,
+      recommendation: overallConsistent ? 
+        'Barcode is consistent with MO specifications' :
+        'Manual override may be required for inconsistent specifications',
+      checkedAt: new Date().toISOString()
+    };
+    
+    const statusCode = overallConsistent ? 200 : 409; // 409 Conflict for inconsistency
+    const message = overallConsistent ? 
+      'Barcode is consistent with MO' : 
+      'Barcode inconsistency detected';
+    
+    res.status(statusCode).json(successResponse(result, message));
+    
+  } catch (error) {
+    if (error instanceof BarcodeError || error instanceof MOServiceError) {
+      res.status(400).json(errorResponse(
+        error.message,
+        error.code,
+        error.details
+      ));
+    } else {
+      throw error;
+    }
+  }
+}));
+
+// ENHANCED MANUFACTURING ORDER INTEGRATION ENDPOINTS
+
+/**
+ * POST /api/v1/barcode/process-with-auto-tracking
+ * Process barcode with automatic MO progress tracking and real-time updates
+ */
+router.post('/process-with-auto-tracking', asyncHandler(async (req, res) => {
+  const { barcode, moId, metadata = {} } = req.body;
+  
+  if (!barcode) {
+    return res.status(400).json(errorResponse(
+      'Barcode is required',
+      'MISSING_BARCODE'
+    ));
+  }
+  
+  try {
+    const result = await enhancedMOIntegration.processBarcodeWithAutoTracking(
+      barcode, 
+      moId, 
+      metadata
+    );
+    
+    res.json(successResponse(result, 'Barcode processed with automatic MO tracking'));
+    
+  } catch (error) {
+    if (error instanceof MOServiceError) {
+      const statusCode = error.code === 'NO_ACTIVE_MO' ? 404 : 400;
+      res.status(statusCode).json(errorResponse(
+        error.message,
+        error.code,
+        error.details
+      ));
+    } else {
+      throw error;
+    }
+  }
+}));
+
+/**
+ * POST /api/v1/barcode/update-panel-status-with-mo
+ * Update panel status with automatic MO progress tracking
+ */
+router.post('/update-panel-status-with-mo', asyncHandler(async (req, res) => {
+  const { panelId, status, metadata = {} } = req.body;
+  
+  if (!panelId || !status) {
+    return res.status(400).json(errorResponse(
+      'Panel ID and status are required',
+      'MISSING_REQUIRED_FIELDS'
+    ));
+  }
+  
+  try {
+    const result = await enhancedMOIntegration.updatePanelStatusWithMOProgress(
+      panelId, 
+      status, 
+      metadata
+    );
+    
+    res.json(successResponse(result, 'Panel status updated with MO progress tracking'));
+    
+  } catch (error) {
+    if (error instanceof MOServiceError) {
+      res.status(400).json(errorResponse(
+        error.message,
+        error.code,
+        error.details
+      ));
+    } else {
+      throw error;
+    }
+  }
+}));
+
+/**
+ * GET /api/v1/barcode/mo-status-real-time/:moId
+ * Get comprehensive MO status with real-time progress updates
+ */
+router.get('/mo-status-real-time/:moId', asyncHandler(async (req, res) => {
+  const { moId } = req.params;
+  
+  try {
+    const status = await enhancedMOIntegration.getMOStatusWithRealTimeProgress(moId);
+    
+    res.json(successResponse(status, 'MO status with real-time progress retrieved'));
+    
+  } catch (error) {
+    if (error instanceof MOServiceError) {
+      const statusCode = error.code === 'MO_NOT_FOUND' ? 404 : 500;
+      res.status(statusCode).json(errorResponse(
+        error.message,
+        error.code,
+        error.details
+      ));
+    } else {
+      throw error;
+    }
+  }
+}));
+
+/**
+ * GET /api/v1/barcode/mo-dashboard
+ * Get comprehensive MO dashboard data for production floor monitoring
+ */
+router.get('/mo-dashboard', asyncHandler(async (req, res) => {
+  try {
+    const dashboardData = await enhancedMOIntegration.getMODashboardData();
+    
+    res.json(successResponse(dashboardData, 'MO dashboard data retrieved'));
+    
+  } catch (error) {
+    if (error instanceof MOServiceError) {
+      res.status(500).json(errorResponse(
+        error.message,
+        error.code,
+        error.details
+      ));
+    } else {
+      throw error;
+    }
+  }
+}));
+
+/**
+ * POST /api/v1/barcode/check-mo-completion/:moId
+ * Check if MO should be automatically completed
+ */
+router.post('/check-mo-completion/:moId', asyncHandler(async (req, res) => {
+  const { moId } = req.params;
+  
+  try {
+    const completionCheck = await enhancedMOIntegration.checkMOCompletion(moId);
+    
+    res.json(successResponse(completionCheck, 'MO completion check completed'));
+    
+  } catch (error) {
+    if (error instanceof MOServiceError) {
+      const statusCode = error.code === 'MO_NOT_FOUND' ? 404 : 500;
+      res.status(statusCode).json(errorResponse(
+        error.message,
+        error.code,
+        error.details
+      ));
+    } else {
+      throw error;
+    }
   }
 }));
 
