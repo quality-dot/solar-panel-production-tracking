@@ -27,6 +27,7 @@ import {
   MOServiceError 
 } from '../services/manufacturingOrderService.js';
 import { enhancedMOIntegration } from '../services/enhancedMOIntegration.js';
+import { databaseService } from '../services/databaseService.js';
 import { createValidationMiddleware } from '../middleware/validation.js';
 
 const router = express.Router();
@@ -1318,6 +1319,131 @@ router.post('/check-mo-completion/:moId', asyncHandler(async (req, res) => {
     } else {
       throw error;
     }
+  }
+}));
+
+// ============================================================================
+// DATABASE INTEGRATION ENDPOINTS
+// ============================================================================
+
+/**
+ * POST /api/v1/barcode/process-with-database
+ * Process barcode with full database integration (panels, stations, MOs)
+ */
+router.post('/process-with-database', asyncHandler(async (req, res) => {
+  const { barcode, stationId, metadata = {} } = req.body;
+  
+  if (!barcode || !stationId) {
+    return res.status(400).json(errorResponse(
+      'Barcode and stationId are required',
+      'MISSING_PARAMETERS'
+    ));
+  }
+  
+  try {
+    const result = await databaseService.processBarcode(barcode, stationId, metadata);
+    
+    res.json(successResponse(result, 'Barcode processed with database integration'));
+    
+  } catch (error) {
+    if (error.code === 'INVALID_FORMAT') {
+      res.status(400).json(errorResponse(
+        error.message,
+        error.code,
+        error.details
+      ));
+    } else if (error.code === 'DUPLICATE_BARCODE') {
+      res.status(409).json(errorResponse(
+        error.message,
+        error.code,
+        error.details
+      ));
+    } else {
+      throw error;
+    }
+  }
+}));
+
+/**
+ * GET /api/v1/barcode/database-statistics
+ * Get comprehensive database statistics for barcode processing
+ */
+router.get('/database-statistics', asyncHandler(async (req, res) => {
+  const { since } = req.query;
+  
+  try {
+    const options = {};
+    if (since) {
+      options.since = new Date(since);
+    }
+    
+    const stats = await databaseService.getBarcodeStatistics(options);
+    
+    res.json(successResponse(stats, 'Database statistics retrieved'));
+    
+  } catch (error) {
+    throw error;
+  }
+}));
+
+/**
+ * GET /api/v1/barcode/history/:barcode
+ * Get complete processing history for a specific barcode
+ */
+router.get('/history/:barcode', asyncHandler(async (req, res) => {
+  const { barcode } = req.params;
+  const { limit } = req.query;
+  
+  try {
+    const options = {};
+    if (limit) {
+      options.limit = parseInt(limit);
+    }
+    
+    const history = await databaseService.getBarcodeHistory(barcode, options);
+    
+    res.json(successResponse(history, 'Barcode history retrieved'));
+    
+  } catch (error) {
+    throw error;
+  }
+}));
+
+/**
+ * POST /api/v1/barcode/initialize-database
+ * Initialize database tables, indexes, and default data
+ */
+router.post('/initialize-database', asyncHandler(async (req, res) => {
+  try {
+    await databaseService.initializeDatabase();
+    
+    res.json(successResponse(
+      { message: 'Database initialized successfully' },
+      'Database initialization completed'
+    ));
+    
+  } catch (error) {
+    throw error;
+  }
+}));
+
+/**
+ * POST /api/v1/barcode/cleanup-events
+ * Clean up old barcode events (maintenance endpoint)
+ */
+router.post('/cleanup-events', asyncHandler(async (req, res) => {
+  const { daysToKeep = 90 } = req.body;
+  
+  try {
+    const deletedCount = await databaseService.cleanupOldEvents(daysToKeep);
+    
+    res.json(successResponse(
+      { deletedCount, daysToKeep },
+      'Old barcode events cleaned up successfully'
+    ));
+    
+  } catch (error) {
+    throw error;
   }
 }));
 

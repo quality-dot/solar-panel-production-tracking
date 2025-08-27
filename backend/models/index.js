@@ -7,10 +7,39 @@ export {
   default as UserModel 
 } from './User.js';
 
-// Placeholder exports for future models
-// export { default as Panel } from './Panel.js';
-// export { default as Station } from './Station.js';
-// export { default as ManufacturingOrder } from './ManufacturingOrder.js';
-// export { default as Inspection } from './Inspection.js';
-// export { default as Pallet } from './Pallet.js';
+// Database integration models for barcode processing
+export { 
+  Panel, 
+  panelModel,
+  PANEL_STATUS,
+  PANEL_TYPE,
+  LINE_TYPE,
+  default as PanelModel 
+} from './Panel.js';
+
+export { 
+  Station, 
+  stationModel,
+  STATION_TYPE,
+  LINE_TYPE as STATION_LINE_TYPE,
+  default as StationModel 
+} from './Station.js';
+
+export { 
+  ManufacturingOrder, 
+  manufacturingOrderModel,
+  MO_STATUS,
+  PANEL_TYPE as MO_PANEL_TYPE,
+  default as ManufacturingOrderModel 
+} from './ManufacturingOrder.js';
+
+// Export all models for convenience
+export const models = {
+  User: User,
+  Panel: Panel,
+  Station: Station,
+  ManufacturingOrder: ManufacturingOrder
+};
+
+export default models;
 

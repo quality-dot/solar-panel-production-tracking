@@ -3,6 +3,7 @@
 
 import { config } from '../config/index.js';
 import { performanceCache } from './performanceCache.js';
+import { metricsService } from '../services/metricsService.js';
 
 /**
  * Barcode format: CRSYYFBPP#####
@@ -17,15 +18,15 @@ import { performanceCache } from './performanceCache.js';
 // Barcode format constants
 export const BARCODE_CONFIG = {
   // Total length including all components
-  TOTAL_LENGTH: 12,
+  TOTAL_LENGTH: 13,
   
   // Component positions and lengths
   COMPANY_PREFIX: { start: 0, length: 3, value: 'CRS' },
   YEAR: { start: 3, length: 2 },
   FACTORY: { start: 5, length: 1 },
   BATCH: { start: 6, length: 1 },
-  PANEL_TYPE: { start: 7, length: 2 },
-  SEQUENCE: { start: 9, length: 5 },
+  PANEL_TYPE: { start: 7, length: 3 }, // Changed to 3 to accommodate 144
+  SEQUENCE: { start: 10, length: 5 }, // Adjusted start position
   
   // Valid values
   VALID_PANEL_TYPES: ['36', '40', '60', '72', '144'],
@@ -36,7 +37,17 @@ export const BARCODE_CONFIG = {
   LINE_ASSIGNMENTS: {
     LINE_1: ['36', '40', '60', '72'],
     LINE_2: ['144']
-  }
+  },
+
+  // Additional properties for barcode generator compatibility
+  format: 'CRSYYFBPPP#####',
+  panelTypes: ['36', '40', '60', '72', '144'],
+  factoryCodes: ['CRS'],
+  constructionTypes: [
+    { code: 'W', name: 'Silver Frame' },
+    { code: 'B', name: 'Black Frame' },
+    { code: 'T', name: 'Test' }
+  ]
 };
 
 /**
@@ -147,14 +158,18 @@ export function validateBarcodeComponents(components) {
     });
   }
 
-  // Validate panel type
-  if (!BARCODE_CONFIG.VALID_PANEL_TYPES.includes(components.panelType)) {
+  // Validate panel type (normalize by removing leading zeros)
+  const normalizedPanelType = components.panelType.replace(/^0+/, '') || '0';
+  if (!BARCODE_CONFIG.VALID_PANEL_TYPES.includes(normalizedPanelType)) {
     errors.push({
       component: 'panelType',
-      message: `Invalid panel type '${components.panelType}'. Valid types: ${BARCODE_CONFIG.VALID_PANEL_TYPES.join(', ')}`,
+      message: `Invalid panel type '${components.panelType}' (normalized: '${normalizedPanelType}'). Valid types: ${BARCODE_CONFIG.VALID_PANEL_TYPES.join(', ')}`,
       code: 'INVALID_PANEL_TYPE'
     });
   }
+  
+  // Update component with normalized value for consistency
+  components.panelType = normalizedPanelType;
 
   // Validate sequence number
   const sequenceNum = parseInt(components.sequence);
@@ -215,7 +230,9 @@ export function determineLineAssignment(panelType) {
  * Complete barcode processing pipeline
  * Parses, validates, and determines line assignment in one operation
  */
-export function processBarcodeComplete(barcodeString) {
+export function processBarcodeComplete(barcodeString, metadata = {}) {
+  const startTime = performance.now();
+  
   try {
     // Step 1: Parse barcode components
     const components = parseBarcode(barcodeString);
@@ -246,9 +263,47 @@ export function processBarcodeComplete(barcodeString) {
       }
     };
 
+    // Step 5: Record metrics
+    const processingTime = performance.now() - startTime;
+    try {
+      metricsService.recordBarcodeEvent({
+        barcode: barcodeString,
+        success: validation.isValid,
+        errorCode: validation.isValid ? null : 'BARCODE_VALIDATION_FAILED',
+        errorMessage: validation.isValid ? null : validation.errors.map(e => e.message).join(', '),
+        processingTime,
+        lineAssignment,
+        moId: metadata.moId || null,
+        stationId: metadata.stationId || null,
+        userId: metadata.userId || null
+      });
+    } catch (metricsError) {
+      // Don't fail barcode processing if metrics recording fails
+      console.warn('Failed to record barcode metrics:', metricsError.message);
+    }
+
     return result;
 
   } catch (error) {
+    const processingTime = performance.now() - startTime;
+    
+    // Record error metrics
+    try {
+      metricsService.recordBarcodeEvent({
+        barcode: barcodeString,
+        success: false,
+        errorCode: error instanceof BarcodeError ? error.code : 'PROCESSING_ERROR',
+        errorMessage: error.message,
+        processingTime,
+        lineAssignment: null,
+        moId: metadata.moId || null,
+        stationId: metadata.stationId || null,
+        userId: metadata.userId || null
+      });
+    } catch (metricsError) {
+      console.warn('Failed to record barcode error metrics:', metricsError.message);
+    }
+    
     if (error instanceof BarcodeError) {
       return {
         success: false,
