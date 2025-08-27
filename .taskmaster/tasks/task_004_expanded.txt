@@ -1,0 +1,91 @@
+# Task ID: 4
+# Title: Barcode Processing and Validation System
+# Status: in-progress
+# Dependencies: 2
+# Priority: high
+# Description: Implement barcode parsing, validation, and line assignment logic
+# Details:
+Create system to parse CRSYYFBPP##### barcode format, validate components, determine panel type, and automatically assign to correct production line (Line 1: 36,40,60,72; Line 2: 144).
+
+# Test Strategy:
+Barcode parsing tests, validation logic tests, line assignment tests
+
+# Subtasks:
+## 1. Core Barcode Parsing Engine [done]
+### Dependencies: None
+### Description: Implement CRSYYFBPP##### format parsing and component extraction
+### Details:
+Create barcode parsing utilities that break down the CRSYYFBPP##### format into components (company prefix, year, factory, batch, panel type, sequence). Include comprehensive validation for each component and error handling for malformed barcodes.
+
+## 2. Barcode Validation and Business Rules [done]
+### Dependencies: None
+### Description: Implement comprehensive validation logic for all barcode components
+### Details:
+Create validation system that checks company prefix (CRS), year ranges, valid factory codes (W/B/T), batch codes (T/W/B), panel types (36/40/60/72/144), and sequence number format. Include business rule validation and detailed error reporting.
+
+## 3. Line Assignment Logic and Routing [done]
+### Dependencies: None
+### Description: Implement automatic line assignment based on panel type
+### Details:
+Create line assignment system that automatically routes panels to Line 1 (36,40,60,72) or Line 2 (144) based on panel type. Include station range assignment and validation of line assignments.
+
+## 4. Manual Override and Correction System [done]
+### Dependencies: None
+### Description: Implement manual specification override for damaged/incorrect barcodes
+### Details:
+Create manual override system allowing correction of nominal wattage, panel type, construction type (bifacial/monofacial), frame color, production year, and quality grade. Include validation, audit trail, and UI helper functions.
+
+## 5. RESTful API Endpoints [done]
+### Dependencies: None
+### Description: Create comprehensive API endpoints for barcode processing
+### Details:
+Implement REST API with endpoints for barcode processing, validation, line assignment, manual specification, batch processing, and specification options. Include proper error handling and response standardization.
+
+## 6. Comprehensive Test Suite [done]
+### Dependencies: None
+### Description: Create extensive test coverage for all barcode processing components
+### Details:
+Implement unit tests for parsing, validation, line assignment, manual overrides, and API endpoints. Include real-world manufacturing scenarios, edge cases, and integration test helpers.
+
+## 7. Database Integration Layer [pending]
+### Dependencies: Task 1 (Database Schema)
+### Description: Create database service layer for barcode-related operations
+### Details:
+Implement database service layer that handles panel creation from barcodes, barcode uniqueness validation, panel lookup by barcode, and integration with manufacturing orders. Include proper transaction handling and error recovery.
+
+## 8. Barcode Generation Utilities [pending]
+### Dependencies: None
+### Description: Create barcode generation utilities for testing and MO setup
+### Details:
+Implement barcode generation utilities for creating valid test barcodes, MO-specific barcode ranges, and validation of manufacturing order barcode templates. Include bulk generation capabilities.
+
+## 9. Performance Optimization [pending]
+### Dependencies: None
+### Description: Optimize barcode processing for production floor performance requirements
+### Details:
+Optimize barcode processing to meet <2 second response time requirement. Implement caching for validation rules, connection pooling optimization, and performance monitoring. Include load testing for 8 concurrent stations.
+
+## 10. Integration with Manufacturing Orders [pending]
+### Dependencies: Task 10 (MO Management)
+### Description: Integrate barcode processing with manufacturing order validation
+### Details:
+Create MO integration that validates barcodes against active manufacturing orders, checks panel type consistency, validates sequence ranges, and provides MO-specific barcode generation. Include automatic MO progress tracking.
+
+## 11. Error Handling and Recovery [pending]
+### Dependencies: None
+### Description: Implement robust error handling and recovery mechanisms
+### Details:
+Create comprehensive error handling for network failures, database connection issues, invalid barcode scenarios, and system recovery. Include graceful degradation, retry mechanisms, and detailed error logging.
+
+## 12. Monitoring and Analytics [pending]
+### Dependencies: None
+### Description: Implement barcode processing monitoring and analytics
+### Details:
+Create monitoring system for barcode scan rates, validation success rates, error patterns, and performance metrics. Include dashboards for production floor monitoring and troubleshooting tools.
+
+## 13. Documentation and Training Materials [pending]
+### Dependencies: None
+### Description: Create comprehensive documentation for barcode system
+### Details:
+Create technical documentation, API documentation, troubleshooting guides, and training materials for operators. Include barcode format examples, common error scenarios, and best practices.
+

@@ -40,3 +40,5 @@ export type {
   BackgroundSyncState,
   BackgroundSyncOptions
 } from './useBackgroundSync';
+
+export { default as useAuthUtils } from './useAuthUtils';
