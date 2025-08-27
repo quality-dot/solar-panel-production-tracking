@@ -3,7 +3,7 @@
 
 import { 
   BARCODE_CONFIG, 
-  validateBarcode, 
+  validateBarcodeComponents, 
   processBarcodeComplete 
 } from './barcodeProcessor.js';
 
@@ -53,13 +53,8 @@ export class BarcodeGenerator {
       // Generate sequence number
       const sequenceNumber = sequence || this._generateSequenceNumber();
       
-      // Build barcode
-      const barcodeFormat = BARCODE_CONFIG.format.replace('CC', factoryCode)
-        .replace('YY', productionYear)
-        .replace('F', selectedConstruction)
-        .replace('B', selectedPanelType.charAt(0))
-        .replace('PP', selectedPanelType)
-        .replace('#####', sequenceNumber.toString().padStart(5, '0'));
+      // Build barcode in CRSYYFBPP##### format
+      const barcodeFormat = `CRS${productionYear}${selectedConstruction}T${selectedPanelType}${sequenceNumber.toString().padStart(5, '0')}`;
 
       // Ensure uniqueness if requested
       if (ensureUnique && this.generatedBarcodes.has(barcodeFormat)) {
@@ -70,12 +65,12 @@ export class BarcodeGenerator {
       }
 
       // Validate generated barcode
-      const validation = validateBarcode(barcodeFormat);
-      if (!validation.isValid) {
+      const processResult = processBarcodeComplete(barcodeFormat);
+      if (!processResult.success) {
         throw new BarcodeGenerationError(
           'Generated invalid barcode',
           'GENERATION_FAILED',
-          { barcode: barcodeFormat, errors: validation.errors }
+          { barcode: barcodeFormat, errors: processResult.error }
         );
       }
 
@@ -83,9 +78,6 @@ export class BarcodeGenerator {
       if (ensureUnique) {
         this.generatedBarcodes.add(barcodeFormat);
       }
-
-      // Get full processing result
-      const processResult = processBarcodeComplete(barcodeFormat);
 
       return {
         barcode: barcodeFormat,
@@ -304,8 +296,8 @@ export class BarcodeGenerator {
 
     try {
       // Generate samples for each panel type and construction
-      for (const panelType of BARCODE_CONFIG.panelTypes) {
-        for (const construction of BARCODE_CONFIG.constructionTypes) {
+      for (const panelType of BARCODE_CONFIG.VALID_PANEL_TYPES) {
+        for (const construction of BARCODE_CONFIG.VALID_FACTORY_CODES) {
           const barcodeResult = this.generateBarcodes(samplesPerType, {
             panelType,
             constructionType: construction.code
@@ -332,7 +324,7 @@ export class BarcodeGenerator {
       // Generate MO ranges
       for (let i = 1; i <= 3; i++) {
         const moRange = this.generateMORange(i, 1000 + (i * 500), {
-          panelType: BARCODE_CONFIG.panelTypes[i - 1]
+          panelType: BARCODE_CONFIG.VALID_PANEL_TYPES[i - 1]
         });
         dataset.moRanges.push(moRange);
       }
@@ -377,28 +369,33 @@ export class BarcodeGenerator {
 
       // Generate sample barcode from template
       const sampleBarcode = template.replace('#####', '00001');
-      const validation = validateBarcode(sampleBarcode);
+      const processResult = processBarcodeComplete(sampleBarcode);
       
-      if (!validation.isValid) {
+      if (!processResult.success) {
         throw new BarcodeGenerationError(
           'Template generates invalid barcodes',
           'INVALID_TEMPLATE',
-          validation.errors
+          processResult.error
         );
       }
 
-      // Process sample barcode
-      const processing = processBarcodeComplete(sampleBarcode);
-      
       // Verify specifications match
       const errors = [];
       
-      if (panelType && processing.result.panelSpecs.panelType !== panelType) {
-        errors.push(`Panel type mismatch: template generates ${processing.result.panelSpecs.panelType}, expected ${panelType}`);
+      if (panelType && processResult.components.panelType !== panelType) {
+        errors.push(`Panel type mismatch: template generates ${processResult.components.panelType}, expected ${panelType}`);
       }
       
-      if (constructionType && processing.result.panelSpecs.constructionType !== constructionType) {
-        errors.push(`Construction type mismatch: template generates ${processing.result.panelSpecs.constructionType}, expected ${constructionType}`);
+      if (constructionType && processResult.components.factory !== constructionType) {
+        errors.push(`Construction type mismatch: template generates ${processResult.components.factory}, expected ${constructionType}`);
+      }
+
+      if (errors.length > 0) {
+        throw new BarcodeGenerationError(
+          'Template validation failed',
+          'TEMPLATE_VALIDATION_FAILED',
+          errors
+        );
       }
 
       // Check sequence capacity
@@ -408,15 +405,16 @@ export class BarcodeGenerator {
       }
 
       return {
-        isValid: errors.length === 0,
+        template,
+        isValid: true,
         errors,
         sampleBarcode,
-        processing: processing.result,
+        processing: processResult,
         templateAnalysis: {
-          factoryCode: processing.result.factoryCode,
-          productionYear: processing.result.productionYear,
-          panelType: processing.result.panelSpecs.panelType,
-          constructionType: processing.result.panelSpecs.constructionType,
+          factoryCode: processResult.components.factory,
+          productionYear: processResult.components.year,
+          panelType: processResult.components.panelType,
+          constructionType: processResult.components.factory,
           maxCapacity: maxSequence
         },
         validatedAt: new Date().toISOString()
@@ -445,9 +443,9 @@ export class BarcodeGenerator {
       availableRanges: Array.from(this.moRanges.keys()),
       generationCapacity: {
         maxSequence: 99999,
-        factoryCodes: BARCODE_CONFIG.factoryCodes,
-        panelTypes: BARCODE_CONFIG.panelTypes,
-        constructionTypes: BARCODE_CONFIG.constructionTypes.map(c => c.code)
+        factoryCodes: BARCODE_CONFIG.VALID_FACTORY_CODES,
+        panelTypes: BARCODE_CONFIG.VALID_PANEL_TYPES,
+        constructionTypes: BARCODE_CONFIG.VALID_FACTORY_CODES.map(c => c.code)
       },
       timestamp: new Date().toISOString()
     };
@@ -470,19 +468,20 @@ export class BarcodeGenerator {
   // Private helper methods
 
   _selectRandomPanelType() {
-    const types = BARCODE_CONFIG.panelTypes;
+    const types = BARCODE_CONFIG.VALID_PANEL_TYPES;
     return types[Math.floor(Math.random() * types.length)];
   }
 
   _selectRandomConstruction(panelType) {
     // Bias construction type selection based on panel type
-    const constructions = BARCODE_CONFIG.constructionTypes;
+    // For solar panels, we use factory codes as construction types
+    const constructions = BARCODE_CONFIG.VALID_FACTORY_CODES;
     
     if (panelType === '144') {
-      // 144-cell panels are more commonly bifacial
+      // 144-cell panels are more commonly bifacial (T)
       return Math.random() < 0.7 ? 'T' : 'W';
     } else {
-      // Other types are more commonly monofacial
+      // Other types are more commonly monofacial (W)
       return Math.random() < 0.8 ? 'W' : 'T';
     }
   }
@@ -500,7 +499,14 @@ export class BarcodeGenerator {
   _createBarcodeTemplate(specs) {
     const { factoryCode, productionYear, constructionType, panelType } = specs;
     
-    return `${factoryCode}${productionYear}${constructionType}${panelType.charAt(0)}${panelType}#####`;
+    // Format: CRSYYFBPP#####
+    // CRS: Company prefix (fixed)
+    // YY: Year (2 digits)
+    // F: Factory identifier (from constructionType)
+    // B: Batch indicator (default to 'T' for test)
+    // PP: Panel type (2 digits)
+    // #####: Sequence placeholder
+    return `CRS${productionYear}${constructionType}T${panelType}#####`;
   }
 }
 

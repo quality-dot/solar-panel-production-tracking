@@ -88,3 +88,11 @@ export {
   RESPONSE_STRUCTURE,
   default as responseMiddleware
 } from './response.js';
+
+// Graceful degradation middleware
+export {
+  gracefulDegradationMiddleware,
+  DEGRADATION_MODES,
+  ServiceHealthTracker,
+  default as gracefulDegradationMiddleware
+} from './gracefulDegradation.js';

@@ -1,0 +1,148 @@
+{"timestamp":"2025-08-26T19:24:34.632Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-26T19:24:34.632Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-26T19:24:34.632Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-26T19:24:34.632Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-26T19:24:34.633Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-26T19:24:34.633Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:24:34.634Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:24:34.634Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:24:34.635Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:24:34.635Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:24:34.635Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:24:34.635Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:24:34.636Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:24:34.636Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:24:34.636Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:24:34.636Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-26T19:24:34.638Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"cacheFailure"}
+{"timestamp":"2025-08-26T19:24:34.638Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"databaseFailure"}
+{"timestamp":"2025-08-26T19:27:30.036Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-26T19:27:30.036Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-26T19:27:30.037Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-26T19:27:30.037Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-26T19:27:30.037Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-26T19:27:30.037Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:27:30.037Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:27:30.038Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:27:30.038Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:27:30.038Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:27:30.038Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:27:30.038Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:27:30.039Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:27:30.039Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:27:30.039Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:27:30.039Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-26T19:27:30.041Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"cacheFailure"}
+{"timestamp":"2025-08-26T19:27:30.041Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"databaseFailure"}
+{"timestamp":"2025-08-26T19:28:39.094Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-26T19:28:39.095Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-26T19:28:39.095Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-26T19:28:39.095Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-26T19:28:39.095Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-26T19:28:39.095Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:28:39.095Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:28:39.095Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:28:39.095Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:28:39.096Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:28:39.096Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:28:39.096Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:28:39.096Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:28:39.096Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:28:39.096Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:28:39.096Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-26T19:28:39.098Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"cacheFailure"}
+{"timestamp":"2025-08-26T19:28:39.098Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"databaseFailure"}
+{"timestamp":"2025-08-26T19:29:05.474Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-26T19:29:05.475Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-26T19:29:05.475Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-26T19:29:05.475Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-26T19:29:05.475Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-26T19:29:05.475Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:29:05.475Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:29:05.475Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:29:05.476Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:29:05.476Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:29:05.476Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:29:05.476Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:29:05.476Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:29:05.476Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:29:05.476Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:29:05.476Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-26T19:40:23.353Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-26T19:40:23.354Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-26T19:40:23.354Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-26T19:40:23.354Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-26T19:40:23.354Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-26T19:40:23.354Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:40:23.354Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:40:23.354Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:40:23.354Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:40:23.354Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:40:23.355Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:40:23.355Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:40:23.355Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:40:23.355Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:40:23.355Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:40:23.355Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-26T19:40:23.357Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"cacheFailure"}
+{"timestamp":"2025-08-26T19:40:23.357Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"databaseFailure"}
+{"timestamp":"2025-08-26T19:41:43.397Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-26T19:41:43.397Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-26T19:41:43.397Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-26T19:41:43.398Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-26T19:41:43.398Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-26T19:41:43.398Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:41:43.398Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:41:43.398Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:41:43.398Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:41:43.398Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:41:43.398Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:41:43.398Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:41:43.399Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:41:43.399Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:41:43.399Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:41:43.399Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-26T19:41:43.401Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"cacheFailure"}
+{"timestamp":"2025-08-26T19:41:43.401Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"databaseFailure"}
+{"timestamp":"2025-08-26T19:45:10.409Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-26T19:45:10.410Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-26T19:45:10.410Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-26T19:45:10.410Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-26T19:45:10.410Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-26T19:45:10.411Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:45:10.411Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:45:10.411Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:45:10.411Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:45:10.411Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:45:10.411Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:45:10.412Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:45:10.412Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:45:10.412Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:45:10.412Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:45:10.412Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-26T19:52:28.299Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-26T19:52:28.299Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-26T19:52:28.300Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-26T19:52:28.300Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-26T19:52:28.300Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-26T19:52:28.300Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:52:28.300Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:52:28.300Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:52:28.300Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:52:28.300Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:52:28.300Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:52:28.300Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:52:28.300Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:52:28.300Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-26T19:52:28.301Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-26T19:52:28.301Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-26T19:52:28.302Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"cacheFailure"}
+{"timestamp":"2025-08-26T19:52:28.302Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"databaseFailure"}
+{"timestamp":"2025-08-26T19:52:58.305Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-26T19:52:58.308Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-26T19:52:58.309Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-26T19:52:58.309Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-26T19:53:28.303Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-26T19:53:28.305Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-26T19:53:28.305Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-26T19:53:28.305Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}

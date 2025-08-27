@@ -1,0 +1,9 @@
+[32mGET /health 200 292 - 2.199 ms | Station: unknown Line: unknown[0m
+[32mGET /health 200 293 - 2.425 ms | Station: unknown Line: unknown[0m
+[32mGET /health 200 295 - 1.132 ms | Station: unknown Line: unknown[0m
+[32mPOST /api/v1/auth/login 404 2048 - 1.430 ms | Station: unknown Line: unknown[0m
+[32mGET /health 200 293 - 1.926 ms | Station: unknown Line: unknown[0m
+[32mGET /health 200 294 - 1.046 ms | Station: unknown Line: unknown[0m
+[32mPOST /api/v1/auth/login 500 337 - 1.703 ms | Station: unknown Line: unknown[0m
+[32mPOST /api/v1/auth/login 500 343 - 6.040 ms | Station: unknown Line: unknown[0m
+[32mPOST /api/v1/auth/login 500 343 - 11.947 ms | Station: unknown Line: unknown[0m

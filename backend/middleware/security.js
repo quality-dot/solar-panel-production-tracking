@@ -2,7 +2,7 @@
 // Production-grade security configuration for solar panel tracking system
 
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { config } from '../config/index.js';
 
 /**
@@ -80,8 +80,8 @@ export const manufacturingRateLimit = rateLimit({
       return `station-${stationId}`;
     }
     
-    // Use station IP with fallback for IPv6 compatibility
-    return `ip-${req.ip}`;
+    // Use station IP with IPv6 compatibility helper
+    return `ip-${ipKeyGenerator(req)}`;
   },
 
   // Skip rate limiting for health checks
@@ -110,7 +110,7 @@ export const authRateLimit = rateLimit({
   legacyHeaders: false,
   
   // Key based on IP for auth attempts (IPv6 safe)
-  keyGenerator: (req) => `auth-${req.ip}`
+  keyGenerator: (req) => `auth-${ipKeyGenerator(req)}`
 });
 
 /**
