@@ -29,7 +29,8 @@
     "benchmark": "node backend/scripts/loadTest.js benchmark",
     "cache-test": "node backend/scripts/loadTest.js cache",
     "test-db-pool": "node backend/scripts/test-postgresql-pool.js",
-    "test-api-routes": "node backend/scripts/test-api-routes.js"
+    "test-api-routes": "node backend/scripts/test-api-routes.js",
+    "test-validation": "node backend/middleware/__tests__/validation.test.js"
   },
   "keywords": [],
   "author": "",

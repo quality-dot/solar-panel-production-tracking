@@ -237,7 +237,7 @@
             "title": "Design RESTful API Route Structure",
             "description": "Create comprehensive API routing architecture for manufacturing workflow",
             "details": "Design and implement route structure for /api/v1/stations, /api/v1/panels, /api/v1/manufacturing-orders, /api/v1/inspections, /api/v1/pallets. Include proper HTTP methods, parameter validation, and manufacturing workflow-specific endpoints.",
-            "status": "in-progress",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 2
           },
@@ -246,7 +246,7 @@
             "title": "Create Input Validation Middleware",
             "description": "Implement validation for barcode processing and manufacturing data",
             "details": "Set up express-validator or Joi for validating barcode formats (CRSYYFBPP#####), station data, panel information, and pass/fail criteria. Include manufacturing-specific validation rules and error responses optimized for tablet interfaces.",
-            "status": "pending",
+            "status": "in-progress",
             "dependencies": [],
             "parentTaskId": 2
           },
@@ -1269,7 +1269,7 @@
     ],
     "metadata": {
       "created": "2025-08-14T19:23:36.047Z",
-      "updated": "2025-08-28T14:32:58.024Z",
+      "updated": "2025-08-28T14:56:19.327Z",
       "description": "Tasks for master context"
     }
   }

@@ -9,24 +9,24 @@ import { ValidationError } from './errorHandler.js';
  * Barcode format validation patterns for solar panel tracking
  * Format: CRSYYFBPP#####
  * - CR: Company/Customer Code (2 letters)
- * - S: Solar Panel Type (1 letter: A=Monocrystalline, B=Polycrystalline)
+ * - S: Solar Panel Type (1 letter: S=Solar)
  * - YY: Year (2 digits: 24 for 2024)
- * - F: Factory/Line (1 letter: A=Line1, B=Line2)
- * - B: Batch/Lot (1 letter)
- * - PP: Production Week (2 digits: 01-52)
+ * - F: Framed indicator (1 letter: F=Framed, B=Unframed)
+ * - B: Backsheet type (1 letter: T=Transparent, W=White, B=Black)
+ * - PP: Panel type (2 digits: 36, 40, 60, 72, 144)
  * - #####: Sequential Number (5 digits: 00001-99999)
  */
 export const BARCODE_PATTERNS = {
   // Full barcode pattern: CRSYYFBPP#####
-  FULL: /^[A-Z]{2}[AB]\d{2}[AB][A-Z]\d{2}\d{5}$/,
+  FULL: /^CRS\d{2}[FB][TWB](36|40|60|72|144)\d{5}$/,
   
   // Individual component patterns
-  COMPANY_CODE: /^[A-Z]{2}$/,
-  PANEL_TYPE: /^[AB]$/, // A=Mono, B=Poly
+  COMPANY_CODE: /^CR$/,
+  PANEL_TYPE: /^S$/, // S=Solar
   YEAR: /^\d{2}$/,
-  FACTORY_LINE: /^[AB]$/, // A=Line1, B=Line2
-  BATCH: /^[A-Z]$/,
-  WEEK: /^(0[1-9]|[1-4][0-9]|5[0-2])$/, // 01-52
+  FRAMED: /^[FB]$/, // F=Framed, B=Unframed
+  BACKSHEET: /^[TWB]$/, // T=Transparent, W=White, B=Black
+  PANEL_SIZE: /^(36|40|60|72|144)$/,
   SEQUENCE: /^\d{5}$/ // 00001-99999
 };
 
@@ -120,11 +120,21 @@ export const validateBarcode = createValidationMiddleware([
         company: value.substring(0, 2),
         type: value.substring(2, 3),
         year: value.substring(3, 5),
-        factory: value.substring(5, 6),
-        batch: value.substring(6, 7),
-        week: value.substring(7, 9),
+        framed: value.substring(5, 6),
+        backsheet: value.substring(6, 7),
+        panelSize: value.substring(7, 9),
         sequence: value.substring(9, 12)
       };
+
+      // Validate company code (must be CR)
+      if (components.company !== 'CR') {
+        throw new Error(`Invalid company code. Expected 'CR', got '${components.company}'`);
+      }
+
+      // Validate panel type (must be S)
+      if (components.type !== 'S') {
+        throw new Error(`Invalid panel type. Expected 'S', got '${components.type}'`);
+      }
 
       // Validate current year (allow current year ±1)
       const currentYear = new Date().getFullYear() % 100;
@@ -133,10 +143,20 @@ export const validateBarcode = createValidationMiddleware([
         throw new Error(`Invalid year in barcode. Expected ${currentYear-1}-${currentYear+1}, got ${barcodeYear}`);
       }
 
-      // Validate week number
-      const week = parseInt(components.week);
-      if (week < 1 || week > 52) {
-        throw new Error(`Invalid week number in barcode. Expected 01-52, got ${week}`);
+      // Validate framed indicator
+      if (!['F', 'B'].includes(components.framed)) {
+        throw new Error(`Invalid framed indicator. Expected 'F' or 'B', got '${components.framed}'`);
+      }
+
+      // Validate backsheet type
+      if (!['T', 'W', 'B'].includes(components.backsheet)) {
+        throw new Error(`Invalid backsheet type. Expected 'T', 'W', or 'B', got '${components.backsheet}'`);
+      }
+
+      // Validate panel size
+      const validPanelSizes = ['36', '40', '60', '72', '144'];
+      if (!validPanelSizes.includes(components.panelSize)) {
+        throw new Error(`Invalid panel size. Expected one of ${validPanelSizes.join(', ')}, got '${components.panelSize}'`);
       }
 
       // Validate sequence number (not 00000)
@@ -414,6 +434,98 @@ export const validateUser = createValidationMiddleware([
 ]);
 
 /**
+ * Panel type validation middleware
+ */
+export const validatePanelType = createValidationMiddleware([
+  body('panelType')
+    .exists()
+    .withMessage('Panel type is required')
+    .isIn(['36', '40', '60', '72', '144'])
+    .withMessage('Panel type must be one of: 36, 40, 60, 72, 144')
+    .custom((value, { req }) => {
+      const panelType = value;
+      const lineNumber = req.body.lineNumber || req.query.lineNumber;
+      
+      if (lineNumber) {
+        const line = parseInt(lineNumber);
+        if (line === 1 && !['36', '40', '60', '72'].includes(panelType)) {
+          throw new Error(`Panel type ${panelType} is not valid for Line 1. Valid types: 36, 40, 60, 72`);
+        }
+        if (line === 2 && panelType !== '144') {
+          throw new Error(`Panel type ${panelType} is not valid for Line 2. Only type 144 is supported`);
+        }
+      }
+      return true;
+    })
+]);
+
+/**
+ * Quality criteria validation middleware
+ */
+export const validateQualityCriteria = createValidationMiddleware([
+  body('criteria')
+    .exists()
+    .withMessage('Quality criteria are required')
+    .isArray({ min: 1 })
+    .withMessage('At least one quality criterion is required')
+    .custom((criteria) => {
+      for (const criterion of criteria) {
+        if (!criterion.name || typeof criterion.name !== 'string') {
+          throw new Error('Each criterion must have a valid name');
+        }
+        if (!criterion.required || typeof criterion.required !== 'boolean') {
+          throw new Error('Each criterion must specify if it is required');
+        }
+        if (criterion.threshold && typeof criterion.threshold !== 'number') {
+          throw new Error('Criterion threshold must be a number');
+        }
+        if (criterion.unit && typeof criterion.unit !== 'string') {
+          throw new Error('Criterion unit must be a string');
+        }
+      }
+      return true;
+    })
+]);
+
+/**
+ * Manufacturing workflow validation middleware
+ */
+export const validateWorkflow = createValidationMiddleware([
+  body('workflowStep')
+    .exists()
+    .withMessage('Workflow step is required')
+    .isIn(['ASSEMBLY_EL', 'FRAMING', 'JUNCTION_BOX', 'PERFORMANCE_FINAL'])
+    .withMessage('Invalid workflow step'),
+    
+  body('previousStep')
+    .optional()
+    .isIn(['ASSEMBLY_EL', 'FRAMING', 'JUNCTION_BOX', 'PERFORMANCE_FINAL'])
+    .withMessage('Invalid previous step'),
+    
+  body('nextStep')
+    .optional()
+    .isIn(['ASSEMBLY_EL', 'FRAMING', 'JUNCTION_BOX', 'PERFORMANCE_FINAL', 'COMPLETE'])
+    .withMessage('Invalid next step')
+    .custom((value, { req }) => {
+      const currentStep = req.body.workflowStep;
+      const previousStep = req.body.previousStep;
+      
+      // Validate workflow progression
+      const workflowOrder = ['ASSEMBLY_EL', 'FRAMING', 'JUNCTION_BOX', 'PERFORMANCE_FINAL'];
+      const currentIndex = workflowOrder.indexOf(currentStep);
+      
+      if (previousStep) {
+        const previousIndex = workflowOrder.indexOf(previousStep);
+        if (previousIndex >= currentIndex) {
+          throw new Error('Workflow step must progress forward');
+        }
+      }
+      
+      return true;
+    })
+]);
+
+/**
  * Custom validation helpers
  */
 export const validationHelpers = {
@@ -429,11 +541,11 @@ export const validationHelpers = {
       company: barcode.substring(0, 2),
       type: barcode.substring(2, 3),
       year: barcode.substring(3, 5),
-      factory: barcode.substring(5, 6),
-      batch: barcode.substring(6, 7),
-      week: barcode.substring(7, 9),
+      framed: barcode.substring(5, 6),
+      backsheet: barcode.substring(6, 7),
+      panelSize: barcode.substring(7, 9),
       sequence: barcode.substring(9, 12),
-      lineNumber: barcode.substring(5, 6) === 'A' ? 1 : 2
+      lineNumber: ['36', '40', '60', '72'].includes(barcode.substring(7, 9)) ? 1 : 2
     };
   },
 
@@ -467,6 +579,9 @@ export default {
   validateDateRange,
   validateSearch,
   validateUser,
+  validatePanelType,
+  validateQualityCriteria,
+  validateWorkflow,
   validationHelpers,
   BARCODE_PATTERNS,
   STATION_PATTERNS,
