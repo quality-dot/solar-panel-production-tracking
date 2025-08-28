@@ -28,7 +28,8 @@
     "load-test-stress": "node backend/scripts/loadTest.js run --stations 16 --barcodes 50",
     "benchmark": "node backend/scripts/loadTest.js benchmark",
     "cache-test": "node backend/scripts/loadTest.js cache",
-    "test-db-pool": "node backend/scripts/test-postgresql-pool.js"
+    "test-db-pool": "node backend/scripts/test-postgresql-pool.js",
+    "test-api-routes": "node backend/scripts/test-api-routes.js"
   },
   "keywords": [],
   "author": "",

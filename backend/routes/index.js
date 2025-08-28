@@ -14,6 +14,7 @@ import stationsRoutes from './stations.js';
 import inspectionsRoutes from './inspections.js';
 import manufacturingOrdersRoutes from './manufacturingOrders.js';
 import palletsRoutes from './pallets.js';
+import apiRoutes from './api.js';
 
 const router = express.Router();
 
@@ -186,5 +187,8 @@ router.use('/api/v1/pallets', palletRoutes.default);
 router.use('/api/v1/performance', performanceRoutes.default);
 router.use('/api/v1/error-handling', errorHandlingRoutes.default);
 router.use('/api/v1/metrics', metricsRoutes.default);
+
+// Mount API documentation routes
+router.use('/api/v1', apiRoutes);
 
 export default router;
