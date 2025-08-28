@@ -11,6 +11,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'))
 const PanelScan = lazy(() => import('./pages/PanelScan'))
 const Inspections = lazy(() => import('./pages/Inspections'))
 const Settings = lazy(() => import('./pages/Settings'))
+const StationDemo = lazy(() => import('./pages/StationDemo'))
 const UIDemo = lazy(() => import('./components/ui/UIDemo'))
 
 // Loading component for Suspense fallback
@@ -67,6 +68,7 @@ function App() {
               <Route path="/scan" element={<PanelScan />} />
               <Route path="/inspections" element={<Inspections />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/station-demo" element={<StationDemo />} />
               <Route path="/ui-demo" element={<UIDemo />} />
             </Routes>
           </Suspense>

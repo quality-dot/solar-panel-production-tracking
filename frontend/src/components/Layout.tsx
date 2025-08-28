@@ -20,6 +20,7 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
   { name: 'Scan Panel', href: '/scan', icon: QrCodeIcon },
   { name: 'Inspections', href: '/inspections', icon: ClipboardDocumentCheckIcon },
+  { name: 'Station Demo', href: '/station-demo', icon: QrCodeIcon },
   { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
   { name: 'UI Demo', href: '/ui-demo', icon: SwatchIcon },
 ]
