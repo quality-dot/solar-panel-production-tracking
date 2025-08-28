@@ -255,7 +255,7 @@
             "title": "Implement Response Standardization",
             "description": "Create consistent API response format for all endpoints",
             "details": "Design and implement standardized response format with success/error status, data payload, metadata, and pagination. Include manufacturing-specific response fields for station status, real-time updates, and offline sync capabilities.",
-            "status": "in-progress",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 2
           },
@@ -511,7 +511,7 @@
         "description": "Implement core station workflow processing and pass/fail logic",
         "details": "Create workflow engine that handles station-specific processes, pass/fail criteria validation, automatic checkbox marking for pass, failure criteria selection for fail, and note requirements for F/B panels.",
         "priority": "high",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           "4"
         ],
@@ -1269,7 +1269,7 @@
     ],
     "metadata": {
       "created": "2025-08-14T19:23:36.047Z",
-      "updated": "2025-08-28T15:27:31.140Z",
+      "updated": "2025-08-28T17:05:15.300Z",
       "description": "Tasks for master context"
     }
   }

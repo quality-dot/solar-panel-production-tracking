@@ -31,8 +31,10 @@
     "test-db-pool": "node backend/scripts/test-postgresql-pool.js",
     "test-api-routes": "node backend/scripts/test-api-routes.js",
     "test-validation": "node backend/middleware/__tests__/validation.test.js",
-    "test-response-utils": "node backend/utils/__tests__/responseUtils.test.js",
-    "demo-response-utils": "node backend/scripts/demo-response-standardization.js"
+            "test-response-utils": "node backend/utils/__tests__/responseUtils.test.js",
+        "demo-response-utils": "node backend/scripts/demo-response-standardization.js",
+        "test-workflow-engine": "node backend/services/__tests__/workflowService.test.js",
+        "demo-workflow-engine": "node backend/scripts/demo-workflow-engine.js"
   },
   "keywords": [],
   "author": "",
