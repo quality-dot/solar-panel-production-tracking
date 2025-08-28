@@ -5,9 +5,26 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest --testPathPattern=__tests__",
+    "test:integration": "jest --testPathPattern=integration",
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
+    "dev:setup": "node backend/scripts/dev-workflow.js setup",
+    "dev:start": "node backend/scripts/dev-workflow.js start",
+    "dev:test": "node backend/scripts/dev-workflow.js test",
+    "dev:test:quick": "node backend/scripts/dev-workflow.js test:quick",
+    "dev:test:db": "node backend/scripts/dev-workflow.js test:db",
+    "dev:test:validation": "node backend/scripts/dev-workflow.js test:validation",
+    "dev:test:workflow": "node backend/scripts/dev-workflow.js test:workflow",
+    "dev:test:load": "node backend/scripts/dev-workflow.js test:load",
+    "dev:test:benchmark": "node backend/scripts/dev-workflow.js test:benchmark",
+    "dev:health": "node backend/scripts/dev-workflow.js health",
+    "dev:data": "node backend/scripts/dev-workflow.js data",
+    "dev:cleanup": "node backend/scripts/dev-workflow.js cleanup",
+    "dev:status": "node backend/scripts/dev-workflow.js status",
     "backend": "node backend/server.js",
     "backend:dev": "nodemon backend/server.js",
     "backend:prod": "NODE_ENV=production node backend/server.js",
@@ -31,10 +48,12 @@
     "test-db-pool": "node backend/scripts/test-postgresql-pool.js",
     "test-api-routes": "node backend/scripts/test-api-routes.js",
     "test-validation": "node backend/middleware/__tests__/validation.test.js",
-            "test-response-utils": "node backend/utils/__tests__/responseUtils.test.js",
-        "demo-response-utils": "node backend/scripts/demo-response-standardization.js",
-        "test-workflow-engine": "node backend/services/__tests__/workflowService.test.js",
-        "demo-workflow-engine": "node backend/scripts/demo-workflow-engine.js"
+    "test-response-utils": "node backend/utils/__tests__/responseUtils.test.js",
+    "demo-response-utils": "node backend/scripts/demo-response-standardization.js",
+    "test-workflow-engine": "node backend/services/__tests__/workflowService.test.js",
+    "demo-workflow-engine": "node backend/scripts/demo-workflow-engine.js",
+    "test-barcode-scanning": "node backend/services/__tests__/barcodeScannerService.test.js",
+    "demo-barcode-scanning": "node backend/scripts/demo-barcode-scanning.js"
   },
   "keywords": [],
   "author": "",
@@ -71,5 +90,10 @@
     "ws": "^8.18.3",
     "yup": "^1.7.0",
     "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@jest/globals": "^29.7.0",
+    "nodemon": "^3.0.2"
   }
 }

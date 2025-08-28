@@ -1,0 +1,25 @@
+{
+  "watch": [
+    "backend/**/*.js",
+    "backend/**/*.mjs",
+    "backend/**/*.json"
+  ],
+  "ignore": [
+    "backend/logs/**/*",
+    "backend/**/*.test.js",
+    "backend/**/*.spec.js",
+    "node_modules/**/*"
+  ],
+  "ext": "js,json,mjs",
+  "env": {
+    "NODE_ENV": "development",
+    "PORT": "3000",
+    "LOG_LEVEL": "debug"
+  },
+  "exec": "node backend/server.js",
+  "restartable": "rs",
+  "verbose": true,
+  "colours": true,
+  "delay": 1000,
+  "legacyWatch": true
+}
