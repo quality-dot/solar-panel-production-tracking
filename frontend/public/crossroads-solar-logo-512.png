@@ -1,0 +1,30 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#FFFFFF"/>
+  
+  <!-- Ascending staircase bars representing solar panels -->
+  <!-- Left bar (shortest) - 2 segments -->
+  <rect x="120" y="280" width="60" height="80" fill="#9CA3AF" stroke="#FFFFFF" stroke-width="3"/>
+  <rect x="120" y="320" width="60" height="40" fill="#6B7280" stroke="#FFFFFF" stroke-width="3"/>
+  
+  <!-- Middle bar - 3 segments -->
+  <rect x="200" y="240" width="60" height="120" fill="#9CA3AF" stroke="#FFFFFF" stroke-width="3"/>
+  <rect x="200" y="280" width="60" height="40" fill="#64748B" stroke="#FFFFFF" stroke-width="3"/>
+  <rect x="200" y="320" width="60" height="40" fill="#475569" stroke="#FFFFFF" stroke-width="3"/>
+  
+  <!-- Right bar (tallest) - 3 segments -->
+  <rect x="280" y="200" width="60" height="160" fill="#9CA3AF" stroke="#FFFFFF" stroke-width="3"/>
+  <rect x="280" y="280" width="60" height="40" fill="#64748B" stroke="#FFFFFF" stroke-width="3"/>
+  <rect x="280" y="320" width="60" height="40" fill="#0F766E" stroke="#FFFFFF" stroke-width="3"/>
+  
+  <!-- Diagonal segment lines -->
+  <line x1="120" y1="320" x2="180" y2="320" stroke="#FFFFFF" stroke-width="3"/>
+  <line x1="200" y1="280" x2="260" y2="280" stroke="#FFFFFF" stroke-width="3"/>
+  <line x1="200" y1="320" x2="260" y2="320" stroke="#FFFFFF" stroke-width="3"/>
+  <line x1="280" y1="280" x2="340" y2="280" stroke="#FFFFFF" stroke-width="3"/>
+  <line x1="280" y1="320" x2="340" y2="320" stroke="#FFFFFF" stroke-width="3"/>
+  
+  <!-- Company name text -->
+  <text x="256" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="300" fill="#000000" letter-spacing="2">CROSSROADS</text>
+  <text x="256" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#0F766E" letter-spacing="2">SOLAR</text>
+</svg>

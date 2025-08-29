@@ -168,12 +168,12 @@ router.get('/:moNumber/progress', asyncHandler(async (req, res) => {
  * @query   ?format=pdf|csv|xlsx
  */
 router.get('/:moNumber/report', asyncHandler(async (req, res) => {
-  // TODO: Implement in Task 18 - Data Export System
+  // TODO: Implement Data Export System
   res.status(501).json({
     success: false,
     error: 'MO reporting not yet implemented',
     code: 'NOT_IMPLEMENTED',
-    message: 'MO reporting will be implemented in Task 18',
+    message: 'MO reporting will be implemented in future development',
     requestedMoNumber: req.params.moNumber
   });
 }));

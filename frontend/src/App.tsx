@@ -6,9 +6,6 @@ import OfflineIndicator from './components/OfflineIndicator'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
 import LoadingSpinner from './components/ui/LoadingSpinner'
 
-// Import UIDemo directly to fix chunk loading issues
-import UIDemo from './components/ui/UIDemo'
-
 // Lazy load page components for code splitting
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const PanelScan = lazy(() => import('./pages/PanelScan'))
@@ -17,6 +14,8 @@ const Settings = lazy(() => import('./pages/Settings'))
 const AuthStatus = lazy(() => import('./components/auth/AuthStatus'))
 const LoginForm = lazy(() => import('./components/auth/LoginForm'))
 const AuthDemo = lazy(() => import('./pages/AuthDemo'))
+const PerformanceMonitoringDashboard = lazy(() => import('./components/PerformanceMonitoringDashboard'))
+const SecurityDashboard = lazy(() => import('./components/SecurityDashboard'))
 
 // Loading component for Suspense fallback
 const PageLoading = () => (
@@ -54,10 +53,11 @@ function App() {
                 <Route path="/scan" element={<PanelScan />} />
                 <Route path="/inspections" element={<Inspections />} />
                 <Route path="/settings" element={<Settings />} />
-                <Route path="/ui-demo" element={<UIDemo />} />
                 <Route path="/auth-status" element={<AuthStatus />} />
                 <Route path="/login" element={<LoginForm />} />
                 <Route path="/auth-demo" element={<AuthDemo />} />
+                <Route path="/performance" element={<PerformanceMonitoringDashboard />} />
+                <Route path="/security" element={<SecurityDashboard />} />
               </Routes>
             </Suspense>
           </Layout>

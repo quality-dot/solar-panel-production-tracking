@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crossroads Solar Logo Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .logo-container {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .logo-64 { width: 64px; height: 64px; }
+        .logo-192 { width: 192px; height: 192px; }
+        .logo-512 { width: 512px; height: 512px; }
+        .download-btn {
+            background: #10B981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .download-btn:hover {
+            background: #059669;
+        }
+        h1 {
+            color: #1F2937;
+            text-align: center;
+        }
+        .instructions {
+            background: #E5E7EB;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Crossroads Solar Logo Converter</h1>
+    
+    <div class="instructions">
+        <h3>Instructions:</h3>
+        <p>Right-click on each logo below and select "Save image as..." to download the PNG version.</p>
+        <p>Save them with these exact names in the <code>frontend/public/</code> folder:</p>
+        <ul>
+            <li><strong>crossroads-solar-logo-64.png</strong> (64x64)</li>
+            <li><strong>crossroads-solar-logo-192.png</strong> (192x192)</li>
+            <li><strong>crossroads-solar-logo-512.png</strong> (512x512)</li>
+        </ul>
+    </div>
+
+    <div class="logo-container">
+        <h3>64x64 Logo</h3>
+        <svg class="logo-64" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background -->
+            <rect width="512" height="512" fill="#FFFFFF"/>
+            
+            <!-- Ascending staircase bars representing solar panels -->
+            <!-- Left bar (shortest) - 2 segments -->
+            <rect x="120" y="280" width="60" height="80" fill="#9CA3AF"/>
+            <rect x="120" y="320" width="60" height="40" fill="#6B7280"/>
+            
+            <!-- Middle bar - 3 segments -->
+            <rect x="200" y="240" width="60" height="120" fill="#9CA3AF"/>
+            <rect x="200" y="280" width="60" height="40" fill="#64748B"/>
+            <rect x="200" y="320" width="60" height="40" fill="#475569"/>
+            
+            <!-- Right bar (tallest) - 3 segments -->
+            <rect x="280" y="200" width="60" height="160" fill="#9CA3AF"/>
+            <rect x="280" y="280" width="60" height="40" fill="#64748B"/>
+            <rect x="280" y="320" width="60" height="40" fill="#0F766E"/>
+            
+            <!-- Diagonal segment lines to create the layered effect -->
+            <line x1="120" y1="320" x2="180" y2="320" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="200" y1="280" x2="260" y2="280" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="200" y1="320" x2="260" y2="320" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="280" y1="280" x2="340" y2="280" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="280" y1="320" x2="340" y2="320" stroke="#FFFFFF" stroke-width="2"/>
+            
+            <!-- Company name text -->
+            <text x="256" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="300" fill="#000000" letter-spacing="2">CROSSROADS</text>
+            <text x="256" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#0F766E" letter-spacing="2">SOLAR</text>
+        </svg>
+        <br>
+        <button class="download-btn" onclick="downloadLogo(64)">Download 64x64</button>
+    </div>
+
+    <div class="logo-container">
+        <h3>192x192 Logo</h3>
+        <svg class="logo-192" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background -->
+            <rect width="512" height="512" fill="#FFFFFF"/>
+            
+            <!-- Ascending staircase bars representing solar panels -->
+            <!-- Left bar (shortest) - 2 segments -->
+            <rect x="120" y="280" width="60" height="80" fill="#9CA3AF"/>
+            <rect x="120" y="320" width="60" height="40" fill="#6B7280"/>
+            
+            <!-- Middle bar - 3 segments -->
+            <rect x="200" y="240" width="60" height="120" fill="#9CA3AF"/>
+            <rect x="200" y="280" width="60" height="40" fill="#64748B"/>
+            <rect x="200" y="320" width="60" height="40" fill="#475569"/>
+            
+            <!-- Right bar (tallest) - 3 segments -->
+            <rect x="280" y="200" width="60" height="160" fill="#9CA3AF"/>
+            <rect x="280" y="280" width="60" height="40" fill="#64748B"/>
+            <rect x="280" y="320" width="60" height="40" fill="#0F766E"/>
+            
+            <!-- Diagonal segment lines to create the layered effect -->
+            <line x1="120" y1="320" x2="180" y2="320" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="200" y1="280" x2="260" y2="280" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="200" y1="320" x2="260" y2="320" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="280" y1="280" x2="340" y2="280" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="280" y1="320" x2="340" y2="320" stroke="#FFFFFF" stroke-width="2"/>
+            
+            <!-- Company name text -->
+            <text x="256" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="300" fill="#000000" letter-spacing="2">CROSSROADS</text>
+            <text x="256" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#0F766E" letter-spacing="2">SOLAR</text>
+        </svg>
+        <br>
+        <button class="download-btn" onclick="downloadLogo(192)">Download 192x192</button>
+    </div>
+
+    <div class="logo-container">
+        <h3>512x512 Logo</h3>
+        <svg class="logo-512" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background -->
+            <rect width="512" height="512" fill="#FFFFFF"/>
+            
+            <!-- Ascending staircase bars representing solar panels -->
+            <!-- Left bar (shortest) - 2 segments -->
+            <rect x="120" y="280" width="60" height="80" fill="#9CA3AF"/>
+            <rect x="120" y="320" width="60" height="40" fill="#6B7280"/>
+            
+            <!-- Middle bar - 3 segments -->
+            <rect x="200" y="240" width="60" height="120" fill="#9CA3AF"/>
+            <rect x="200" y="280" width="60" height="40" fill="#64748B"/>
+            <rect x="200" y="320" width="60" height="40" fill="#475569"/>
+            
+            <!-- Right bar (tallest) - 3 segments -->
+            <rect x="280" y="200" width="60" height="160" fill="#9CA3AF"/>
+            <rect x="280" y="280" width="60" height="40" fill="#64748B"/>
+            <rect x="280" y="320" width="60" height="40" fill="#0F766E"/>
+            
+            <!-- Diagonal segment lines to create the layered effect -->
+            <line x1="120" y1="320" x2="180" y2="320" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="200" y1="280" x2="260" y2="280" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="200" y1="320" x2="260" y2="320" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="280" y1="280" x2="340" y2="280" stroke="#FFFFFF" stroke-width="2"/>
+            <line x1="280" y1="320" x2="340" y2="320" stroke="#FFFFFF" stroke-width="2"/>
+            
+            <!-- Company name text -->
+            <text x="256" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="300" fill="#000000" letter-spacing="2">CROSSROADS</text>
+            <text x="256" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#0F766E" letter-spacing="2">SOLAR</text>
+        </svg>
+        <br>
+        <button class="download-btn" onclick="downloadLogo(512)">Download 512x512</button>
+    </div>
+
+    <script>
+        function downloadLogo(size) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Create a temporary image element
+            const img = new Image();
+            const svg = document.querySelector(`.logo-${size}`).outerHTML;
+            const svgBlob = new Blob([svg], {type: 'image/svg+xml'});
+            const url = URL.createObjectURL(svgBlob);
+            
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0, size, size);
+                URL.revokeObjectURL(url);
+                
+                // Download the image
+                const link = document.createElement('a');
+                link.download = `crossroads-solar-logo-${size}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
+            
+            img.src = url;
+        }
+    </script>
+</body>
+</html>

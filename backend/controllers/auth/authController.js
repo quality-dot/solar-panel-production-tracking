@@ -280,11 +280,18 @@ export const changePassword = asyncHandler(async (req, res) => {
     });
   }
 
-  // TODO: Implement password change in User model
-  // For now, we'll return a 501 response
-  throw new ValidationError('Password change functionality not yet implemented', {
-    reason: 'feature_not_implemented'
-  });
+  // Change password using User model method
+  await user.changePassword(currentPassword, newPassword);
+
+  res.status(200).json(manufacturingResponse(
+    { message: 'Password changed successfully' },
+    'Password changed successfully',
+    {
+      action: 'change_password',
+      station: req.station?.id,
+      timestamp: req.timestamp
+    }
+  ));
 });
 
 /**

@@ -9,3 +9,29 @@ Create Station 2 workflow for Framing with pass/fail criteria: panel trimmed, pa
 
 # Test Strategy:
 Station workflow tests, criteria validation tests, barcode verification tests
+
+# Subtasks:
+## 1. Automated Pallet Generation [pending]
+### Dependencies: None
+### Description: Implement automatic pallet creation system
+### Details:
+Create automatic pallet generation every 25/26 panels (configurable). Implement pallet size configuration and custom quantity override options.
+
+## 2. Pallet Data Compilation [pending]
+### Dependencies: 7.1
+### Description: Implement pallet data aggregation
+### Details:
+Compile panel data for pallets: serial numbers, wattage, Vmp, Imp, date/time stamps, total count. Implement data validation and error handling.
+
+## 3. Pallet Sheet Generation [pending]
+### Dependencies: 7.2
+### Description: Create pallet sheet output system
+### Details:
+Generate pallet sheets with comprehensive panel information, QR codes for tracking, and professional formatting. Implement PDF generation and printing.
+
+## 4. Manual Pallet Operations [pending]
+### Dependencies: 7.3
+### Description: Implement manual pallet management features
+### Details:
+Create manual pallet generation option, custom quantity override, and manual pallet sheet generation. Implement validation and error handling.
+

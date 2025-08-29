@@ -9,7 +9,9 @@ import {
   XMarkIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  SwatchIcon
+  KeyIcon,
+  ChartBarIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 
 interface LayoutProps {
@@ -21,7 +23,8 @@ const navigation = [
   { name: 'Scan Panel', href: '/scan', icon: QrCodeIcon },
   { name: 'Inspections', href: '/inspections', icon: ClipboardDocumentCheckIcon },
   { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
-  { name: 'UI Demo', href: '/ui-demo', icon: SwatchIcon },
+  { name: 'Performance', href: '/performance', icon: ChartBarIcon },
+  { name: 'Security', href: '/security', icon: ShieldCheckIcon },
 ]
 
 export default function Layout({ children }: LayoutProps) {
@@ -59,9 +62,16 @@ export default function Layout({ children }: LayoutProps) {
                 <Bars3Icon className="h-6 w-6" aria-hidden="true" />
               </button>
               
-              <h1 className="text-xl font-semibold text-gray-900 ml-2 lg:ml-0">
-                Solar Panel Tracker
-              </h1>
+              <div className="flex items-center space-x-3">
+                <img 
+                  src="/crossroads-solar-logo.svg" 
+                  alt="Crossroads Solar Logo" 
+                  className="h-8 w-8"
+                />
+                <h1 className="text-xl font-semibold text-gray-900">
+                  Crossroads Solar Production Tracker
+                </h1>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-500">
@@ -122,6 +132,14 @@ export default function Layout({ children }: LayoutProps) {
               </div>
               <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4">
                 <div className="sidebar-header">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <img 
+                      src="/crossroads-solar-logo.svg" 
+                      alt="Crossroads Solar Logo" 
+                      className="h-8 w-8"
+                    />
+                    <h2 className="text-lg font-semibold text-gray-900">Crossroads Solar</h2>
+                  </div>
                   <h2 className="text-lg font-semibold text-gray-900">Navigation</h2>
                   <button
                     type="button"

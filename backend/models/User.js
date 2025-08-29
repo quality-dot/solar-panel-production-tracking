@@ -9,13 +9,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 /**
  * User roles for manufacturing environment
+ * Imported from permissions to avoid circular dependency
  */
-export const USER_ROLES = {
-  STATION_INSPECTOR: 'STATION_INSPECTOR',
-  PRODUCTION_SUPERVISOR: 'PRODUCTION_SUPERVISOR', 
-  QC_MANAGER: 'QC_MANAGER',
-  SYSTEM_ADMIN: 'SYSTEM_ADMIN'
-};
+import { USER_ROLES } from '../utils/permissions.js';
 
 /**
  * User model class with database operations
@@ -518,6 +514,84 @@ export class User {
     }
 
     return false;
+  }
+
+  /**
+   * Change user password with current password verification
+   */
+  async changePassword(currentPassword, newPassword) {
+    try {
+      if (!currentPassword || !newPassword) {
+        throw new ValidationError('Current password and new password are required', {
+          reason: 'missing_passwords'
+        });
+      }
+
+      // Verify current password
+      const isCurrentPasswordValid = await comparePassword(currentPassword, this.password_hash);
+      if (!isCurrentPasswordValid) {
+        throw new ValidationError('Current password is incorrect', {
+          reason: 'invalid_current_password'
+        });
+      }
+
+      // Validate new password
+      if (currentPassword === newPassword) {
+        throw new ValidationError('New password must be different from current password', {
+          reason: 'password_same_as_current'
+        });
+      }
+
+      // Validate new password policy
+      const passwordValidation = validatePasswordPolicy(newPassword);
+      if (!passwordValidation.isValid) {
+        throw new ValidationError('New password does not meet security requirements', {
+          reason: 'password_policy_violation',
+          details: passwordValidation.errors
+        });
+      }
+
+      // Hash new password
+      const newPasswordHash = await hashPassword(newPassword);
+
+      // Update password and increment token version (invalidates all existing tokens)
+      const now = new Date().toISOString();
+      const query = `
+        UPDATE users 
+        SET password_hash = $1, token_version = $2, updated_at = $3
+        WHERE id = $4
+      `;
+      
+      await databaseManager.query(query, [newPasswordHash, this.token_version + 1, now, this.id]);
+      
+      // Update local instance
+      this.password_hash = newPasswordHash;
+      this.token_version += 1;
+      this.updated_at = now;
+
+      manufacturingLogger.info('Password changed successfully', {
+        userId: this.id,
+        username: this.username,
+        category: 'user_management'
+      });
+
+      return true;
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        throw error;
+      }
+
+      manufacturingLogger.error('Failed to change password', {
+        userId: this.id,
+        error: error.message,
+        category: 'user_management'
+      });
+
+      throw new DatabaseError('Failed to change password', 'password_change', {
+        userId: this.id,
+        originalError: error.message
+      });
+    }
   }
 
   /**

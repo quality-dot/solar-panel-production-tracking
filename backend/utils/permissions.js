@@ -1,7 +1,16 @@
 // Role-based permissions system for manufacturing environment
 // Comprehensive permission matrix for solar panel production tracking
 
-import { USER_ROLES } from '../models/index.js';
+/**
+ * User roles for manufacturing environment
+ * Defined here to avoid circular dependency issues
+ */
+export const USER_ROLES = {
+  STATION_INSPECTOR: 'STATION_INSPECTOR',
+  PRODUCTION_SUPERVISOR: 'PRODUCTION_SUPERVISOR', 
+  QC_MANAGER: 'QC_MANAGER',
+  SYSTEM_ADMIN: 'SYSTEM_ADMIN'
+};
 
 /**
  * Permission actions available in the manufacturing system
@@ -91,8 +100,10 @@ export const PERMISSIONS = {
  */
 export const ROLE_PERMISSIONS = {};
 
-// Station Inspector permissions
-ROLE_PERMISSIONS[USER_ROLES.STATION_INSPECTOR] = [
+// Initialize role permissions after import
+const initializeRolePermissions = () => {
+  // Station Inspector permissions
+  ROLE_PERMISSIONS[USER_ROLES.STATION_INSPECTOR] = [
   // Station Operations (only assigned stations)
   PERMISSIONS.STATION_SCAN_BARCODE,
   PERMISSIONS.STATION_SUBMIT_INSPECTION,
@@ -206,6 +217,12 @@ ROLE_PERMISSIONS[USER_ROLES.SYSTEM_ADMIN] = [
   // All permissions - system administrators have full access
   ...Object.values(PERMISSIONS)
 ];
+
+// Close the initialization function
+};
+
+// Initialize role permissions
+initializeRolePermissions();
 
 /**
  * Permission categories for UI organization
@@ -504,6 +521,7 @@ export const getPermissionDescription = (permission) => {
 };
 
 export default {
+  USER_ROLES,
   PERMISSIONS,
   ROLE_PERMISSIONS,
   PERMISSION_CATEGORIES,
