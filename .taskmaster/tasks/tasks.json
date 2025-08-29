@@ -380,7 +380,7 @@
         "description": "Implement barcode parsing, validation, and line assignment logic",
         "details": "Create system to parse CRSYYFBPP##### barcode format, validate components, determine panel type, and automatically assign to correct production line (Line 1: 36,40,60,72; Line 2: 144).",
         "priority": "high",
-        "status": "in-progress",
+        "status": "done",
         "dependencies": [
           "2"
         ],
@@ -472,7 +472,7 @@
             "title": "Integration with Manufacturing Orders",
             "description": "Integrate barcode processing with manufacturing order validation",
             "details": "Create MO integration that validates barcodes against active manufacturing orders, checks panel type consistency, validates sequence ranges, and provides MO-specific barcode generation. Include automatic MO progress tracking.",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 4
           },
@@ -490,7 +490,7 @@
             "title": "Monitoring and Analytics",
             "description": "Implement barcode processing monitoring and analytics",
             "details": "Create monitoring system for barcode scan rates, validation success rates, error patterns, and performance metrics. Include dashboards for production floor monitoring and troubleshooting tools.",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 4
           },
@@ -499,7 +499,7 @@
             "title": "Documentation and Training Materials",
             "description": "Create comprehensive documentation for barcode system",
             "details": "Create technical documentation, API documentation, troubleshooting guides, and training materials for operators. Include barcode format examples, common error scenarios, and best practices.",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 4
           }
@@ -511,7 +511,7 @@
         "description": "Implement core station workflow processing and pass/fail logic",
         "details": "Create workflow engine that handles station-specific processes, pass/fail criteria validation, automatic checkbox marking for pass, failure criteria selection for fail, and note requirements for F/B panels.",
         "priority": "high",
-        "status": "pending",
+        "status": "in-progress",
         "dependencies": [
           "4"
         ],
@@ -522,7 +522,7 @@
             "title": "Design Workflow State Machine",
             "description": "Create the core state machine for panel workflow through stations",
             "details": "Design state machine with states: SCANNED, IN_PROGRESS, PASSED, FAILED, REWORK_NEEDED. Define transitions, validate state changes, and implement state persistence. Include panel routing logic between stations and lines.",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 5
           },
@@ -531,7 +531,7 @@
             "title": "Implement Pass/Fail Validation Engine",
             "description": "Build the core validation system for pass/fail criteria",
             "details": "Create validation engine that processes station-specific criteria, handles one-touch Pass (auto-check all), manages Fail with criteria selection, enforces required notes for F/B panels, and supports 'Other' category for unlisted defects.",
-            "status": "pending",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 5
           },
@@ -540,7 +540,7 @@
             "title": "Build Station-Specific Criteria Configuration",
             "description": "Create configurable criteria system for each station and line",
             "details": "Implement station criteria configuration supporting Station 1-4 specific requirements, Line 1/2 differences (mirror examination, second EL test), N/A handling for line-specific tests, and dynamic criteria loading from database configuration.",
-            "status": "pending",
+            "status": "in-progress",
             "dependencies": [],
             "parentTaskId": 5
           },
@@ -1007,12 +1007,76 @@
         "description": "Implement camera-based barcode scanning for station tablets",
         "details": "Integrate html5-qrcode or QuaggaJS for barcode scanning using tablet cameras, implement audio/visual feedback for successful scans, handle scan errors, and provide manual entry fallback.",
         "priority": "high",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "13"
         ],
         "testStrategy": "Barcode scanning tests, camera integration tests, fallback mechanism tests",
-        "subtasks": []
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Install Barcode Scanning Libraries",
+            "description": "Install and configure html5-qrcode and other necessary barcode scanning libraries for the frontend",
+            "details": "Install html5-qrcode, quagga, or similar libraries for real camera-based barcode scanning. Configure TypeScript types and ensure compatibility with the PWA setup.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 14
+          },
+          {
+            "id": 2,
+            "title": "Create Real Camera Integration Component",
+            "description": "Implement actual camera access and barcode scanning using the installed libraries",
+            "details": "Replace the mock scanning in PanelScan.tsx with real camera integration. Implement camera device selection, real-time video feed, and actual barcode detection using the html5-qrcode library.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 14
+          },
+          {
+            "id": 3,
+            "title": "Implement Barcode Validation and Processing",
+            "description": "Connect frontend scanning to backend validation and processing",
+            "details": "Integrate the frontend barcode scanning with the backend BarcodeScannerService. Implement real-time validation, error handling, and processing of scanned barcodes including the CRSYYFBPP##### format validation.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 14
+          },
+          {
+            "id": 4,
+            "title": "Add Audio/Visual Feedback System",
+            "description": "Implement real audio and visual feedback for successful scans and errors",
+            "details": "Add real audio feedback (beeps, tones) and visual feedback (color changes, animations) for successful scans, errors, and processing states. Integrate with the backend feedback system.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 14
+          },
+          {
+            "id": 5,
+            "title": "Create Station Tablet Integration",
+            "description": "Integrate barcode scanning with station workflow and tablet interface",
+            "details": "Connect the barcode scanning to the station workflow engine. Implement station-specific scanning interfaces, workflow progression, and integration with the existing station criteria and validation systems.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 14
+          },
+          {
+            "id": 6,
+            "title": "Implement Offline Scanning and Sync",
+            "description": "Add offline barcode scanning capabilities with sync when connection is restored",
+            "details": "Implement offline barcode scanning using IndexedDB storage. Add sync functionality to upload scanned data when connection is restored, integrating with the existing offline sync system.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 14
+          },
+          {
+            "id": 7,
+            "title": "Add Testing and Quality Assurance",
+            "description": "Create comprehensive testing for the barcode scanning integration",
+            "details": "Implement unit tests, integration tests, and end-to-end tests for the barcode scanning system. Test camera integration, barcode validation, error handling, and offline functionality.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 14
+          }
+        ]
       },
       {
         "id": 15,
@@ -1269,7 +1333,7 @@
     ],
     "metadata": {
       "created": "2025-08-14T19:23:36.047Z",
-      "updated": "2025-08-27T22:47:51.809Z",
+      "updated": "2025-08-28T17:58:04.667Z",
       "description": "Tasks for master context"
     }
   }

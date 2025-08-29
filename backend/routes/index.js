@@ -9,11 +9,12 @@ import { successResponse, errorResponse } from '../utils/index.js';
 // Import route modules
 import authRoutes from './auth.js';
 import barcodeRoutes from './barcode.js';
-// import panelsRoutes from './panels.js';
-// import stationsRoutes from './stations.js';
-// import inspectionsRoutes from './inspections.js';
-// import manufacturingOrdersRoutes from './manufacturingOrders.js';
-// import palletsRoutes from './pallets.js';
+import panelsRoutes from './panels.js';
+import stationsRoutes from './stations.js';
+import inspectionsRoutes from './inspections.js';
+import manufacturingOrdersRoutes from './manufacturingOrders.js';
+import palletsRoutes from './pallets.js';
+import apiRoutes from './api.js';
 
 const router = express.Router();
 
@@ -142,9 +143,10 @@ const stationRoutes = await import('./stations.js');
 const panelRoutes = await import('./panels.js');
 const manufacturingOrderRoutes = await import('./manufacturingOrders.js');
 const inspectionRoutes = await import('./inspections.js');
-const palletRoutes = await import('./pallets.js');
-const performanceRoutes = await import('./performance.js');
-const errorHandlingRoutes = await import('./errorHandling.js');
+  const palletRoutes = await import('./pallets.js');
+  const performanceRoutes = await import('./performance.js');
+  const errorHandlingRoutes = await import('./errorHandling.js');
+  const metricsRoutes = await import('./metrics.js');
 
 // API v1 base route with available endpoints info
 router.get('/api/v1', (req, res) => {
@@ -160,7 +162,8 @@ router.get('/api/v1', (req, res) => {
       inspections: '/api/v1/inspections',
       pallets: '/api/v1/pallets',
       performance: '/api/v1/performance',
-      errorHandling: '/api/v1/error-handling'
+      errorHandling: '/api/v1/error-handling',
+      metrics: '/api/v1/metrics'
     },
     documentation: 'Each endpoint provides detailed documentation in 501 responses until implemented',
     features: {
@@ -183,5 +186,9 @@ router.use('/api/v1/inspections', inspectionRoutes.default);
 router.use('/api/v1/pallets', palletRoutes.default);
 router.use('/api/v1/performance', performanceRoutes.default);
 router.use('/api/v1/error-handling', errorHandlingRoutes.default);
+router.use('/api/v1/metrics', metricsRoutes.default);
+
+// Mount API documentation routes
+router.use('/api/v1', apiRoutes);
 
 export default router;

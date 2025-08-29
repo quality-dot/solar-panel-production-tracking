@@ -1,0 +1,159 @@
+{"timestamp":"2025-08-27T15:46:06.519Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-27T15:46:06.522Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-27T15:46:06.524Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-27T15:46:06.526Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-27T15:46:06.528Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-27T15:46:06.529Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T15:46:06.531Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T15:46:06.532Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T15:46:06.533Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T15:46:06.536Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T15:46:06.537Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T15:46:06.539Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T15:46:06.540Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T15:46:06.542Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T15:46:06.544Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T15:46:06.545Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-27T15:46:06.546Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"cacheFailure"}
+{"timestamp":"2025-08-27T15:46:06.547Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"databaseFailure"}
+{"timestamp":"2025-08-27T15:49:53.130Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-27T15:49:53.131Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-27T15:49:53.132Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-27T15:49:53.133Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-27T15:49:53.134Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-27T15:49:53.136Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T15:49:53.137Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T15:49:53.138Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T15:49:53.140Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T15:49:53.141Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T15:49:53.142Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T15:49:53.144Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T15:49:53.145Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T15:49:53.146Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T15:49:53.147Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T15:49:53.148Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-27T15:49:53.149Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"cacheFailure"}
+{"timestamp":"2025-08-27T15:49:53.150Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"databaseFailure"}
+{"timestamp":"2025-08-27T16:07:22.636Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-27T16:07:22.639Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-27T16:07:22.641Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-27T16:07:22.642Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-27T16:07:22.647Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-27T16:07:22.656Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T16:07:22.658Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T16:07:22.662Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T16:07:22.670Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T16:07:22.674Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T16:07:22.677Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T16:07:22.683Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T16:07:22.687Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T16:07:22.690Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T16:07:22.692Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T16:07:22.703Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-27T16:07:22.708Z","level":"INFO","logger":"MetricsService","message":"Metrics service initialized","sessionStart":"2025-08-27T16:07:22.708Z"}
+{"timestamp":"2025-08-27T16:07:22.724Z","level":"ERROR","logger":"MetricsService","message":"Failed to record barcode event","error":"performanceCache.set is not a function","barcode":"CRS25WT360..."}
+{"timestamp":"2025-08-27T16:07:22.837Z","level":"ERROR","logger":"MetricsService","message":"Failed to record barcode event","error":"performanceCache.set is not a function","barcode":"CRS25WT360..."}
+{"timestamp":"2025-08-27T16:07:22.955Z","level":"ERROR","logger":"MetricsService","message":"Failed to record barcode event","error":"performanceCache.set is not a function","barcode":"CRS25WT144..."}
+{"timestamp":"2025-08-27T16:07:23.067Z","level":"ERROR","logger":"MetricsService","message":"Failed to record barcode event","error":"performanceCache.set is not a function","barcode":"INVALID123..."}
+{"timestamp":"2025-08-27T16:07:23.189Z","level":"ERROR","logger":"MetricsService","message":"Failed to record barcode event","error":"performanceCache.set is not a function","barcode":"CRS99XT990..."}
+{"timestamp":"2025-08-27T16:07:23.296Z","level":"ERROR","logger":"MetricsService","message":"Failed to record barcode event","error":"performanceCache.set is not a function","barcode":"CRS25WT720..."}
+{"timestamp":"2025-08-27T16:07:23.405Z","level":"ERROR","logger":"MetricsService","message":"Failed to record barcode event","error":"performanceCache.set is not a function","barcode":"TOOLONG123..."}
+{"timestamp":"2025-08-27T16:07:23.513Z","level":"ERROR","logger":"MetricsService","message":"Failed to record barcode event","error":"performanceCache.set is not a function","barcode":"CRS25WT600..."}
+{"timestamp":"2025-08-27T16:07:23.621Z","level":"ERROR","logger":"MetricsService","message":"Failed to record MO event","error":"performanceCache.set is not a function","moId":1,"eventType":"created"}
+{"timestamp":"2025-08-27T16:07:23.622Z","level":"ERROR","logger":"MetricsService","message":"Failed to record MO event","error":"performanceCache.set is not a function","moId":1,"eventType":"progress_updated"}
+{"timestamp":"2025-08-27T16:07:23.624Z","level":"ERROR","logger":"MetricsService","message":"Failed to record MO event","error":"performanceCache.set is not a function","moId":2,"eventType":"created"}
+{"timestamp":"2025-08-27T16:07:23.625Z","level":"ERROR","logger":"MetricsService","message":"Failed to record panel event","error":"performanceCache.set is not a function","panelId":101}
+{"timestamp":"2025-08-27T16:07:23.627Z","level":"ERROR","logger":"MetricsService","message":"Failed to record panel event","error":"performanceCache.set is not a function","panelId":102}
+{"timestamp":"2025-08-27T16:07:23.630Z","level":"ERROR","logger":"MetricsService","message":"Failed to record panel event","error":"performanceCache.set is not a function","panelId":103}
+{"timestamp":"2025-08-27T16:12:22.416Z","level":"INFO","logger":"MetricsService","message":"Metrics service initialized","sessionStart":"2025-08-27T16:12:22.414Z"}
+{"timestamp":"2025-08-27T16:12:22.427Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-27T16:12:22.430Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-27T16:12:22.432Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-27T16:12:22.437Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-27T16:12:22.442Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-27T16:12:22.449Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T16:12:22.455Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T16:12:22.457Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T16:12:22.462Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T16:12:22.465Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T16:12:22.468Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T16:12:22.470Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T16:12:22.471Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T16:12:22.475Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T16:12:22.478Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T16:12:22.483Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-27T16:12:22.493Z","level":"DEBUG","logger":"MetricsService","message":"Barcode event recorded","success":false,"processingTime":0.4995999999999867,"errorCode":"INVALID_LENGTH"}
+{"timestamp":"2025-08-27T16:12:22.604Z","level":"DEBUG","logger":"MetricsService","message":"Barcode event recorded","success":false,"processingTime":0.08540000000004966,"errorCode":"INVALID_LENGTH"}
+{"timestamp":"2025-08-27T16:12:22.731Z","level":"DEBUG","logger":"MetricsService","message":"Barcode event recorded","success":false,"processingTime":0.21929999999997563,"errorCode":"INVALID_LENGTH"}
+{"timestamp":"2025-08-27T16:12:22.850Z","level":"DEBUG","logger":"MetricsService","message":"Barcode event recorded","success":false,"processingTime":0.41859999999996944,"errorCode":"INVALID_LENGTH"}
+{"timestamp":"2025-08-27T16:12:23.064Z","level":"DEBUG","logger":"MetricsService","message":"Barcode event recorded","success":false,"processingTime":0.08849999999983993,"errorCode":"INVALID_LENGTH"}
+{"timestamp":"2025-08-27T16:12:23.300Z","level":"DEBUG","logger":"MetricsService","message":"Barcode event recorded","success":false,"processingTime":0.09220000000004802,"errorCode":"INVALID_LENGTH"}
+{"timestamp":"2025-08-27T16:12:23.445Z","level":"DEBUG","logger":"MetricsService","message":"Barcode event recorded","success":false,"processingTime":0.10969999999997526,"errorCode":"INVALID_LENGTH"}
+{"timestamp":"2025-08-27T16:12:23.591Z","level":"DEBUG","logger":"MetricsService","message":"Barcode event recorded","success":false,"processingTime":0.16840000000001965,"errorCode":"INVALID_LENGTH"}
+{"timestamp":"2025-08-27T16:12:23.727Z","level":"DEBUG","logger":"MetricsService","message":"MO event recorded","moId":1,"orderNumber":"MO-TEST-001","eventType":"created"}
+{"timestamp":"2025-08-27T16:12:23.731Z","level":"DEBUG","logger":"MetricsService","message":"MO event recorded","moId":1,"orderNumber":"MO-TEST-001","eventType":"progress_updated"}
+{"timestamp":"2025-08-27T16:12:23.762Z","level":"DEBUG","logger":"MetricsService","message":"MO event recorded","moId":2,"orderNumber":"MO-TEST-002","eventType":"created"}
+{"timestamp":"2025-08-27T16:12:23.774Z","level":"DEBUG","logger":"MetricsService","message":"Panel event recorded","panelId":101,"lineAssignment":"LINE_1","hasOverrides":false}
+{"timestamp":"2025-08-27T16:12:23.796Z","level":"DEBUG","logger":"MetricsService","message":"Panel event recorded","panelId":102,"lineAssignment":"LINE_1","hasOverrides":true}
+{"timestamp":"2025-08-27T16:12:23.810Z","level":"DEBUG","logger":"MetricsService","message":"Panel event recorded","panelId":103,"lineAssignment":"LINE_2","hasOverrides":false}
+{"timestamp":"2025-08-27T16:12:23.840Z","level":"ERROR","logger":"MetricsService","message":"Failed to get MO progress summary","error":"Cannot read properties of null (reading 'query')"}
+{"timestamp":"2025-08-27T18:35:18.124Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-27T18:35:18.125Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-27T18:35:18.127Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-27T18:35:18.128Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-27T18:35:18.129Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-27T18:35:18.131Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T18:35:18.135Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T18:35:18.137Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T18:35:18.139Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T18:35:18.142Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T18:35:18.144Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T18:35:18.145Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T18:35:18.146Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T18:35:18.148Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T18:35:18.151Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T18:35:18.153Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-27T18:35:18.156Z","level":"INFO","logger":"MetricsService","message":"Metrics service initialized","sessionStart":"2025-08-27T18:35:18.156Z"}
+{"timestamp":"2025-08-27T18:44:42.497Z","level":"INFO","logger":"manufacturing","message":"Barcode scanned: CRS01W36T12345","barcode":"CRS01W36T12345","action":"scanned","station":"STATION001","success":true,"category":"barcode_processing","url":"/scan","method":"POST","ip":"::1"}
+{"timestamp":"2025-08-27T18:52:59.707Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-27T18:52:59.709Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-27T18:52:59.711Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-27T18:52:59.712Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-27T18:52:59.714Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-27T18:52:59.715Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T18:52:59.717Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T18:52:59.718Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T18:52:59.721Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T18:52:59.723Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T18:52:59.725Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T18:52:59.726Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T18:52:59.727Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T18:52:59.729Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T18:52:59.731Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T18:52:59.732Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-27T18:52:59.734Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"cacheFailure"}
+{"timestamp":"2025-08-27T18:52:59.736Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"databaseFailure"}
+{"timestamp":"2025-08-27T18:52:59.738Z","level":"INFO","logger":"MetricsService","message":"Metrics service initialized","sessionStart":"2025-08-27T18:52:59.738Z"}
+{"timestamp":"2025-08-27T18:52:59.745Z","level":"DEBUG","logger":"MetricsService","message":"Barcode event recorded","success":false,"processingTime":0.3562999999999761,"errorCode":"INVALID_LENGTH"}
+{"timestamp":"2025-08-27T18:52:59.747Z","level":"DEBUG","logger":"MetricsService","message":"Barcode event recorded","success":false,"processingTime":0.10779999999999745,"errorCode":"INVALID_LENGTH"}
+{"timestamp":"2025-08-27T18:52:59.749Z","level":"DEBUG","logger":"MetricsService","message":"Barcode event recorded","success":false,"processingTime":0.09919999999999618,"errorCode":"INVALID_LENGTH"}
+{"timestamp":"2025-08-27T19:01:08.587Z","level":"INFO","logger":"MetricsService","message":"Metrics service initialized","sessionStart":"2025-08-27T19:01:08.585Z"}
+{"timestamp":"2025-08-27T19:01:08.590Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-27T19:01:08.592Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-27T19:01:08.593Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-27T19:01:08.595Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-27T19:01:08.596Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-27T19:01:08.599Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T19:01:08.600Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T19:01:08.602Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T19:01:08.605Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T19:01:08.606Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T19:01:08.608Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T19:01:08.609Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T19:01:08.611Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T19:01:08.613Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T19:01:08.614Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T19:01:08.616Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-27T19:01:08.618Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"cacheFailure"}
+{"timestamp":"2025-08-27T19:01:08.619Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"databaseFailure"}
+{"timestamp":"2025-08-27T19:01:08.622Z","level":"INFO","logger":"EnhancedMonitoring","message":"Enhanced monitoring service initialized","stations":8,"lines":2}

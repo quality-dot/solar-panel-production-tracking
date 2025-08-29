@@ -1,0 +1,3 @@
+[32mGET /health 200 177 - 3.874 ms | Station: unknown Line: unknown[0m
+[32mGET /performance 200 1603 - 2.380 ms | Station: unknown Line: unknown[0m
+[32mPOST /scan 200 101 - 3.690 ms | Station: STATION001 Line: 1[0m

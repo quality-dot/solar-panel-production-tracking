@@ -1,6 +1,6 @@
 # Task ID: 14
 # Title: Barcode Scanning Integration
-# Status: pending
+# Status: in-progress
 # Dependencies: 13
 # Priority: high
 # Description: Implement camera-based barcode scanning for station tablets
@@ -9,3 +9,47 @@ Integrate html5-qrcode or QuaggaJS for barcode scanning using tablet cameras, im
 
 # Test Strategy:
 Barcode scanning tests, camera integration tests, fallback mechanism tests
+
+# Subtasks:
+## 1. Install Barcode Scanning Libraries [pending]
+### Dependencies: None
+### Description: Install and configure html5-qrcode and other necessary barcode scanning libraries for the frontend
+### Details:
+Install html5-qrcode, quagga, or similar libraries for real camera-based barcode scanning. Configure TypeScript types and ensure compatibility with the PWA setup.
+
+## 2. Create Real Camera Integration Component [pending]
+### Dependencies: None
+### Description: Implement actual camera access and barcode scanning using the installed libraries
+### Details:
+Replace the mock scanning in PanelScan.tsx with real camera integration. Implement camera device selection, real-time video feed, and actual barcode detection using the html5-qrcode library.
+
+## 3. Implement Barcode Validation and Processing [pending]
+### Dependencies: None
+### Description: Connect frontend scanning to backend validation and processing
+### Details:
+Integrate the frontend barcode scanning with the backend BarcodeScannerService. Implement real-time validation, error handling, and processing of scanned barcodes including the CRSYYFBPP##### format validation.
+
+## 4. Add Audio/Visual Feedback System [pending]
+### Dependencies: None
+### Description: Implement real audio and visual feedback for successful scans and errors
+### Details:
+Add real audio feedback (beeps, tones) and visual feedback (color changes, animations) for successful scans, errors, and processing states. Integrate with the backend feedback system.
+
+## 5. Create Station Tablet Integration [pending]
+### Dependencies: None
+### Description: Integrate barcode scanning with station workflow and tablet interface
+### Details:
+Connect the barcode scanning to the station workflow engine. Implement station-specific scanning interfaces, workflow progression, and integration with the existing station criteria and validation systems.
+
+## 6. Implement Offline Scanning and Sync [pending]
+### Dependencies: None
+### Description: Add offline barcode scanning capabilities with sync when connection is restored
+### Details:
+Implement offline barcode scanning using IndexedDB storage. Add sync functionality to upload scanned data when connection is restored, integrating with the existing offline sync system.
+
+## 7. Add Testing and Quality Assurance [pending]
+### Dependencies: None
+### Description: Create comprehensive testing for the barcode scanning integration
+### Details:
+Implement unit tests, integration tests, and end-to-end tests for the barcode scanning system. Test camera integration, barcode validation, error handling, and offline functionality.
+

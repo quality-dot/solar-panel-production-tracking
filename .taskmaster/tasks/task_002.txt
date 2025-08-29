@@ -1,6 +1,6 @@
 # Task ID: 2
 # Title: Backend API Framework Setup
-# Status: done
+# Status: in-progress
 # Dependencies: 1
 # Priority: high
 # Description: Set up Node.js Express backend with core middleware and project structure
@@ -89,13 +89,13 @@ Set up express-validator or Joi for validating barcode formats (CRSYYFBPP#####),
 ### Details:
 Design and implement standardized response format with success/error status, data payload, metadata, and pagination. Include manufacturing-specific response fields for station status, real-time updates, and offline sync capabilities.
 
-## 11. Create Database Health Check Endpoints [done]
+## 11. Create Database Health Check Endpoints [pending]
 ### Dependencies: None
 ### Description: Implement monitoring endpoints for production floor reliability
 ### Details:
 Create /health, /status, and /ready endpoints for monitoring database connectivity, server health, and readiness checks. Include production floor-specific metrics like active stations, connection pool status, and system performance indicators.
 
-## 12. Setup Development Scripts and Testing Framework [done]
+## 12. Setup Development Scripts and Testing Framework [pending]
 ### Dependencies: None
 ### Description: Configure development environment and basic testing setup
 ### Details:
