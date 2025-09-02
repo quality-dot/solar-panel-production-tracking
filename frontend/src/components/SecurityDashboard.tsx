@@ -169,6 +169,7 @@ export default function SecurityDashboard() {
   const [securityAlerts, setSecurityAlerts] = useState<SecurityAlert[]>([]);
   const [dashboardConfig, setDashboardConfig] = useState<DashboardConfig | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'error'>('disconnected');
 
@@ -196,7 +197,7 @@ export default function SecurityDashboard() {
         setLastUpdated(new Date());
       } catch (error) {
         console.error('Failed to initialize dashboard:', error);
-        // Use mock data as fallback
+        setApiError('Failed to load security data. Showing limited information.');
       } finally {
         setIsLoading(false);
       }
@@ -226,6 +227,15 @@ export default function SecurityDashboard() {
 
     const handleAlert = (alert: SecurityAlert) => {
       setSecurityAlerts(prev => [alert, ...prev]);
+    };
+    
+    const handleConnection = (status: { status: string }) => {
+      setConnectionStatus(status.status as any);
+      if (status.status === 'error') {
+        setApiError('Live connection interrupted. Reconnecting...');
+      } else if (status.status === 'connected') {
+        setApiError(null);
+      }
     };
 
     const handleConnection = (status: { status: string }) => {
@@ -991,6 +1001,11 @@ export default function SecurityDashboard() {
 
       {/* Main Content */}
       <div className="px-6 py-8">
+        {apiError && (
+          <div className="mb-4 p-3 rounded bg-yellow-50 text-yellow-700 border border-yellow-200">
+            {apiError}
+          </div>
+        )}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">

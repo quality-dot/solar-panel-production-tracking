@@ -14,8 +14,10 @@ const Settings = lazy(() => import('./pages/Settings'))
 const AuthStatus = lazy(() => import('./components/auth/AuthStatus'))
 const LoginForm = lazy(() => import('./components/auth/LoginForm'))
 const AuthDemo = lazy(() => import('./pages/AuthDemo'))
+const Unauthorized = lazy(() => import('./pages/Unauthorized'))
 const PerformanceMonitoringDashboard = lazy(() => import('./components/PerformanceMonitoringDashboard'))
 const SecurityDashboard = lazy(() => import('./components/SecurityDashboard'))
+const ProtectedRoute = lazy(() => import('./components/auth/ProtectedRoute'))
 
 // Loading component for Suspense fallback
 const PageLoading = () => (
@@ -56,8 +58,16 @@ function App() {
                 <Route path="/auth-status" element={<AuthStatus />} />
                 <Route path="/login" element={<LoginForm />} />
                 <Route path="/auth-demo" element={<AuthDemo />} />
+                <Route path="/unauthorized" element={<Unauthorized />} />
                 <Route path="/performance" element={<PerformanceMonitoringDashboard />} />
-                <Route path="/security" element={<SecurityDashboard />} />
+                <Route
+                  path="/security"
+                  element={
+                    <ProtectedRoute requiredRole="SYSTEM_ADMIN">
+                      <SecurityDashboard />
+                    </ProtectedRoute>
+                  }
+                />
               </Routes>
             </Suspense>
           </Layout>

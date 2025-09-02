@@ -145,6 +145,7 @@ const inspectionRoutes = await import('./inspections.js');
 const palletRoutes = await import('./pallets.js');
 const performanceRoutes = await import('./performance.js');
 const errorHandlingRoutes = await import('./errorHandling.js');
+const securityEventsRoutes = await import('./securityEvents.js');
 
 // API v1 base route with available endpoints info
 router.get('/api/v1', (req, res) => {
@@ -182,6 +183,7 @@ router.use('/api/v1/manufacturing-orders', manufacturingOrderRoutes.default);
 router.use('/api/v1/inspections', inspectionRoutes.default);
 router.use('/api/v1/pallets', palletRoutes.default);
 router.use('/api/v1/performance', performanceRoutes.default);
+router.use('/api/v1/security-events', securityEventsRoutes.default);
 router.use('/api/v1/error-handling', errorHandlingRoutes.default);
 
 export default router;

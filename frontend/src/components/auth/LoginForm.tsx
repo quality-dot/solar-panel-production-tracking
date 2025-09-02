@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Card, CardHeader, CardContent } from '../ui/Card';
 import { Input } from '../ui/Input';
@@ -11,6 +12,8 @@ import { StatusIndicator } from '../ui/StatusIndicator';
  */
 export const LoginForm: React.FC = () => {
   const { login, isLoading, error, clearError } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation() as any;
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -22,7 +25,15 @@ export const LoginForm: React.FC = () => {
     clearError();
     
     const stationId = formData.stationId.trim() || undefined;
-    await login(formData.username, formData.password, stationId);
+    try {
+      await login(formData.username, formData.password, stationId);
+      // Force immediate redirect to security dashboard
+      window.location.href = '/security';
+    } catch (err) {
+      // AuthContext already sets error state; add a console for visibility
+      // eslint-disable-next-line no-console
+      console.error('Login failed:', err);
+    }
   };
 
   const handleInputChange = (field: keyof typeof formData) => (

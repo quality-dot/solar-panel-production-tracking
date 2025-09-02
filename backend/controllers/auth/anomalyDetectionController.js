@@ -6,8 +6,8 @@ import { manufacturingLogger } from '../../middleware/logger.js';
 import {
   successResponse,
   errorResponse,
-  validationError
-} from '../../utils/responseHelpers.js';
+  validationErrorResponse as validationError
+} from '../../utils/index.js';
 
 /**
  * Anomaly Detection and Security Intelligence Controller

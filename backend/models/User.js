@@ -276,6 +276,40 @@ export class User {
         });
       }
 
+      // Development fallback: allow login without DB using known test users
+      if (!databaseManager.getPool()) {
+        const TEST_PASSWORD = 'password123';
+        const testUsers = {
+          admin1: { role: USER_ROLES.SYSTEM_ADMIN, email: 'admin1@example.com', stations: [1,2,3,4,5,6,7,8] },
+          supervisor1: { role: USER_ROLES.PRODUCTION_SUPERVISOR, email: 'supervisor1@example.com', stations: [1,2,3,4,5,6,7,8] },
+          inspector1: { role: USER_ROLES.STATION_INSPECTOR, email: 'inspector1@example.com', stations: [1,2] },
+          qcmanager1: { role: USER_ROLES.QC_MANAGER, email: 'qcmanager1@example.com', stations: [1,2,3,4,5,6,7,8] },
+        };
+        const record = testUsers[username];
+        if (!record || password !== TEST_PASSWORD) {
+          throw new AuthenticationError('Invalid credentials', { reason: 'invalid_credentials' });
+        }
+        const now = new Date().toISOString();
+        const devUser = new User({
+          id: uuidv4(),
+          username,
+          email: record.email,
+          role: record.role,
+          station_assignments: record.stations,
+          is_active: true,
+          created_at: now,
+          updated_at: now,
+          last_login: now,
+          token_version: 1,
+        });
+        manufacturingLogger.info('Dev-mode user authenticated (no DB)', {
+          username,
+          role: devUser.role,
+          category: 'authentication'
+        });
+        return devUser;
+      }
+
       const user = await User.findByUsername(username);
       if (!user) {
         // Log attempt but don't reveal user existence

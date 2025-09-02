@@ -137,7 +137,7 @@ const PerformanceMonitoringDashboard: React.FC = () => {
     // LCP alerts
     if (currentMetrics.lcp && currentMetrics.lcp > thresholds.lcp.poor) {
       newAlerts.push({
-        id: `lcp-${Date.now()}`,
+        id: `lcp-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
         type: 'error',
         message: `Critical: Page loading very slow (LCP: ${currentMetrics.lcp.toFixed(0)}ms)`,
         timestamp: new Date(),
@@ -145,7 +145,7 @@ const PerformanceMonitoringDashboard: React.FC = () => {
       });
     } else if (currentMetrics.lcp && currentMetrics.lcp > thresholds.lcp.good) {
       newAlerts.push({
-        id: `lcp-${Date.now()}`,
+        id: `lcp-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
         type: 'warning',
         message: `Warning: Page loading slow (LCP: ${currentMetrics.lcp.toFixed(0)}ms)`,
         timestamp: new Date(),
@@ -156,7 +156,7 @@ const PerformanceMonitoringDashboard: React.FC = () => {
     // FID alerts
     if (currentMetrics.fid && currentMetrics.fid > thresholds.fid.poor) {
       newAlerts.push({
-        id: `fid-${Date.now()}`,
+        id: `fid-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
         type: 'error',
         message: `Critical: User interactions very slow (FID: ${currentMetrics.fid.toFixed(0)}ms)`,
         timestamp: new Date(),
@@ -164,18 +164,25 @@ const PerformanceMonitoringDashboard: React.FC = () => {
       });
     }
 
-    // Connection quality alerts
+    // Connection quality alerts (dedupe unresolved)
     if (currentMetrics.connectionQuality === 'poor') {
-      newAlerts.push({
-        id: `connection-${Date.now()}`,
-        type: 'warning',
-        message: 'Warning: Poor network connection detected - may affect production data sync',
-        timestamp: new Date(),
-        resolved: false
+      setAlerts(prev => {
+        const hasUnresolvedConnection = prev.some(a => a.type === 'warning' && !a.resolved && a.message.startsWith('Warning: Poor network connection'));
+        if (hasUnresolvedConnection) return prev;
+        return [
+          ...prev,
+          {
+            id: `connection-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+            type: 'warning',
+            message: 'Warning: Poor network connection detected - may affect production data sync',
+            timestamp: new Date(),
+            resolved: false
+          }
+        ];
       });
     }
 
-    // Add new alerts
+    // Add other alerts (ensure unique IDs)
     if (newAlerts.length > 0) {
       setAlerts(prev => [...prev, ...newAlerts]);
     }

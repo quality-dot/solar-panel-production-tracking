@@ -4,6 +4,7 @@
 import helmet from 'helmet';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { config } from '../config/index.js';
+import { securityEventService, SECURITY_EVENT_TYPES, SECURITY_SEVERITY } from '../services/securityEventService.js';
 
 /**
  * Helmet security configuration for manufacturing environment
@@ -23,7 +24,8 @@ export const helmetConfig = helmet({
       mediaSrc: ["'self'"],
       frameSrc: ["'none'"],
     },
-    reportOnly: config.environment === 'development'
+    // Disable report-only mode in development to silence browser warning
+    reportOnly: false
   },
 
   // Cross-Origin settings for manufacturing tablets
@@ -181,11 +183,59 @@ export const requestSizeLimit = (req, res, next) => {
   next();
 };
 
+/**
+ * Adaptive threat mitigation
+ * When system threat level is high/critical, aggressively throttle risky endpoints
+ */
+export const adaptiveThreatMitigation = async (req, res, next) => {
+  try {
+    const threatLevel = securityEventService?.metrics?.threat?.lastLevel || 'low';
+
+    // Allowlist: always allow health and metrics endpoints
+    const allowlist = ['/health', '/status', '/ready', '/api/v1/security-events/threat-metrics'];
+    if (allowlist.includes(req.path)) return next();
+
+    if (threatLevel === 'high' || threatLevel === 'critical') {
+      // Define risky conditions: non-GET or auth/data/security endpoints
+      const isWrite = req.method !== 'GET';
+      const isSensitivePath = /\/api\/v1\/(auth|security-events|panels|manufacturing-orders|inspections|pallets)/.test(req.path);
+
+      if (isWrite || isSensitivePath) {
+        // Emit mitigation event and block
+        try {
+          await securityEventService.securityEmitter.emitSecurityEvent(
+            SECURITY_EVENT_TYPES.THREAT_BLOCKED,
+            threatLevel === 'critical' ? SECURITY_SEVERITY.CRITICAL : SECURITY_SEVERITY.HIGH,
+            {
+              reason: 'adaptive_threat_mitigation',
+              path: req.path,
+              method: req.method,
+              stationId: req.headers['x-station-id'] || null,
+              ip: req.ip
+            },
+            { source: 'security.middleware', action: 'request_blocked' }
+          );
+        } catch {}
+
+        return res.status(429).json({
+          success: false,
+          error: 'Requests temporarily restricted due to elevated threat level',
+          threatLevel,
+          retryAfter: 60,
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+  } catch {}
+  next();
+};
+
 export default {
   helmetConfig,
   manufacturingRateLimit,
   authRateLimit,
   stationIdentification,
   corsPreflightHandler,
-  requestSizeLimit
+  requestSizeLimit,
+  adaptiveThreatMitigation
 };

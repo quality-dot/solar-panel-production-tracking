@@ -54,6 +54,9 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 console.log('✅ Security middleware stack configured for 8 concurrent stations');
 
+// Adaptive threat mitigation (after basic limits, before logging and routes)
+app.use(securityMiddleware.adaptiveThreatMitigation);
+
 // Add request timing for performance monitoring
 app.use(loggerMiddleware.requestTiming);
 
