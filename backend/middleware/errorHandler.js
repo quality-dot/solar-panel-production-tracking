@@ -3,6 +3,7 @@
 
 import { manufacturingLogger } from './logger.js';
 import { config } from '../config/index.js';
+import { securityEventService } from '../services/securityEventService.js';
 
 /**
  * Custom error classes for manufacturing operations
@@ -191,7 +192,7 @@ export const formatErrorResponse = (error, req) => {
 /**
  * Main error handling middleware
  */
-export const globalErrorHandler = (error, req, res, next) => {
+export const globalErrorHandler = async (error, req, res, next) => {
   // Log the error with full context
   manufacturingLogger.error('Application error occurred', {
     errorId: `ERR_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -235,6 +236,30 @@ export const globalErrorHandler = (error, req, res, next) => {
   // Format and send error response
   const errorResponse = formatErrorResponse(error, req);
   res.status(statusCode).json(errorResponse);
+
+  // Emit security events for authentication failures
+  if (error instanceof AuthenticationError && statusCode === 401) {
+    try {
+      await securityEventService.emitEvent(
+        'user.login.failed',
+        'medium',
+        {
+          userId: req.body?.username || 'unknown',
+          ip: req.ip,
+          reason: error.message,
+          userAgent: req.get('User-Agent'),
+          station: req.station?.id
+        },
+        { source: 'errorHandler', action: 'auth_failure_logged' }
+      );
+    } catch (securityError) {
+      // Don't let security event emission failures break error handling
+      manufacturingLogger.warn('Failed to emit security event for auth failure', {
+        originalError: error.message,
+        securityError: securityError.message
+      });
+    }
+  }
 
   // For critical errors, consider alerting
   if (!ErrorHandler.isOperationalError(error) && config.environment === 'production') {

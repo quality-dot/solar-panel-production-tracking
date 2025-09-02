@@ -1,575 +1,276 @@
 /**
- * Security Event Emitter
- * Task: 22.3 - Event Collection System
- * Description: Core event management for security monitoring
- * Date: 2025-08-28
+ * SecurityEventEmitter - Real-time security event monitoring and collection system
  */
 
-import { EventEmitter } from 'events';
-import { randomUUID } from 'crypto';
-import { EventStore } from './eventStore.js';
-import { EventMetrics } from './eventMetrics.js';
-import { getEventWebSocket } from './eventWebSocket.js';
-import loggerService from './loggerService.js';
+import EventEmitter from 'events';
+import { v4 as uuidv4 } from 'uuid';
 
-export class SecurityEventEmitter extends EventEmitter {
-  constructor() {
-    super();
-    this.eventStore = new EventStore();
-    this.metrics = new EventMetrics();
-    this.handlers = new Map();
-    this.eventTypes = new Set();
-    this.setupDefaultHandlers();
-    
-    loggerService.logSecurity('info', 'Security event emitter initialized', {
-      source: 'security-event-emitter'
-    });
+// Security Event Types
+const SECURITY_EVENT_TYPES = {
+  AUTH_SUCCESS: 'auth_success',
+  AUTH_FAILURE: 'auth_failure',
+  AUTH_LOCKOUT: 'auth_lockout',
+  DATA_READ: 'data_read',
+  DATA_WRITE: 'data_write',
+  DATA_DELETE: 'data_delete',
+  SYSTEM_ERROR: 'system_error',
+  MANUFACTURING_ERROR: 'manufacturing_error',
+  COMPLIANCE_VIOLATION: 'compliance_violation',
+  SECURITY_THREAT_DETECTED: 'security_threat_detected'
+};
+
+// Security Event Severity Levels
+const SECURITY_SEVERITY = {
+  CRITICAL: 'critical',
+  HIGH: 'high',
+  MEDIUM: 'medium',
+  LOW: 'low',
+  INFO: 'info'
+};
+
+// Security Event Categories
+const SECURITY_CATEGORIES = {
+  AUTHENTICATION: 'authentication',
+  DATA_ACCESS: 'data_access',
+  SYSTEM: 'system',
+  MANUFACTURING: 'manufacturing',
+  COMPLIANCE: 'compliance',
+  SECURITY: 'security'
+};
+
+// Security Event Context
+class SecurityEventContext {
+  constructor(options = {}) {
+    this.timestamp = new Date().toISOString();
+    this.correlationId = options.correlationId || uuidv4();
+    this.sessionId = options.sessionId || null;
+    this.userId = options.userId || null;
+    this.ipAddress = options.ipAddress || null;
+    this.source = options.source || 'system';
   }
-  
-  /**
-   * Emit security event with automatic persistence
-   * @param {string} eventType - Type of security event
-   * @param {Object} data - Event data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event object
-   */
-  async emitSecurityEvent(eventType, data, context = {}) {
-    try {
-      const startTime = Date.now();
-      
-      // Create standardized security event
-      const event = this.createSecurityEvent(eventType, data, context);
-      
-      // Add processing time to context
-      event.context.processingTime = Date.now() - startTime;
-      
-      // Persist to database
-      await this.eventStore.persist(event);
-      
-      // Update metrics
-      await this.metrics.record(event);
-      
-      // Emit event for real-time processing
-      this.emit(eventType, event);
-      
-      // Emit to wildcard handler
-      this.emit('*', event);
-      
-      // Stream event to WebSocket clients (if available)
-      try {
-        const webSocket = getEventWebSocket();
-        if (webSocket) {
-          webSocket.broadcastEvent(event);
-        }
-      } catch (error) {
-        // Log error but don't fail event emission
-        loggerService.logSecurity('warn', 'Failed to broadcast event to WebSocket', {
-          eventId: event.id,
-          error: error.message,
-          source: 'security-event-emitter'
-        });
-      }
-      
-      // Log event emission
-      loggerService.logSecurity('debug', `Security event emitted: ${eventType}`, {
-        eventId: event.id,
-        eventType,
-        timestamp: event.timestamp,
-        severity: event.severity,
-        source: 'security-event-emitter'
-      });
-      
-      return event;
-    } catch (error) {
-      loggerService.logSecurity('error', 'Failed to emit security event', {
-        eventType,
-        error: error.message,
-        stack: error.stack,
-        source: 'security-event-emitter'
-      });
-      throw error;
-    }
-  }
-  
-  /**
-   * Create standardized security event
-   * @param {string} eventType - Type of security event
-   * @param {Object} data - Event data
-   * @param {Object} context - Event context
-   * @returns {Object} Standardized event object
-   */
-  createSecurityEvent(eventType, data, context) {
-    // Add event type to tracking
-    this.eventTypes.add(eventType);
-    
+
+  toJSON() {
     return {
-      id: randomUUID(),
-      eventType,
-      eventData: data,
-      context: {
-        correlationId: context.correlationId || loggerService.correlationId,
-        timestamp: new Date().toISOString(),
-        source: context.source || 'security-service',
-        version: context.version || '1.0.0',
-        ...context
-      },
-      metadata: {
-        severity: this.determineSeverity(eventType, data),
-        source: context.source || 'security-service',
-        version: context.version || '1.0.0'
-      },
-      timestamp: new Date(),
-      correlationId: context.correlationId || loggerService.correlationId,
-      userId: context.userId,
-      sourceIp: context.sourceIp,
-      severity: this.determineSeverity(eventType, data)
+      timestamp: this.timestamp,
+      correlationId: this.correlationId,
+      sessionId: this.sessionId,
+      userId: this.userId,
+      ipAddress: this.ipAddress,
+      source: this.source
     };
-  }
-  
-  /**
-   * Determine event severity based on type and data
-   * @param {string} eventType - Event type
-   * @param {Object} data - Event data
-   * @returns {string} Severity level
-   */
-  determineSeverity(eventType, data) {
-    const severityMap = {
-      // Authentication events
-      'user.login': 'info',
-      'user.logout': 'info',
-      'user.login.failed': 'warn',
-      'user.logout.failed': 'warn',
-      'permission.change': 'warn',
-      'permission.change.failed': 'error',
-      'access.denied': 'warn',
-      'access.denied.repeated': 'error',
-      
-      // Manufacturing events
-      'station.operation': 'info',
-      'station.operation.failed': 'warn',
-      'quality.check': 'info',
-      'quality.check.failed': 'warn',
-      'quality.check.critical': 'error',
-      'equipment.status': 'info',
-      'equipment.status.warning': 'warn',
-      'equipment.status.error': 'error',
-      'maintenance.event': 'info',
-      'maintenance.event.overdue': 'warn',
-      
-      // Data security events
-      'data.access': 'info',
-      'data.access.unauthorized': 'warn',
-      'data.access.sensitive': 'warn',
-      'encryption.event': 'info',
-      'encryption.event.failed': 'error',
-      'compliance.action': 'info',
-      'compliance.action.violation': 'error',
-      
-      // System security events
-      'config.change': 'warn',
-      'config.change.security': 'error',
-      'security.violation': 'error',
-      'security.violation.critical': 'error',
-      'system.error': 'error',
-      'system.error.security': 'error',
-      
-      // API events
-      'api.access': 'info',
-      'api.access.unauthorized': 'warn',
-      'api.access.rate.limited': 'warn',
-      'api.access.suspicious': 'error'
-    };
-    
-    // Check for specific severity indicators in data
-    if (data && data.severity) {
-      return data.severity;
-    }
-    
-    // Check for failure indicators
-    if (data && (data.success === false || data.failed === true || data.error)) {
-      return 'error';
-    }
-    
-    // Check for warning indicators
-    if (data && (data.warning || data.attention || data.overdue)) {
-      return 'warn';
-    }
-    
-    // Return mapped severity or default to info
-    return severityMap[eventType] || 'info';
-  }
-  
-  /**
-   * Register event handler
-   * @param {string} eventType - Event type to handle
-   * @param {Function} handler - Handler function
-   */
-  registerHandler(eventType, handler) {
-    if (!this.handlers.has(eventType)) {
-      this.handlers.set(eventType, []);
-    }
-    
-    this.handlers.get(eventType).push(handler);
-    this.on(eventType, handler);
-    
-    loggerService.logSecurity('info', `Handler registered for event type: ${eventType}`, {
-      eventType,
-      handlerCount: this.handlers.get(eventType).length,
-      source: 'security-event-emitter'
-    });
-  }
-  
-  /**
-   * Unregister event handler
-   * @param {string} eventType - Event type
-   * @param {Function} handler - Handler function to remove
-   */
-  unregisterHandler(eventType, handler) {
-    if (this.handlers.has(eventType)) {
-      const handlers = this.handlers.get(eventType);
-      const index = handlers.indexOf(handler);
-      
-      if (index > -1) {
-        handlers.splice(index, 1);
-        this.off(eventType, handler);
-        
-        loggerService.logSecurity('info', `Handler unregistered for event type: ${eventType}`, {
-          eventType,
-          handlerCount: handlers.length,
-          source: 'security-event-emitter'
-        });
-      }
-    }
-  }
-  
-  /**
-   * Setup default handlers
-   */
-  setupDefaultHandlers() {
-    // Default security event handler
-    this.registerHandler('*', (event) => {
-      loggerService.logSecurity('debug', 'Default security event handler', {
-        eventId: event.id,
-        eventType: event.eventType,
-        source: 'security-event-emitter'
-      });
-    });
-    
-    // Error event handler
-    this.registerHandler('error', (event) => {
-      loggerService.logSecurity('error', 'Security error event detected', {
-        eventId: event.id,
-        eventType: event.eventType,
-        error: event.eventData.error,
-        source: 'security-event-emitter'
-      });
-    });
-    
-    // Warning event handler
-    this.registerHandler('warn', (event) => {
-      loggerService.logSecurity('warn', 'Security warning event detected', {
-        eventId: event.id,
-        eventType: event.eventType,
-        source: 'security-event-emitter'
-      });
-    });
-  }
-  
-  /**
-   * Get registered event types
-   * @returns {Array} Array of registered event types
-   */
-  getRegisteredEventTypes() {
-    return Array.from(this.eventTypes);
-  }
-  
-  /**
-   * Get handler count for event type
-   * @param {string} eventType - Event type
-   * @returns {number} Number of handlers
-   */
-  getHandlerCount(eventType) {
-    return this.handlers.has(eventType) ? this.handlers.get(eventType).length : 0;
-  }
-  
-  /**
-   * Get all handlers
-   * @returns {Map} Map of event types to handlers
-   */
-  getAllHandlers() {
-    return new Map(this.handlers);
-  }
-  
-  /**
-   * Emit user login event
-   * @param {Object} data - Login data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitUserLogin(data, context = {}) {
-    const eventType = data.success ? 'user.login' : 'user.login.failed';
-    return this.emitSecurityEvent(eventType, data, context);
-  }
-  
-  /**
-   * Emit user logout event
-   * @param {Object} data - Logout data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitUserLogout(data, context = {}) {
-    return this.emitSecurityEvent('user.logout', data, context);
-  }
-  
-  /**
-   * Emit permission change event
-   * @param {Object} data - Permission change data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitPermissionChange(data, context = {}) {
-    const eventType = data.success ? 'permission.change' : 'permission.change.failed';
-    return this.emitSecurityEvent(eventType, data, context);
-  }
-  
-  /**
-   * Emit access denied event
-   * @param {Object} data - Access denied data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitAccessDenied(data, context = {}) {
-    const eventType = data.repeated ? 'access.denied.repeated' : 'access.denied';
-    return this.emitSecurityEvent(eventType, data, context);
-  }
-  
-  /**
-   * Emit station operation event
-   * @param {Object} data - Station operation data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitStationOperation(data, context = {}) {
-    const eventType = data.success ? 'station.operation' : 'station.operation.failed';
-    return this.emitSecurityEvent(eventType, data, context);
-  }
-  
-  /**
-   * Emit quality check event
-   * @param {Object} data - Quality check data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitQualityCheck(data, context = {}) {
-    let eventType = 'quality.check';
-    
-    if (data.failed) {
-      eventType = 'quality.check.failed';
-    } else if (data.critical) {
-      eventType = 'quality.check.critical';
-    }
-    
-    return this.emitSecurityEvent(eventType, data, context);
-  }
-  
-  /**
-   * Emit equipment status event
-   * @param {Object} data - Equipment status data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitEquipmentStatus(data, context = {}) {
-    let eventType = 'equipment.status';
-    
-    if (data.status === 'warning') {
-      eventType = 'equipment.status.warning';
-    } else if (data.status === 'error') {
-      eventType = 'equipment.status.error';
-    }
-    
-    return this.emitSecurityEvent(eventType, data, context);
-  }
-  
-  /**
-   * Emit maintenance event
-   * @param {Object} data - Maintenance data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitMaintenanceEvent(data, context = {}) {
-    const eventType = data.overdue ? 'maintenance.event.overdue' : 'maintenance.event';
-    return this.emitSecurityEvent(eventType, data, context);
-  }
-  
-  /**
-   * Emit data access event
-   * @param {Object} data - Data access data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitDataAccess(data, context = {}) {
-    let eventType = 'data.access';
-    
-    if (data.unauthorized) {
-      eventType = 'data.access.unauthorized';
-    } else if (data.sensitive) {
-      eventType = 'data.access.sensitive';
-    }
-    
-    return this.emitSecurityEvent(eventType, data, context);
-  }
-  
-  /**
-   * Emit encryption event
-   * @param {Object} data - Encryption data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitEncryptionEvent(data, context = {}) {
-    const eventType = data.success ? 'encryption.event' : 'encryption.event.failed';
-    return this.emitSecurityEvent(eventType, data, context);
-  }
-  
-  /**
-   * Emit compliance action event
-   * @param {Object} data - Compliance action data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitComplianceAction(data, context = {}) {
-    const eventType = data.violation ? 'compliance.action.violation' : 'compliance.action';
-    return this.emitSecurityEvent(eventType, data, context);
-  }
-  
-  /**
-   * Emit configuration change event
-   * @param {Object} data - Configuration change data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitConfigChange(data, context = {}) {
-    let eventType = 'config.change';
-    
-    if (data.securityRelated) {
-      eventType = 'config.change.security';
-    }
-    
-    return this.emitSecurityEvent(eventType, data, context);
-  }
-  
-  /**
-   * Emit security violation event
-   * @param {Object} data - Security violation data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitSecurityViolation(data, context = {}) {
-    const eventType = data.critical ? 'security.violation.critical' : 'security.violation';
-    return this.emitSecurityEvent(eventType, data, context);
-  }
-  
-  /**
-   * Emit system error event
-   * @param {Object} data - System error data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitSystemError(data, context = {}) {
-    let eventType = 'system.error';
-    
-    if (data.securityRelated) {
-      eventType = 'system.error.security';
-    }
-    
-    return this.emitSecurityEvent(eventType, data, context);
-  }
-  
-  /**
-   * Emit API access event
-   * @param {Object} data - API access data
-   * @param {Object} context - Event context
-   * @returns {Object} Created event
-   */
-  async emitApiAccess(data, context = {}) {
-    let eventType = 'api.access';
-    
-    if (data.unauthorized) {
-      eventType = 'api.access.unauthorized';
-    } else if (data.rateLimited) {
-      eventType = 'api.access.rate.limited';
-    } else if (data.suspicious) {
-      eventType = 'api.access.suspicious';
-    }
-    
-    return this.emitSecurityEvent(eventType, data, context);
-  }
-  
-  /**
-   * Get event emitter statistics
-   * @returns {Object} Statistics
-   */
-  getStatistics() {
-    return {
-      registeredEventTypes: this.getRegisteredEventTypes().length,
-      totalHandlers: Array.from(this.handlers.values()).reduce((sum, handlers) => sum + handlers.length, 0),
-      eventTypeHandlers: Object.fromEntries(
-        Array.from(this.handlers.entries()).map(([type, handlers]) => [type, handlers.length])
-      ),
-      metrics: this.metrics.exportMetrics(),
-      timestamp: new Date().toISOString()
-    };
-  }
-  
-  /**
-   * Health check
-   * @returns {Object} Health status
-   */
-  async getHealthStatus() {
-    try {
-      const eventStoreHealth = await this.eventStore.getHealthStatus();
-      const metricsHealth = this.metrics.getMetricsSummary();
-      
-      return {
-        status: 'healthy',
-        eventStore: eventStoreHealth,
-        metrics: metricsHealth,
-        timestamp: new Date().toISOString()
-      };
-    } catch (error) {
-      return {
-        status: 'unhealthy',
-        error: error.message,
-        timestamp: new Date().toISOString()
-      };
-    }
-  }
-  
-  /**
-   * Cleanup resources
-   */
-  async cleanup() {
-    try {
-      // Close event store connections
-      await this.eventStore.close();
-      
-      // Remove all listeners
-      this.removeAllListeners();
-      
-      // Clear handlers
-      this.handlers.clear();
-      
-      loggerService.logSecurity('info', 'Security event emitter cleaned up', {
-        source: 'security-event-emitter'
-      });
-    } catch (error) {
-      loggerService.logSecurity('error', 'Failed to cleanup security event emitter', {
-        error: error.message,
-        source: 'security-event-emitter'
-      });
-    }
   }
 }
 
-// Export singleton instance
-export const securityEventEmitter = new SecurityEventEmitter();
-export default securityEventEmitter;
+// Security Event Data Structure
+class SecurityEvent {
+  constructor(type, severity, category, message, data = {}, context = {}) {
+    this.id = uuidv4();
+    this.type = type;
+    this.severity = severity;
+    this.category = category;
+    this.message = message;
+    this.data = data;
+    this.context = new SecurityEventContext(context);
+    this.createdAt = new Date().toISOString();
+    this.processed = false;
+  }
+
+  validate() {
+    const errors = [];
+    if (!this.type || !Object.values(SECURITY_EVENT_TYPES).includes(this.type)) {
+      errors.push('Invalid event type');
+    }
+    if (!this.severity || !Object.values(SECURITY_SEVERITY).includes(this.severity)) {
+      errors.push('Invalid severity level');
+    }
+    if (!this.message || typeof this.message !== 'string') {
+      errors.push('Invalid message');
+    }
+    return { isValid: errors.length === 0, errors };
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      type: this.type,
+      severity: this.severity,
+      category: this.category,
+      message: this.message,
+      data: this.data,
+      context: this.context.toJSON(),
+      createdAt: this.createdAt,
+      processed: this.processed
+    };
+  }
+}
+
+// Security Event Emitter Class
+class SecurityEventEmitter extends EventEmitter {
+  constructor(options = {}) {
+    super();
+    this.options = {
+      maxListeners: options.maxListeners || 100,
+      enableValidation: options.enableValidation !== false,
+      ...options
+    };
+    this.setMaxListeners(this.options.maxListeners);
+    this.eventStore = new Map();
+    this.metrics = {
+      totalEvents: 0,
+      eventsByType: new Map(),
+      eventsBySeverity: new Map(),
+      errors: 0
+    };
+  }
+
+  emitSecurityEvent(type, severity, category, message, data = {}, context = {}) {
+    try {
+      const event = new SecurityEvent(type, severity, category, message, data, context);
+      
+      if (this.options.enableValidation) {
+        const validation = event.validate();
+        if (!validation.isValid) {
+          throw new Error(`Invalid security event: ${validation.errors.join(', ')}`);
+        }
+      }
+
+      this.eventStore.set(event.id, event);
+      this.updateMetrics(event);
+      
+      this.emit('securityEvent', event);
+      this.emit(`securityEvent:${type}`, event);
+      this.emit('event', event.toJSON());
+      
+      return event;
+    } catch (error) {
+      console.error('Error emitting security event:', error);
+      this.metrics.errors++;
+      throw error;
+    }
+  }
+
+  emitAuthEvent(type, userId, success, details = {}, context = {}) {
+    const severity = success ? SECURITY_SEVERITY.INFO : SECURITY_SEVERITY.HIGH;
+    const message = success 
+      ? `Authentication successful for user ${userId}`
+      : `Authentication failed for user ${userId}`;
+
+    return this.emitSecurityEvent(
+      type,
+      severity,
+      SECURITY_CATEGORIES.AUTHENTICATION,
+      message,
+      { userId, success, ...details },
+      { userId, ...context }
+    );
+  }
+
+  emitDataEvent(type, userId, resource, action, details = {}, context = {}) {
+    const severity = this.getDataAccessSeverity(action);
+    const message = `Data ${action}: ${userId} performed ${action} on ${resource}`;
+
+    return this.emitSecurityEvent(
+      type,
+      severity,
+      SECURITY_CATEGORIES.DATA_ACCESS,
+      message,
+      { userId, resource, action, ...details },
+      { userId, ...context }
+    );
+  }
+
+  emitManufacturingEvent(type, equipmentId, details = {}, context = {}) {
+    const severity = this.getManufacturingSeverity(type);
+    const message = `Manufacturing event: ${type} for equipment ${equipmentId}`;
+
+    return this.emitSecurityEvent(
+      type,
+      severity,
+      SECURITY_CATEGORIES.MANUFACTURING,
+      message,
+      { equipmentId, ...details },
+      context
+    );
+  }
+
+  updateMetrics(event) {
+    this.metrics.totalEvents++;
+    const typeCount = this.metrics.eventsByType.get(event.type) || 0;
+    this.metrics.eventsByType.set(event.type, typeCount + 1);
+    const severityCount = this.metrics.eventsBySeverity.get(event.severity) || 0;
+    this.metrics.eventsBySeverity.set(event.severity, severityCount + 1);
+  }
+
+  getEvent(eventId) {
+    return this.eventStore.get(eventId);
+  }
+
+  getEventsByType(type, limit = 100) {
+    return Array.from(this.eventStore.values())
+      .filter(event => event.type === type)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, limit);
+  }
+
+  getRecentEvents(limit = 100) {
+    return Array.from(this.eventStore.values())
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, limit);
+  }
+
+  getMetrics() {
+    return {
+      ...this.metrics,
+      eventsByType: Object.fromEntries(this.metrics.eventsByType),
+      eventsBySeverity: Object.fromEntries(this.metrics.eventsBySeverity),
+      eventStoreSize: this.eventStore.size
+    };
+  }
+
+  getDataAccessSeverity(action) {
+    const severityMap = {
+      'read': SECURITY_SEVERITY.INFO,
+      'write': SECURITY_SEVERITY.MEDIUM,
+      'delete': SECURITY_SEVERITY.HIGH,
+      'export': SECURITY_SEVERITY.MEDIUM
+    };
+    return severityMap[action] || SECURITY_SEVERITY.INFO;
+  }
+
+  getManufacturingSeverity(type) {
+    const severityMap = {
+      [SECURITY_EVENT_TYPES.MANUFACTURING_ERROR]: SECURITY_SEVERITY.HIGH
+    };
+    return severityMap[type] || SECURITY_SEVERITY.INFO;
+  }
+
+  /**
+   * Create event listener for specific event types
+   */
+  onSecurityEvent(type, callback) {
+    this.on(`securityEvent:${type}`, callback);
+  }
+
+  /**
+   * Create event listener for specific severity levels
+   */
+  onSeverity(severity, callback) {
+    this.on(`securityEvent:${severity}`, callback);
+  }
+
+  /**
+   * Create event listener for specific categories
+   */
+  onCategory(category, callback) {
+    this.on(`securityEvent:${category}`, callback);
+  }
+}
+
+export {
+  SecurityEventEmitter,
+  SecurityEvent,
+  SecurityEventContext,
+  SECURITY_EVENT_TYPES,
+  SECURITY_SEVERITY,
+  SECURITY_CATEGORIES
+};

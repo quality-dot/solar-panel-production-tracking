@@ -16,6 +16,7 @@ import {
   ValidationError, 
   asyncHandler 
 } from '../../middleware/errorHandler.js';
+import { securityEventService } from '../../services/securityEventService.js';
 
 /**
  * User login endpoint

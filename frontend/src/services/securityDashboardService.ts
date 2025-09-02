@@ -111,40 +111,80 @@ export interface ManufacturingSecurity {
 
 export interface SecurityAlert {
   id: string;
-  type: 'security' | 'compliance' | 'manufacturing';
+  type: 'threat' | 'compliance' | 'equipment' | 'access';
   severity: 'low' | 'medium' | 'high' | 'critical';
-  title: string;
   message: string;
   timestamp: string;
-  acknowledged: boolean;
-  acknowledgedBy?: string;
-  acknowledgedAt?: string;
-  actions: string[];
+  status: 'active' | 'acknowledged' | 'resolved';
+  assignedTo?: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  category: string;
+  source: string;
+  context?: Record<string, any>;
+  title?: string;
+  acknowledged?: boolean;
+  actions?: string[];
 }
 
 export interface DashboardConfig {
-  updateFrequency: number; // seconds
+  refreshInterval: number;
+  autoRefresh: boolean;
+  notifications: boolean;
   alertThresholds: {
     critical: number;
-    warning: number;
-    error: number;
+    high: number;
+    medium: number;
+    low: number;
   };
-  complianceSchedule: {
-    isa99: number; // days
-    nist: number; // days
-    gdpr: number; // days
+  displayOptions: {
+    showTimestamps: boolean;
+    showSourceIPs: boolean;
+    showUserDetails: boolean;
+    compactMode: boolean;
   };
-  enabledFeatures: {
-    realTimeUpdates: boolean;
-    complianceTracking: boolean;
-    manufacturingSecurity: boolean;
-    alertSystem: boolean;
+}
+
+// New interfaces for anomaly detection and threat intelligence
+export interface ThreatMetrics {
+  lastScore: number;
+  lastLevel: 'low' | 'medium' | 'high' | 'critical';
+  totalEvents: number;
+  eventsBySeverity: Record<string, number>;
+  eventsByType: Record<string, number>;
+  eventsBySource: Record<string, number>;
+  threat?: {
+    lastScore: number;
+    lastLevel: 'low' | 'medium' | 'high' | 'critical';
   };
+}
+
+export interface ThreatAggregation {
+  score: number;
+  level: 'low' | 'medium' | 'high' | 'critical';
+  factors: string[];
+  timestamp: string;
+  sourceIp?: string;
+  recentEvents: number;
+  seriesData: {
+    loginFailures: number[];
+    equipmentErrors: number[];
+    unauthorizedAccess: number[];
+  };
+}
+
+export interface AnomalyDetectionStats {
+  totalOutliers: number;
+  statisticalAnomalies: number;
+  ruleViolations: number;
+  threatDetections: number;
+  lastAnalysis: string;
+  confidence: number;
 }
 
 class SecurityDashboardService {
   private baseUrl: string;
   private eventSource: EventSource | null = null;
+  private complianceEventSource: EventSource | null = null;
   private eventListeners: Map<string, Function[]> = new Map();
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 10;
@@ -154,6 +194,7 @@ class SecurityDashboardService {
     // Backend runs on 3000 by default
     this.baseUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000';
     this.initializeSSE();
+    this.initializeComplianceSSE();
   }
 
   // Server-Sent Events Management
@@ -228,6 +269,45 @@ class SecurityDashboardService {
     }
   }
 
+  private initializeComplianceSSE() {
+    try {
+      const sseUrl = `${this.baseUrl}/api/v1/compliance/stream`;
+      this.complianceEventSource = new EventSource(sseUrl);
+
+      this.complianceEventSource.onopen = () => {
+        console.log('🔗 Connected to compliance events stream');
+        this.emit('connection', { status: 'connected', type: 'compliance' });
+      };
+
+      this.complianceEventSource.onerror = () => {
+        this.emit('connection', { status: 'error', type: 'compliance' });
+        this.scheduleComplianceReconnect();
+      };
+
+      this.complianceEventSource.addEventListener('complianceUpdate', (e: MessageEvent) => {
+        try {
+          const data = JSON.parse(e.data);
+          this.emit('complianceUpdate', data);
+        } catch (err) {
+          console.error('Failed to parse compliance update:', err);
+        }
+      });
+
+      this.complianceEventSource.addEventListener('snapshot', (e: MessageEvent) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data.complianceStatus) {
+            this.emit('complianceUpdate', data.complianceStatus);
+          }
+        } catch (err) {
+          console.error('Failed to parse compliance snapshot:', err);
+        }
+      });
+    } catch (error) {
+      console.error('Failed to initialize compliance SSE:', error);
+    }
+  }
+
   private scheduleReconnect() {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
@@ -235,6 +315,17 @@ class SecurityDashboardService {
       const jitter = Math.floor(Math.random() * 500);
       setTimeout(() => {
         this.initializeSSE();
+      }, base + jitter);
+    }
+  }
+
+  private scheduleComplianceReconnect() {
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnectAttempts++;
+      const base = this.reconnectDelay * this.reconnectAttempts;
+      const jitter = Math.floor(Math.random() * 500);
+      setTimeout(() => {
+        this.initializeComplianceSSE();
       }, base + jitter);
     }
   }
@@ -269,15 +360,23 @@ class SecurityDashboardService {
   // API Methods
   async getSecurityMetrics(): Promise<SecurityMetrics> {
     // No backend endpoint yet; return mock for now
-    return this.getMockSecurityMetrics();
+      return this.getMockSecurityMetrics();
   }
 
   async getComplianceStatus(): Promise<ComplianceStatus> {
-    return this.getMockComplianceStatus();
+    try {
+      const response = await fetch(`${this.baseUrl}/api/v1/compliance/status`);
+      if (!response.ok) throw new Error('Failed to fetch compliance status');
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.warn('Using mock compliance status:', error);
+      return this.getMockComplianceStatus();
+    }
   }
 
   async getManufacturingSecurity(): Promise<ManufacturingSecurity> {
-    return this.getMockManufacturingSecurity();
+      return this.getMockManufacturingSecurity();
   }
 
   async getRecentSecurityEvents(limit: number = 10): Promise<SecurityEvent[]> {
@@ -306,16 +405,32 @@ class SecurityDashboardService {
   }
 
   async getSecurityAlerts(): Promise<SecurityAlert[]> {
-    return this.getMockSecurityAlerts();
-  }
+      return this.getMockSecurityAlerts();
+    }
 
   async acknowledgeAlert(_alertId: string, _userId: string): Promise<boolean> {
     // No backend endpoint yet
     return true;
   }
 
+  async getComplianceMonitoringStatus(): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/v1/compliance/monitoring/status`);
+      if (!response.ok) throw new Error('Failed to fetch compliance monitoring status');
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.warn('Using mock compliance monitoring status:', error);
+      return {
+        isa99: { status: 'compliant', score: 92, lastAssessment: '2025-01-27T10:00:00Z' },
+        nist: { status: 'partial', score: 78, lastAssessment: '2025-01-27T10:00:00Z' },
+        gdpr: { status: 'compliant', score: 95, lastAssessment: '2025-01-27T10:00:00Z' }
+      };
+    }
+  }
+
   async getDashboardConfig(): Promise<DashboardConfig> {
-    return this.getDefaultDashboardConfig();
+      return this.getDefaultDashboardConfig();
   }
 
   async updateDashboardConfig(_config: Partial<DashboardConfig>): Promise<boolean> {
@@ -379,17 +494,204 @@ class SecurityDashboardService {
 
   private getMockSecurityAlerts(): SecurityAlert[] {
     return [
-      { id: 'alert-001', type: 'security', severity: 'high', title: 'Multiple Failed Login Attempts', message: 'User account showing suspicious login patterns', timestamp: '2025-01-27T14:30:00Z', acknowledged: false, actions: ['Investigate user activity', 'Review access logs', 'Consider account lockout'] },
-      { id: 'alert-002', type: 'manufacturing', severity: 'critical', title: 'Critical Equipment Failure', message: 'EL test equipment communication timeout', timestamp: '2025-01-27T14:25:00Z', acknowledged: true, acknowledgedBy: 'supervisor-001', acknowledgedAt: '2025-01-27T14:26:00Z', actions: ['Check network connectivity', 'Restart equipment', 'Contact maintenance'] }
+      { 
+        id: 'alert-001', 
+        type: 'threat', 
+        severity: 'high', 
+        message: 'User account showing suspicious login patterns', 
+        timestamp: '2025-01-27T14:30:00Z', 
+        status: 'active', 
+        priority: 'high', 
+        category: 'Authentication', 
+        source: 'Security System',
+        title: 'Suspicious Login Activity',
+        acknowledged: false,
+        actions: ['Review login logs', 'Check user account', 'Notify security team']
+      },
+      { 
+        id: 'alert-002', 
+        type: 'equipment', 
+        severity: 'critical', 
+        message: 'EL test equipment communication timeout', 
+        timestamp: '2025-01-27T14:25:00Z', 
+        status: 'acknowledged', 
+        assignedTo: 'supervisor-001', 
+        priority: 'urgent', 
+        category: 'Equipment', 
+        source: 'Equipment Monitor',
+        title: 'Equipment Communication Failure',
+        acknowledged: true,
+        actions: ['Check equipment status', 'Restart communication service', 'Verify network connection']
+      }
     ];
   }
 
   private getDefaultDashboardConfig(): DashboardConfig {
     return {
-      updateFrequency: 30,
-      alertThresholds: { critical: 5, warning: 20, error: 15 },
-      complianceSchedule: { isa99: 90, nist: 90, gdpr: 180 },
-      enabledFeatures: { realTimeUpdates: true, complianceTracking: true, manufacturingSecurity: true, alertSystem: true }
+      refreshInterval: 30,
+      autoRefresh: true,
+      notifications: true,
+      alertThresholds: { critical: 5, high: 15, medium: 25, low: 50 },
+      displayOptions: {
+        showTimestamps: true,
+        showSourceIPs: true,
+        showUserDetails: true,
+        compactMode: false
+      }
+    };
+  }
+
+  // New methods for threat intelligence and anomaly detection
+  async getThreatMetrics(): Promise<ThreatMetrics> {
+    try {
+      const response = await fetch('/api/v1/security-events/threat-metrics');
+      if (!response.ok) throw new Error('Failed to fetch threat metrics');
+      const data = await response.json();
+      return data.metrics;
+    } catch (error) {
+      console.warn('Using mock threat metrics:', error);
+      return this.getMockThreatMetrics();
+    }
+  }
+
+  async getThreatAggregation(): Promise<ThreatAggregation | null> {
+    try {
+      const response = await fetch('/api/v1/security-events/threat-metrics');
+      if (!response.ok) throw new Error('Failed to fetch threat aggregation');
+      const data = await response.json();
+      return data.lastAggregation;
+    } catch (error) {
+      console.warn('Using mock threat aggregation:', error);
+      return this.getMockThreatAggregation();
+    }
+  }
+
+  async getAnomalyDetectionStats(): Promise<AnomalyDetectionStats> {
+    // Mock data for now - will be implemented when backend endpoint is ready
+    return this.getMockAnomalyDetectionStats();
+  }
+
+  // Real-time streaming methods
+  async connectToSecurityStream(): Promise<void> {
+    if (this.eventSource) {
+      this.disconnect();
+    }
+
+    try {
+      this.eventSource = new EventSource('/api/v1/security-events/stream');
+      
+      this.eventSource.onopen = () => {
+        console.log('🔗 Connected to security events stream');
+        this.emit('connected', { timestamp: new Date().toISOString() });
+      };
+
+      this.eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          this.emit('securityEvent', data);
+        } catch (error) {
+          console.warn('Failed to parse security event:', error);
+        }
+      };
+
+      this.eventSource.onerror = (error) => {
+        console.error('Security stream error:', error);
+        this.emit('error', error);
+        // Attempt to reconnect after delay
+        setTimeout(() => this.connectToSecurityStream(), 5000);
+      };
+
+    } catch (error) {
+      console.error('Failed to connect to security stream:', error);
+      this.emit('error', error);
+    }
+  }
+
+  // Test endpoints for development
+  async simulateAttack(attackType: string, intensity: string = 'medium'): Promise<any> {
+    try {
+      const response = await fetch('/api/v1/security-events/simulate-attack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ attackType, intensity })
+      });
+      
+      if (!response.ok) throw new Error('Failed to simulate attack');
+      return await response.json();
+    } catch (error) {
+      console.error('Attack simulation failed:', error);
+      throw error;
+    }
+  }
+
+  async testAlertGeneration(incidentType: string, severity: string = 'high', eventData: any = {}): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/v1/security-events/test-alert-generation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ incidentType, severity, eventData })
+      });
+      
+      if (!response.ok) throw new Error('Failed to test alert generation');
+      return await response.json();
+    } catch (error) {
+      console.error('Alert generation test failed:', error);
+      throw error;
+    }
+  }
+
+  async emitTestEvent(eventType: string, severity: string, eventData: any = {}): Promise<any> {
+    try {
+      const response = await fetch('/api/v1/security-events/test-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventType, severity, eventData })
+      });
+      
+      if (!response.ok) throw new Error('Failed to emit test event');
+      return await response.json();
+    } catch (error) {
+      console.error('Test event emission failed:', error);
+      throw error;
+    }
+  }
+
+  private getMockThreatMetrics(): ThreatMetrics {
+    return {
+      lastScore: 85,
+      lastLevel: 'high',
+      totalEvents: 1000,
+      eventsBySeverity: { info: 100, warning: 150, error: 200, critical: 150, low: 100, medium: 100, high: 200 },
+      eventsByType: { login: 200, access: 150, data: 100, equipment: 150, network: 100, other: 200 },
+      eventsBySource: { api: 300, system: 200, user: 200, external: 100, unknown: 200 },
+      threat: { lastScore: 90, lastLevel: 'critical' }
+    };
+  }
+
+  private getMockThreatAggregation(): ThreatAggregation {
+    return {
+      score: 88,
+      level: 'high',
+      factors: ['Multiple failed login attempts', 'Critical equipment failure', 'Unauthorized data access'],
+      timestamp: '2025-01-27T14:25:00Z',
+      sourceIp: '192.168.1.100',
+      recentEvents: 5,
+      seriesData: {
+        loginFailures: [10, 12, 15, 13, 11],
+        equipmentErrors: [5, 7, 8, 6, 5],
+        unauthorizedAccess: [10, 12, 15, 13, 11]
+      }
+    };
+  }
+
+  private getMockAnomalyDetectionStats(): AnomalyDetectionStats {
+    return {
+      totalOutliers: 10,
+      statisticalAnomalies: 5,
+      ruleViolations: 2,
+      threatDetections: 3,
+      lastAnalysis: '2025-01-27T14:20:00Z',
+      confidence: 0.95
     };
   }
 
@@ -398,6 +700,10 @@ class SecurityDashboardService {
     if (this.eventSource) {
       this.eventSource.close();
       this.eventSource = null;
+    }
+    if (this.complianceEventSource) {
+      this.complianceEventSource.close();
+      this.complianceEventSource = null;
     }
     this.eventListeners.clear();
   }

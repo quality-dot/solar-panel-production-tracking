@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   ShieldCheckIcon,
   ExclamationTriangleIcon,
@@ -14,18 +14,24 @@ import {
   ArrowTrendingDownIcon,
   ExclamationCircleIcon,
   InformationCircleIcon,
-  BellIcon
+  BellIcon,
+  FireIcon
 } from '@heroicons/react/24/outline';
 
 import securityDashboardService from '../services/securityDashboardService';
+import { alertService } from '../services/alertService';
+import AlertManager from './AlertManager';
+import { useRBAC } from '../hooks/useRBAC';
+import PermissionGate from './PermissionGate';
+import UserRoleSelector from './UserRoleSelector';
 import type { 
   SecurityEvent, 
   SecurityMetrics, 
   ComplianceStatus, 
   ManufacturingSecurity,
-  SecurityAlert,
   DashboardConfig 
 } from '../services/securityDashboardService';
+import type { AlertThresholds, SecurityAlert } from '../services/alertService';
 
 // Use imported types from the service
 
@@ -161,6 +167,21 @@ const mockRecentEvents: SecurityEvent[] = [
 ];
 
 export default function SecurityDashboard() {
+  // RBAC hook
+  const {
+    currentUser,
+    isAuthenticated,
+    userRole: rbacUserRole,
+    hasPermission,
+    hasAnyPermission,
+    canAccessFeature,
+    canPerformAction,
+    isAdmin,
+    isAnalystOrHigher,
+    isOperatorOrHigher,
+    setCurrentUser
+  } = useRBAC();
+
   const [activeTab, setActiveTab] = useState('overview');
   const [securityMetrics, setSecurityMetrics] = useState<SecurityMetrics>(mockSecurityMetrics);
   const [complianceStatus, setComplianceStatus] = useState<ComplianceStatus>(mockComplianceStatus);
@@ -173,11 +194,118 @@ export default function SecurityDashboard() {
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'error'>('disconnected');
 
+  // Alert system with configurable thresholds
+  const [alertThresholds, setAlertThresholds] = useState<AlertThresholds>(alertService.getConfig().thresholds);
+
+  // Legacy role-based access control (for backward compatibility)
+  const [userRole, setUserRole] = useState<'admin' | 'security' | 'viewer'>('security');
+  const [userPermissions, setUserPermissions] = useState({
+    canAcknowledgeAlerts: true,
+    canResolveAlerts: true,
+    canConfigureThresholds: true,
+    canViewAllData: true,
+    canExportData: false
+  });
+
+  // Initialize mock user for demonstration
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Create a mock user with security-analyst role for demonstration
+      const mockUser = {
+        id: 'user-123',
+        username: 'security-analyst',
+        email: 'analyst@company.com',
+        role: {
+          id: 'security-analyst',
+          name: 'Security Analyst',
+          description: 'Access to security monitoring, alerts, and analysis tools',
+          level: 80,
+          permissions: []
+        },
+        permissions: [],
+        isActive: true,
+        lastLogin: new Date().toISOString()
+      };
+      setCurrentUser(mockUser);
+    }
+  }, [isAuthenticated, setCurrentUser]);
+
+  // Legacy permission check function (for backward compatibility)
+  const canPerformLegacyAction = (action: keyof typeof userPermissions) => {
+    return userPermissions[action];
+  };
+
+  // Alert management functions with RBAC protection
+  const handleAcknowledgeAlert = (alertId: string) => {
+    if (!hasPermission('alerts:acknowledge')) {
+      console.warn('User does not have permission to acknowledge alerts');
+      return;
+    }
+    
+    setSecurityAlerts(prev => 
+      prev.map(alert => 
+        alert.id === alertId 
+          ? { ...alert, status: 'acknowledged' as const, acknowledged: true }
+          : alert
+      )
+    );
+    alertService.acknowledgeAlert(alertId, 'current-user');
+  };
+
+  const handleResolveAlert = (alertId: string) => {
+    if (!hasPermission('alerts:resolve')) {
+      console.warn('User does not have permission to resolve alerts');
+      return;
+    }
+    
+    setSecurityAlerts(prev => 
+      prev.map(alert => 
+        alert.id === alertId 
+          ? { ...alert, status: 'resolved' as const }
+          : alert
+      )
+    );
+    alertService.resolveAlert(alertId, 'current-user');
+  };
+
+  const handleDismissAlert = (alertId: string) => {
+    if (!hasPermission('alerts:delete')) {
+      console.warn('User does not have permission to dismiss alerts');
+      return;
+    }
+    
+    setSecurityAlerts(prev => prev.filter(alert => alert.id !== alertId));
+  };
+
+  // Alert threshold management
+  const updateAlertThresholds = (newThresholds: Partial<AlertThresholds>) => {
+    setAlertThresholds(prev => ({ ...prev, ...newThresholds }));
+    alertService.updateThresholds(newThresholds);
+  };
+
+  // Generate alerts using alert service
+  const generateAlerts = useCallback((metrics: SecurityMetrics) => {
+    return alertService.processMetrics(metrics);
+  }, []);
+
+  // Process new alerts
+  useEffect(() => {
+    const newAlerts = generateAlerts(securityMetrics);
+    if (newAlerts.length > 0) {
+      setSecurityAlerts(prev => [...newAlerts, ...prev]);
+    }
+  }, [securityMetrics, generateAlerts]);
+
   // Initialize dashboard data
   useEffect(() => {
     const initializeDashboard = async () => {
       setIsLoading(true);
       try {
+        // Request notification permission
+        if (Notification.permission === 'default') {
+          await Notification.requestPermission();
+        }
+
         // Load initial data
         const [metrics, compliance, manufacturing, events, alerts, config] = await Promise.all([
           securityDashboardService.getSecurityMetrics(),
@@ -210,6 +338,12 @@ export default function SecurityDashboard() {
   useEffect(() => {
     const handleSecurityEvent = (event: SecurityEvent) => {
       setRecentEvents(prev => [event, ...prev.slice(0, 9)]);
+      
+      // Generate alerts based on the specific security event
+      const incidentAlerts = alertService.processSecurityEvent(event);
+      if (incidentAlerts.length > 0) {
+        setSecurityAlerts(prev => [...incidentAlerts, ...prev]);
+      }
     };
 
     const handleMetricsUpdate = (metrics: SecurityMetrics) => {
@@ -238,10 +372,6 @@ export default function SecurityDashboard() {
       }
     };
 
-    const handleConnection = (status: { status: string }) => {
-      setConnectionStatus(status.status as any);
-    };
-
     // Subscribe to real-time updates
     securityDashboardService.on('securityEvent', handleSecurityEvent);
     securityDashboardService.on('metricsUpdate', handleMetricsUpdate);
@@ -249,6 +379,24 @@ export default function SecurityDashboard() {
     securityDashboardService.on('manufacturingUpdate', handleManufacturingUpdate);
     securityDashboardService.on('alert', handleAlert);
     securityDashboardService.on('connection', handleConnection);
+
+    // Subscribe to alert service events
+    const handleAlertGenerated = (alert: SecurityAlert) => {
+      setSecurityAlerts(prev => [alert, ...prev]);
+    };
+
+    const handleBrowserNotification = (alert: SecurityAlert) => {
+      if (Notification.permission === 'granted') {
+        new Notification(`Security Alert: ${alert.severity.toUpperCase()}`, {
+          body: alert.message,
+          icon: '/favicon.ico',
+          tag: alert.id
+        });
+      }
+    };
+
+    alertService.on('alertGenerated', handleAlertGenerated);
+    alertService.on('browserNotification', handleBrowserNotification);
 
     // Cleanup
     return () => {
@@ -258,6 +406,8 @@ export default function SecurityDashboard() {
       securityDashboardService.off('manufacturingUpdate', handleManufacturingUpdate);
       securityDashboardService.off('alert', handleAlert);
       securityDashboardService.off('connection', handleConnection);
+      alertService.off('alertGenerated', handleAlertGenerated);
+      alertService.off('browserNotification', handleBrowserNotification);
     };
   }, []);
 
@@ -511,7 +661,7 @@ export default function SecurityDashboard() {
                         <p className="text-xs text-gray-500">
                           {new Date(alert.timestamp).toLocaleString()} • {alert.type}
                         </p>
-                        {alert.actions.length > 0 && (
+                        {alert.actions && alert.actions.length > 0 && (
                           <div className="mt-2">
                             <p className="text-xs font-medium text-gray-700 mb-1">Recommended Actions:</p>
                             <ul className="text-xs text-gray-600 space-y-1">
@@ -855,71 +1005,137 @@ export default function SecurityDashboard() {
     </div>
   );
 
-  // Settings Tab Content
-  const SettingsTab = () => (
+  // Threat Intelligence Tab Content
+  const ThreatIntelligenceTab = () => (
     <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-medium text-gray-900">Threat Intelligence</h3>
+        <p className="mt-2 text-sm text-gray-600">
+          Stay informed about emerging threats and potential vulnerabilities in your manufacturing environment.
+        </p>
+      </div>
+
+      {/* Threat Types */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-red-100 rounded-lg">
+              <ExclamationCircleIcon className="w-6 h-6 text-red-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Malware Attacks</p>
+              <p className="text-2xl font-bold text-red-600">12</p>
+            </div>
+          </div>
+          <p className="mt-2 text-sm text-gray-500">Last 24 hours</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <ExclamationTriangleIcon className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Phishing Attempts</p>
+              <p className="text-2xl font-bold text-yellow-600">8</p>
+            </div>
+          </div>
+          <p className="mt-2 text-sm text-gray-500">Last 24 hours</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <ShieldCheckIcon className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Privilege Escalation</p>
+              <p className="text-2xl font-bold text-blue-600">5</p>
+            </div>
+          </div>
+          <p className="mt-2 text-sm text-gray-500">Last 24 hours</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <UserGroupIcon className="w-6 h-6 text-purple-600" />
+            </div>
+            <div className="ml-4">
+              <p className="text-sm font-medium text-gray-600">Data Breaches</p>
+              <p className="text-2xl font-bold text-purple-600">3</p>
+            </div>
+          </div>
+          <p className="mt-2 text-sm text-gray-500">Last 24 hours</p>
+        </div>
+      </div>
+
+      {/* Recent Threats */}
       <div className="bg-white rounded-lg shadow">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Security Dashboard Settings</h3>
+          <h3 className="text-lg font-medium text-gray-900">Recent Threats</h3>
         </div>
         <div className="p-6">
-          <div className="space-y-6">
-            <div>
-              <h4 className="text-md font-medium text-gray-900 mb-3">Update Frequency</h4>
-              <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="15">15 seconds</option>
-                <option value="30" selected>30 seconds</option>
-                <option value="60">1 minute</option>
-                <option value="300">5 minutes</option>
-              </select>
-            </div>
-            <div>
-              <h4 className="text-md font-medium text-gray-900 mb-3">Alert Thresholds</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Critical Events</label>
-                  <input type="number" className="w-full px-3 py-2 border border-gray-300 rounded-md" defaultValue="5" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Warning Events</label>
-                  <input type="number" className="w-full px-3 py-2 border border-gray-300 rounded-md" defaultValue="20" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Error Events</label>
-                  <input type="number" className="w-full px-3 py-2 border border-gray-300 rounded-md" defaultValue="15" />
-                </div>
+          <div className="space-y-4">
+            {/* Mock data for recent threats */}
+            <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+              <ExclamationCircleIcon className="w-5 h-5 text-red-500" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900">Ransomware Attack on Production Line 1</p>
+                <p className="text-sm text-gray-500">
+                  Source: Threat Intelligence Feed • 2 hours ago
+                </p>
               </div>
             </div>
-            <div>
-              <h4 className="text-md font-medium text-gray-900 mb-3">Compliance Assessment Schedule</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">ISA-99 Assessment</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                    <option value="30">Monthly</option>
-                    <option value="90" selected>Quarterly</option>
-                    <option value="180">Semi-annually</option>
-                    <option value="365">Annually</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">NIST Assessment</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                    <option value="30">Monthly</option>
-                    <option value="90" selected>Quarterly</option>
-                    <option value="180">Semi-annually</option>
-                    <option value="365">Annually</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">GDPR Assessment</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md">
-                    <option value="90">Quarterly</option>
-                    <option value="180" selected>Semi-annually</option>
-                    <option value="365">Annually</option>
-                  </select>
-                </div>
+            <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+              <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900">Suspicious Login Attempt from China</p>
+                <p className="text-sm text-gray-500">
+                  Source: Threat Intelligence Feed • 1 day ago
+                </p>
               </div>
+            </div>
+            <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+              <ShieldCheckIcon className="w-5 h-5 text-blue-500" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900">Potential Data Leak Detected</p>
+                <p className="text-sm text-gray-500">
+                  Source: Threat Intelligence Feed • 3 days ago
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Threat Detection Models */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-medium text-gray-900">Threat Detection Models</h3>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-md font-medium text-gray-900 mb-2">Advanced Threat Detection</h4>
+              <p className="text-sm text-gray-600">
+                Utilizes machine learning and behavioral analysis to detect sophisticated threats.
+              </p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-md font-medium text-gray-900 mb-2">Anomaly Detection</h4>
+              <p className="text-sm text-gray-600">
+                Monitors system and user behavior for unusual patterns that might indicate an attack.
+              </p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-md font-medium text-gray-900 mb-2">Threat Intelligence Feed</h4>
+              <p className="text-sm text-gray-600">
+                Integrates real-time threat data from multiple sources to provide early warnings.
+              </p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="text-md font-medium text-gray-900 mb-2">Incident Response</h4>
+              <p className="text-sm text-gray-600">
+                Comprehensive incident detection and response capabilities.
+              </p>
             </div>
           </div>
         </div>
@@ -927,8 +1143,225 @@ export default function SecurityDashboard() {
     </div>
   );
 
+  // Settings Tab Content
+  const SettingsTab = () => {
+    const [localThresholds, setLocalThresholds] = useState(alertThresholds);
+    const [localPermissions, setLocalPermissions] = useState(userPermissions);
+
+    const handleThresholdChange = (severity: keyof AlertThresholds, value: number) => {
+      setLocalThresholds(prev => ({ ...prev, [severity]: value }));
+    };
+
+    const handlePermissionChange = (permission: keyof typeof userPermissions, value: boolean) => {
+      setLocalPermissions(prev => ({ ...prev, [permission]: value }));
+    };
+
+    const saveSettings = () => {
+      setAlertThresholds(localThresholds);
+      setUserPermissions(localPermissions);
+      // TODO: Save to backend
+      console.log('Settings saved:', { thresholds: localThresholds, permissions: localPermissions });
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* User Role Management */}
+        <PermissionGate permission="users:view">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">User Role Management</h3>
+            <UserRoleSelector 
+              showCurrentRole={true}
+              allowRoleChange={hasPermission('users:manage')}
+              className="max-w-md"
+            />
+          </div>
+        </PermissionGate>
+
+        {/* Alert Thresholds Configuration */}
+        <PermissionGate permission="alerts:configure">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Alert Thresholds</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Critical Events Threshold
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={localThresholds.critical}
+                onChange={(e) => handleThresholdChange('critical', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                High Events Threshold
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={localThresholds.high}
+                onChange={(e) => handleThresholdChange('high', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Medium Events Threshold
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={localThresholds.medium}
+                onChange={(e) => handleThresholdChange('medium', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Low Events Threshold
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={localThresholds.low}
+                onChange={(e) => handleThresholdChange('low', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Role-based Access Control */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">User Permissions</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Acknowledge Alerts</label>
+                <p className="text-xs text-gray-500">Allow user to acknowledge security alerts</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={localPermissions.canAcknowledgeAlerts}
+                onChange={(e) => handlePermissionChange('canAcknowledgeAlerts', e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Resolve Alerts</label>
+                <p className="text-xs text-gray-500">Allow user to resolve security alerts</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={localPermissions.canResolveAlerts}
+                onChange={(e) => handlePermissionChange('canResolveAlerts', e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Configure Thresholds</label>
+                <p className="text-xs text-gray-500">Allow user to modify alert thresholds</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={localPermissions.canConfigureThresholds}
+                onChange={(e) => handlePermissionChange('canConfigureThresholds', e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">View All Data</label>
+                <p className="text-xs text-gray-500">Allow user to view all security data</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={localPermissions.canViewAllData}
+                onChange={(e) => handlePermissionChange('canViewAllData', e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="text-sm font-medium text-gray-700">Export Data</label>
+                <p className="text-xs text-gray-500">Allow user to export security data</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={localPermissions.canExportData}
+                onChange={(e) => handlePermissionChange('canExportData', e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Test Alert Generation */}
+        <div className="border-t pt-6">
+          <h4 className="text-sm font-medium text-gray-900 mb-4">Test Alert Generation</h4>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => securityDashboardService.testAlertGeneration('auth-failure', 'high')}
+              className="px-3 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors text-sm"
+            >
+              Test Auth Failure
+            </button>
+            <button
+              onClick={() => securityDashboardService.testAlertGeneration('equipment-failure', 'critical')}
+              className="px-3 py-2 bg-orange-100 text-orange-700 rounded-md hover:bg-orange-200 transition-colors text-sm"
+            >
+              Test Equipment Failure
+            </button>
+            <button
+              onClick={() => securityDashboardService.testAlertGeneration('threat-detected', 'critical')}
+              className="px-3 py-2 bg-purple-100 text-purple-700 rounded-md hover:bg-purple-200 transition-colors text-sm"
+            >
+              Test Threat Detection
+            </button>
+            <button
+              onClick={() => securityDashboardService.testAlertGeneration('compliance-violation', 'high')}
+              className="px-3 py-2 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200 transition-colors text-sm"
+            >
+              Test Compliance Violation
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            These buttons simulate security incidents to test the alert generation system.
+          </p>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end mt-6">
+          <button
+            onClick={saveSettings}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Save Settings
+          </button>
+        </div>
+          </div>
+        </PermissionGate>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Alert Manager for Toast Notifications */}
+      <AlertManager
+        alerts={securityAlerts}
+        onAcknowledge={handleAcknowledgeAlert}
+        onResolve={handleResolveAlert}
+        onDismiss={handleDismissAlert}
+        maxToasts={3}
+        toastDuration={5000}
+        toastPosition="top-right"
+      />
+
       {/* Header */}
       <div className="bg-white shadow">
         <div className="px-6 py-4">
@@ -940,6 +1373,30 @@ export default function SecurityDashboard() {
               </p>
             </div>
             <div className="flex items-center space-x-4">
+              {/* User Info */}
+              {currentUser && (
+                <div className="flex items-center space-x-3">
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-gray-900">
+                      {currentUser.username}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {rbacUserRole?.name || 'Unknown Role'}
+                    </div>
+                  </div>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                    rbacUserRole?.id === 'security-admin' ? 'bg-red-100 text-red-800' :
+                    rbacUserRole?.id === 'security-analyst' ? 'bg-orange-100 text-orange-800' :
+                    rbacUserRole?.id === 'security-operator' ? 'bg-yellow-100 text-yellow-800' :
+                    rbacUserRole?.id === 'compliance-officer' ? 'bg-blue-100 text-blue-800' :
+                    rbacUserRole?.id === 'auditor' ? 'bg-purple-100 text-purple-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {currentUser.username.charAt(0).toUpperCase()}
+                  </div>
+                </div>
+              )}
+              
               <div className="text-right">
                 <p className="text-xs text-gray-500">Last Updated</p>
                 <p className="text-sm font-medium text-gray-900">
@@ -974,11 +1431,12 @@ export default function SecurityDashboard() {
         <div className="px-6">
           <nav className="flex space-x-8">
             {[
-              { id: 'overview', name: 'Overview', icon: EyeIcon },
-              { id: 'compliance', name: 'Compliance', icon: DocumentTextIcon },
-              { id: 'analytics', name: 'Analytics', icon: ChartBarIcon },
-              { id: 'settings', name: 'Settings', icon: CogIcon }
-            ].map((tab) => {
+              { id: 'overview', name: 'Overview', icon: EyeIcon, permission: 'dashboard:view' },
+              { id: 'compliance', name: 'Compliance', icon: DocumentTextIcon, permission: 'compliance:view' },
+              { id: 'analytics', name: 'Analytics', icon: ChartBarIcon, permission: 'metrics:view' },
+              { id: 'threat-intelligence', name: 'Threat Intelligence', icon: FireIcon, permission: 'events:view' },
+              { id: 'settings', name: 'Settings', icon: CogIcon, permission: 'settings:view' }
+            ].filter(tab => hasPermission(tab.permission)).map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
@@ -1015,10 +1473,11 @@ export default function SecurityDashboard() {
           </div>
         ) : (
           <>
-            {activeTab === 'overview' && <OverviewTab />}
-            {activeTab === 'compliance' && <ComplianceTab />}
-            {activeTab === 'analytics' && <AnalyticsTab />}
-            {activeTab === 'settings' && <SettingsTab />}
+            {activeTab === 'overview' && hasPermission('dashboard:view') && <OverviewTab />}
+            {activeTab === 'compliance' && hasPermission('compliance:view') && <ComplianceTab />}
+            {activeTab === 'analytics' && hasPermission('metrics:view') && <AnalyticsTab />}
+            {activeTab === 'threat-intelligence' && hasPermission('events:view') && <ThreatIntelligenceTab />}
+            {activeTab === 'settings' && hasPermission('settings:view') && <SettingsTab />}
           </>
         )}
       </div>
