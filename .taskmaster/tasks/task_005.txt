@@ -1,6 +1,6 @@
 # Task ID: 5
 # Title: Station Workflow Engine
-# Status: pending
+# Status: in-progress
 # Dependencies: 4
 # Priority: high
 # Description: Implement core station workflow processing and pass/fail logic
@@ -11,19 +11,19 @@ Create workflow engine that handles station-specific processes, pass/fail criter
 Workflow state tests, pass/fail logic tests, criteria validation tests
 
 # Subtasks:
-## 1. Design Workflow State Machine [pending]
+## 1. Design Workflow State Machine [done]
 ### Dependencies: None
 ### Description: Create the core state machine for panel workflow through stations
 ### Details:
 Design state machine with states: SCANNED, IN_PROGRESS, PASSED, FAILED, REWORK_NEEDED. Define transitions, validate state changes, and implement state persistence. Include panel routing logic between stations and lines.
 
-## 2. Implement Pass/Fail Validation Engine [pending]
+## 2. Implement Pass/Fail Validation Engine [done]
 ### Dependencies: None
 ### Description: Build the core validation system for pass/fail criteria
 ### Details:
 Create validation engine that processes station-specific criteria, handles one-touch Pass (auto-check all), manages Fail with criteria selection, enforces required notes for F/B panels, and supports 'Other' category for unlisted defects.
 
-## 3. Build Station-Specific Criteria Configuration [pending]
+## 3. Build Station-Specific Criteria Configuration [in-progress]
 ### Dependencies: None
 ### Description: Create configurable criteria system for each station and line
 ### Details:

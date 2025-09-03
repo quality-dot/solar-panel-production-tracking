@@ -14,6 +14,14 @@ import { ManufacturingLogger } from '../middleware/logger.js';
 import { optimizedDbQuery, processBarcodeOptimized } from '../utils/performanceOptimizer.js';
 import { performanceCache, createCacheKey } from '../utils/performanceCache.js';
 import { errorRecoverySystem, ManufacturingError } from '../utils/errorHandling.js';
+import { 
+  manufacturingOrderService, 
+  MOServiceError 
+} from './manufacturingOrderService.js';
+import { 
+  metricsService, 
+  MetricsServiceError 
+} from './metricsService.js';
 
 const logger = new ManufacturingLogger('PanelService');
 
@@ -64,6 +72,7 @@ export class PanelService {
 
   async _createPanelFromBarcodeInternal(barcodeString, options = {}) {
     const { overrides = {}, metadata = {}, moId = null } = options;
+    const startTime = performance.now();
     
     try {
       // Start database transaction
@@ -153,6 +162,42 @@ export class PanelService {
 
         // Step 7: Log panel creation
         await this.logPanelCreation(createdPanel, metadata, client);
+
+        // Step 8: Update MO progress if panel is associated with an MO
+        if (moId) {
+          try {
+            await manufacturingOrderService.updateMOProgress(moId, {
+              type: 'PANEL_STARTED',
+              count: 1
+            }, metadata);
+          } catch (moError) {
+            logger.warn('Failed to update MO progress for panel creation', {
+              panelId: createdPanel.id,
+              moId,
+              error: moError.message
+            });
+            // Don't fail panel creation if MO update fails
+          }
+        }
+
+        // Step 9: Record panel creation metrics
+        try {
+          metricsService.recordPanelEvent({
+            panelId: createdPanel.id,
+            barcode: barcodeString,
+            moId: moId,
+            lineAssignment: panelSpec.lineAssignment,
+            hasOverrides: panelSpec.manualOverride,
+            processingTime: performance.now() - startTime,
+            userId: metadata.userId
+          });
+        } catch (metricsError) {
+          logger.warn('Failed to record panel creation metrics', {
+            panelId: createdPanel.id,
+            error: metricsError.message
+          });
+          // Don't fail panel creation if metrics recording fails
+        }
 
         // Commit transaction
         await client.query('COMMIT');
@@ -451,6 +496,25 @@ export class PanelService {
         // Log status change
         await this.logStatusChange(panel, updatedPanel, metadata, client);
 
+        // Update MO progress if status changed to completed or failed
+        if (panel.mo_id && this.shouldUpdateMOProgress(panel.status, status)) {
+          try {
+            const statusChange = this.mapStatusToMOUpdate(panel.status, status);
+            if (statusChange) {
+              await manufacturingOrderService.updateMOProgress(panel.mo_id, statusChange, metadata);
+            }
+          } catch (moError) {
+            logger.warn('Failed to update MO progress for status change', {
+              panelId,
+              moId: panel.mo_id,
+              oldStatus: panel.status,
+              newStatus: status,
+              error: moError.message
+            });
+            // Don't fail panel update if MO update fails
+          }
+        }
+
         await client.query('COMMIT');
 
         logger.info('Panel status updated', {
@@ -651,6 +715,87 @@ export class PanelService {
       throw new PanelServiceError(
         'Statistics generation failed',
         'DATABASE_ERROR',
+        { originalError: error.message }
+      );
+    }
+  }
+
+  /**
+   * Check if panel status change should update MO progress
+   */
+  shouldUpdateMOProgress(oldStatus, newStatus) {
+    const statusTransitions = {
+      'PENDING': ['IN_PROGRESS', 'PASSED', 'FAILED'],
+      'IN_PROGRESS': ['PASSED', 'FAILED', 'REWORK'],
+      'REWORK': ['PASSED', 'FAILED', 'IN_PROGRESS'],
+      'PASSED': ['FAILED', 'REWORK'], // Rare but possible
+      'FAILED': ['REWORK'] // Rare but possible
+    };
+
+    return statusTransitions[oldStatus]?.includes(newStatus) || false;
+  }
+
+  /**
+   * Map panel status change to MO progress update
+   */
+  mapStatusToMOUpdate(oldStatus, newStatus) {
+    // Panel completed successfully
+    if (newStatus === 'PASSED' && oldStatus !== 'PASSED') {
+      return { type: 'PANEL_COMPLETED', count: 1 };
+    }
+
+    // Panel failed
+    if (newStatus === 'FAILED' && oldStatus !== 'FAILED') {
+      return { type: 'PANEL_FAILED', count: 1 };
+    }
+
+    // Panel moved to rework (considered still in progress)
+    if (newStatus === 'REWORK') {
+      return { type: 'PANEL_REWORK', count: 1 };
+    }
+
+    // Panel started (moved from pending to in progress)
+    if (newStatus === 'IN_PROGRESS' && oldStatus === 'PENDING') {
+      return { type: 'PANEL_STARTED', count: 1 };
+    }
+
+    return null; // No MO update needed
+  }
+
+  /**
+   * Create panel from barcode with MO validation
+   */
+  async createPanelFromBarcodeWithMOValidation(barcodeString, options = {}) {
+    const { overrides = {}, metadata = {}, moId = null, skipMOValidation = false } = options;
+
+    try {
+      // Step 1: Validate barcode against MO if not skipping
+      if (!skipMOValidation) {
+        const moValidation = await manufacturingOrderService.validateBarcodeAgainstMO(barcodeString, moId);
+        
+        if (!moValidation.isValid) {
+          throw new PanelServiceError(
+            'Barcode validation against MO failed',
+            'MO_VALIDATION_FAILED',
+            moValidation
+          );
+        }
+
+        // Use the validated MO for panel creation
+        options.moId = moValidation.manufacturingOrder.id;
+      }
+
+      // Step 2: Create panel using existing method
+      return await this.createPanelFromBarcode(barcodeString, options);
+
+    } catch (error) {
+      if (error instanceof PanelServiceError || error instanceof MOServiceError) {
+        throw error;
+      }
+
+      throw new PanelServiceError(
+        'Panel creation with MO validation failed',
+        'CREATION_WITH_MO_FAILED',
         { originalError: error.message }
       );
     }

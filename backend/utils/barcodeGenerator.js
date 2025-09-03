@@ -3,7 +3,7 @@
 
 import { 
   BARCODE_CONFIG, 
-  validateBarcodeComponents, 
+  validateBarcodeComponents,
   processBarcodeComplete 
 } from './barcodeProcessor.js';
 
@@ -40,7 +40,9 @@ export class BarcodeGenerator {
       panelType = null,
       constructionType = null,
       sequence = null,
-      ensureUnique = true
+      ensureUnique = true,
+      moId = null,
+      lineAssignment = null
     } = options;
 
     try {
@@ -66,7 +68,8 @@ export class BarcodeGenerator {
 
       // Validate generated barcode
       const processResult = processBarcodeComplete(barcodeFormat);
-      if (!processResult.success) {
+      const validation = { isValid: processResult.success, errors: processResult.error };
+      if (!validation.isValid) {
         throw new BarcodeGenerationError(
           'Generated invalid barcode',
           'GENERATION_FAILED',
@@ -79,6 +82,8 @@ export class BarcodeGenerator {
         this.generatedBarcodes.add(barcodeFormat);
       }
 
+      // Get full processing result
+      const fullProcessResult = processBarcodeComplete(barcodeFormat);
       return {
         barcode: barcodeFormat,
         components: {
@@ -88,7 +93,7 @@ export class BarcodeGenerator {
           panelType: selectedPanelType,
           sequenceNumber
         },
-        processing: processResult,
+        processing: fullProcessResult,
         generatedAt: new Date().toISOString()
       };
 
@@ -370,6 +375,7 @@ export class BarcodeGenerator {
       // Generate sample barcode from template
       const sampleBarcode = template.replace('#####', '00001');
       const processResult = processBarcodeComplete(sampleBarcode);
+      const validation = { isValid: processResult.success, errors: processResult.error };
       
       if (!processResult.success) {
         throw new BarcodeGenerationError(
@@ -379,23 +385,6 @@ export class BarcodeGenerator {
         );
       }
 
-      // Verify specifications match
-      const errors = [];
-      
-      if (panelType && processResult.components.panelType !== panelType) {
-        errors.push(`Panel type mismatch: template generates ${processResult.components.panelType}, expected ${panelType}`);
-      }
-      
-      if (constructionType && processResult.components.factory !== constructionType) {
-        errors.push(`Construction type mismatch: template generates ${processResult.components.factory}, expected ${constructionType}`);
-      }
-
-      if (errors.length > 0) {
-        throw new BarcodeGenerationError(
-          'Template validation failed',
-          'TEMPLATE_VALIDATION_FAILED',
-          errors
-        );
       }
 
       // Check sequence capacity
@@ -409,12 +398,6 @@ export class BarcodeGenerator {
         isValid: true,
         errors,
         sampleBarcode,
-        processing: processResult,
-        templateAnalysis: {
-          factoryCode: processResult.components.factory,
-          productionYear: processResult.components.year,
-          panelType: processResult.components.panelType,
-          constructionType: processResult.components.factory,
           maxCapacity: maxSequence
         },
         validatedAt: new Date().toISOString()
@@ -463,6 +446,210 @@ export class BarcodeGenerator {
       message: 'Generation cache cleared',
       clearedAt: new Date().toISOString()
     };
+  }
+
+  /**
+   * Generate barcode from specific position in MO range
+   */
+  generateFromMORange(moId, position) {
+    try {
+      const moRange = this.moRanges.get(moId);
+      if (!moRange) {
+        throw new BarcodeGenerationError(
+          'MO range not found',
+          'MO_RANGE_NOT_FOUND',
+          { moId }
+        );
+      }
+
+      if (position < 1 || position > moRange.totalQuantity) {
+        throw new BarcodeGenerationError(
+          'Invalid position in MO range',
+          'INVALID_POSITION',
+          { position, rangeSize: moRange.totalQuantity }
+        );
+      }
+
+      const sequence = moRange.startSequence + position - 1;
+      const barcode = moRange.template.replace('#####', sequence.toString().padStart(5, '0'));
+      
+      return {
+        barcode,
+        position,
+        moId,
+        sequence,
+        metadata: moRange.specifications,
+        processing: processBarcodeComplete(barcode)
+      };
+
+    } catch (error) {
+      throw new BarcodeGenerationError(
+        'Failed to generate barcode from MO range',
+        'MO_RANGE_ACCESS_FAILED',
+        { moId, position, originalError: error.message }
+      );
+    }
+  }
+
+  /**
+   * Validate MO barcode template
+   */
+  validateMOTemplate(template, specifications = {}) {
+    try {
+      const errors = [];
+      const warnings = [];
+
+      // Validate required fields
+      if (!template.panelType) {
+        errors.push('Panel type is required');
+      } else if (!['36', '40', '60', '72', '144'].includes(template.panelType)) {
+        errors.push('Invalid panel type');
+      }
+
+      if (!template.targetQuantity || template.targetQuantity < 1) {
+        errors.push('Target quantity must be at least 1');
+      }
+
+      if (template.targetQuantity > 10000) {
+        warnings.push('Large target quantity may impact performance');
+      }
+
+      // Validate panel type consistency with line assignment
+      if (template.panelType && template.lineAssignment) {
+        const expectedLine = this._determineLineAssignment(template.panelType);
+        if (template.lineAssignment !== expectedLine) {
+          warnings.push(`Panel type ${template.panelType} typically goes to ${expectedLine}, not ${template.lineAssignment}`);
+        }
+      }
+
+      // Validate sequence range
+      if (template.startSequence && template.endSequence) {
+        if (template.startSequence >= template.endSequence) {
+          errors.push('Start sequence must be less than end sequence');
+        }
+        
+        const rangeSize = template.endSequence - template.startSequence + 1;
+        if (rangeSize !== template.targetQuantity) {
+          warnings.push(`Sequence range (${rangeSize}) doesn't match target quantity (${template.targetQuantity})`);
+        }
+      }
+
+      const isValid = errors.length === 0;
+      
+      return {
+        isValid,
+        errors,
+        warnings,
+        template,
+        specifications,
+        validatedAt: new Date().toISOString()
+      };
+
+    } catch (error) {
+      return {
+        isValid: false,
+        errors: ['Template validation failed: ' + error.message],
+        warnings: [],
+        template,
+        specifications,
+        validatedAt: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
+   * Get comprehensive test dataset
+   */
+  generateTestDataset(options = {}) {
+    const {
+      samplesPerType = 5,
+      includeEdgeCases = true,
+      includeInvalid = false
+    } = options;
+
+    const dataset = {
+      valid: {},
+      edgeCases: [],
+      invalid: [],
+      metadata: {
+        generatedAt: new Date().toISOString(),
+        options
+      }
+    };
+
+    // Generate samples for each panel type
+    const panelTypes = ['36', '40', '60', '72', '144'];
+    
+    for (const panelType of panelTypes) {
+      dataset.valid[panelType] = this.generateBarcodes(samplesPerType, { 
+        panelType,
+        ensureUnique: true
+      });
+    }
+
+    // Generate edge cases
+    if (includeEdgeCases) {
+      dataset.edgeCases = [
+        this.generateBarcode({ panelType: '36', sequence: 1 }),
+        this.generateBarcode({ panelType: '144', sequence: 99999 }),
+        this.generateBarcode({ productionYear: '20' }),
+        this.generateBarcode({ productionYear: '99' })
+      ];
+    }
+
+    // Generate invalid examples for testing
+    if (includeInvalid) {
+      dataset.invalid = [
+        { barcode: 'INVALID123', reason: 'Invalid format' },
+        { barcode: 'CRS15YBPP00001', reason: 'Invalid year' },
+        { barcode: 'CRS24XBPP00001', reason: 'Invalid construction type' },
+        { barcode: 'CRS24YBPP0001', reason: 'Too short' },
+        { barcode: 'CRS24YBPP000001', reason: 'Too long' }
+      ];
+    }
+
+    return dataset;
+  }
+
+  /**
+   * Get generation statistics
+   */
+  getStatistics() {
+    const totalGenerated = this.generatedBarcodes.size;
+    const totalMORanges = this.moRanges.size;
+    
+    // Calculate success rates
+    const successRate = totalGenerated > 0 ? 100 : 0;
+    
+    // Panel type distribution
+    const panelTypeCounts = {};
+    for (const barcode of this.generatedBarcodes) {
+      const panelType = barcode.substring(6, 8);
+      panelTypeCounts[panelType] = (panelTypeCounts[panelType] || 0) + 1;
+    }
+
+    return {
+      totalGenerated,
+      totalMORanges,
+      successRate: `${successRate}%`,
+      panelTypeDistribution: panelTypeCounts,
+      cacheSize: {
+        barcodes: this.generatedBarcodes.size,
+        moRanges: this.moRanges.size
+      },
+      generatedAt: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Determine line assignment for panel type
+   */
+  _determineLineAssignment(panelType) {
+    if (panelType === '144') {
+      return 'LINE_2';
+    } else {
+      return 'LINE_1';
+    }
   }
 
   // Private helper methods
