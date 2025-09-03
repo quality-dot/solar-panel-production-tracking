@@ -6,6 +6,6 @@
 # Description: Implement Station 4 workflow with manual wattage entry and extensive pass/fail criteria
 # Details:
 Create Station 4 workflow with manual Wattage (Pmax) entry and comprehensive pass/fail criteria including wattage verification, high pot test, second EL test (Line 2 only), labeling, and quality checks. Include sticker printing functionality.
-
+COMMENT
 # Test Strategy:
 Manual entry validation tests, comprehensive criteria tests, sticker printing tests
