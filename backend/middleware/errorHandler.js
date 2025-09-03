@@ -3,7 +3,9 @@
 
 import { manufacturingLogger } from './logger.js';
 import { config } from '../config/index.js';
-import { securityEventService } from '../services/securityEventService.js';
+import SecurityEventService from '../services/securityEventService.js';
+
+const securityEventService = new SecurityEventService();
 
 /**
  * Custom error classes for manufacturing operations

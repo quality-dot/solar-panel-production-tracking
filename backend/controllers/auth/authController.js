@@ -17,6 +17,8 @@ import {
   asyncHandler 
 } from '../../middleware/errorHandler.js';
 import { securityEventService } from '../../services/securityEventService.js';
+import { accountLockoutService } from '../../services/accountLockoutService.js';
+import { sessionManagementService } from '../../services/sessionManagementService.js';
 
 /**
  * User login endpoint
@@ -33,49 +35,117 @@ export const login = asyncHandler(async (req, res) => {
     });
   }
 
-  // Authenticate user
-  const user = await User.authenticate(username, password);
-  
-  // Generate token pair
-  const tokens = generateTokenPair(user);
+  try {
+    // Authenticate user
+    const user = await User.authenticate(username, password);
+    
+    // Check if account is locked
+    const lockStatus = await accountLockoutService.isAccountLocked(user.id);
+    if (lockStatus.locked) {
+      throw new AuthenticationError('Account is locked', {
+        reason: 'account_locked',
+        lockoutUntil: lockStatus.lockoutUntil,
+        remainingTime: lockStatus.remainingTime
+      });
+    }
 
-  // Log successful login
-  manufacturingLogger.info('User login successful', {
-    userId: user.id,
-    username: user.username,
-    role: user.role,
-    stationId: stationId || 'not_specified',
-    ip: req.ip,
-    userAgent: req.get('User-Agent'),
-    station: req.station?.id || 'unknown',
-    category: 'authentication'
-  });
+    // Record successful login and clear failed attempts
+    await accountLockoutService.recordSuccessfulLogin(
+      user.id, 
+      user.username, 
+      req.ip
+    );
+    
+    // Generate token pair
+    const tokens = generateTokenPair(user);
 
-  // Prepare response data
-  const responseData = {
-    user: user.toPublicJSON(),
-    tokens,
-    permissions: {
+    // Create session
+    const session = await sessionManagementService.createSession(
+      user.id,
+      user.username,
+      user.role,
+      req.ip,
+      req.get('User-Agent'),
+      tokens.accessToken,
+      tokens.refreshToken
+    );
+
+    // Log successful login
+    manufacturingLogger.info('User login successful', {
+      userId: user.id,
+      username: user.username,
       role: user.role,
-      stationAccess: user.station_assignments,
-      canAccessAllStations: ['SYSTEM_ADMIN', 'PRODUCTION_SUPERVISOR', 'QC_MANAGER'].includes(user.role)
-    },
-    session: {
-      loginTime: new Date().toISOString(),
-      expiresAt: getTokenExpiration(tokens.accessToken)?.expiresAt,
-      stationContext: stationId || null
-    }
-  };
+      stationId: stationId || 'not_specified',
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      station: req.station?.id || 'unknown',
+      category: 'authentication'
+    });
 
-  res.status(200).json(manufacturingResponse(
-    responseData,
-    'Login successful',
-    {
-      action: 'login',
-      station: req.station?.id,
-      timestamp: req.timestamp
+    // Prepare response data
+    const responseData = {
+      user: user.toPublicJSON(),
+      tokens,
+      session: {
+        sessionId: session.sessionId,
+        loginTime: new Date().toISOString(),
+        expiresAt: session.expiresAt,
+        stationContext: stationId || null
+      },
+      permissions: {
+        role: user.role,
+        stationAccess: user.station_assignments,
+        canAccessAllStations: ['SYSTEM_ADMIN', 'PRODUCTION_SUPERVISOR', 'QC_MANAGER'].includes(user.role)
+      }
+    };
+
+    res.status(200).json(manufacturingResponse(
+      responseData,
+      'Login successful',
+      {
+        action: 'login',
+        station: req.station?.id,
+        timestamp: req.timestamp
+      }
+    ));
+
+  } catch (error) {
+    // Handle authentication failures
+    if (error instanceof AuthenticationError && error.reason === 'invalid_credentials') {
+      // Find user by username to record failed attempt
+      try {
+        const user = await User.findByUsername(username);
+        if (user) {
+          // Record failed attempt
+          const lockoutResult = await accountLockoutService.recordFailedAttempt(
+            user.id,
+            user.username,
+            req.ip,
+            req.get('User-Agent')
+          );
+
+          // If account is now locked, include lockout information in error
+          if (lockoutResult.locked) {
+            throw new AuthenticationError('Account locked due to failed login attempts', {
+              reason: 'account_locked',
+              lockoutUntil: lockoutResult.lockoutUntil,
+              attemptCount: lockoutResult.attemptCount
+            });
+          }
+        }
+      } catch (lockoutError) {
+        manufacturingLogger.error('Failed to record failed login attempt', {
+          error: lockoutError.message,
+          username,
+          ip: req.ip,
+          category: 'account_lockout'
+        });
+      }
     }
-  ));
+
+    // Re-throw the original error
+    throw error;
+  }
 });
 
 /**
@@ -85,10 +155,25 @@ export const login = asyncHandler(async (req, res) => {
 export const logout = asyncHandler(async (req, res) => {
   const authHeader = req.get('Authorization');
   const token = extractTokenFromHeader(authHeader);
+  const { sessionId } = req.body;
 
   if (token) {
     try {
       const decoded = verifyToken(token, TOKEN_TYPES.ACCESS);
+      
+      // Invalidate session if sessionId is provided
+      if (sessionId) {
+        try {
+          await sessionManagementService.invalidateSession(sessionId, 'manual_logout');
+        } catch (sessionError) {
+          manufacturingLogger.warn('Failed to invalidate session during logout', {
+            error: sessionError.message,
+            sessionId,
+            userId: decoded.userId,
+            category: 'authentication'
+          });
+        }
+      }
       
       // Log successful logout
       manufacturingLogger.info('User logout successful', {
@@ -96,18 +181,17 @@ export const logout = asyncHandler(async (req, res) => {
         username: decoded.username,
         role: decoded.role,
         ip: req.ip,
+        sessionId,
         station: req.station?.id || 'unknown',
         category: 'authentication'
       });
-
-      // TODO: Add token to blacklist/invalidation store
-      // For now, we rely on short token expiry
       
     } catch (error) {
       // Log logout attempt even with invalid token
       manufacturingLogger.warn('Logout attempt with invalid token', {
         error: error.message,
         ip: req.ip,
+        sessionId,
         station: req.station?.id,
         category: 'authentication'
       });
