@@ -9,13 +9,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 /**
  * User roles for manufacturing environment
+ * Imported from permissions to avoid circular dependency
  */
-export const USER_ROLES = {
-  STATION_INSPECTOR: 'STATION_INSPECTOR',
-  PRODUCTION_SUPERVISOR: 'PRODUCTION_SUPERVISOR', 
-  QC_MANAGER: 'QC_MANAGER',
-  SYSTEM_ADMIN: 'SYSTEM_ADMIN'
-};
+import { USER_ROLES } from '../utils/permissions.js';
 
 /**
  * User model class with database operations
@@ -226,6 +222,50 @@ export class User {
   }
 
   /**
+   * Find user by email
+   */
+  static async findByEmail(email) {
+    try {
+      if (!email) {
+        throw new ValidationError('Email is required', {
+          field: 'email',
+          reason: 'missing_parameter'
+        });
+      }
+
+      const query = 'SELECT * FROM users WHERE email = $1 AND is_active = true';
+      const result = await databaseManager.query(query, [email]);
+      
+      if (result.rows.length === 0) {
+        return null;
+      }
+
+      const userData = result.rows[0];
+      // Parse JSON fields
+      if (userData.station_assignments) {
+        userData.station_assignments = JSON.parse(userData.station_assignments);
+      }
+
+      return new User(userData);
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        throw error;
+      }
+
+      manufacturingLogger.error('Failed to find user by email', {
+        email,
+        error: error.message,
+        category: 'user_management'
+      });
+
+      throw new DatabaseError('Failed to find user', 'user_lookup', {
+        email,
+        originalError: error.message
+      });
+    }
+  }
+
+  /**
    * Find user by ID
    */
   static async findById(userId) {
@@ -278,6 +318,40 @@ export class User {
         throw new ValidationError('Username and password are required', {
           reason: 'missing_credentials'
         });
+      }
+
+      // Development fallback: allow login without DB using known test users
+      if (!databaseManager.getPool()) {
+        const TEST_PASSWORD = 'password123';
+        const testUsers = {
+          admin1: { role: USER_ROLES.SYSTEM_ADMIN, email: 'admin1@example.com', stations: [1,2,3,4,5,6,7,8] },
+          supervisor1: { role: USER_ROLES.PRODUCTION_SUPERVISOR, email: 'supervisor1@example.com', stations: [1,2,3,4,5,6,7,8] },
+          inspector1: { role: USER_ROLES.STATION_INSPECTOR, email: 'inspector1@example.com', stations: [1,2] },
+          qcmanager1: { role: USER_ROLES.QC_MANAGER, email: 'qcmanager1@example.com', stations: [1,2,3,4,5,6,7,8] },
+        };
+        const record = testUsers[username];
+        if (!record || password !== TEST_PASSWORD) {
+          throw new AuthenticationError('Invalid credentials', { reason: 'invalid_credentials' });
+        }
+        const now = new Date().toISOString();
+        const devUser = new User({
+          id: uuidv4(),
+          username,
+          email: record.email,
+          role: record.role,
+          station_assignments: record.stations,
+          is_active: true,
+          created_at: now,
+          updated_at: now,
+          last_login: now,
+          token_version: 1,
+        });
+        manufacturingLogger.info('Dev-mode user authenticated (no DB)', {
+          username,
+          role: devUser.role,
+          category: 'authentication'
+        });
+        return devUser;
       }
 
       const user = await User.findByUsername(username);
@@ -518,6 +592,457 @@ export class User {
     }
 
     return false;
+  }
+
+  /**
+   * Change user password with current password verification
+   */
+  async changePassword(currentPassword, newPassword) {
+    try {
+      if (!currentPassword || !newPassword) {
+        throw new ValidationError('Current password and new password are required', {
+          reason: 'missing_passwords'
+        });
+      }
+
+      // Verify current password
+      const isCurrentPasswordValid = await comparePassword(currentPassword, this.password_hash);
+      if (!isCurrentPasswordValid) {
+        throw new ValidationError('Current password is incorrect', {
+          reason: 'invalid_current_password'
+        });
+      }
+
+      // Validate new password
+      if (currentPassword === newPassword) {
+        throw new ValidationError('New password must be different from current password', {
+          reason: 'password_same_as_current'
+        });
+      }
+
+      // Validate new password policy
+      const passwordValidation = validatePasswordPolicy(newPassword);
+      if (!passwordValidation.isValid) {
+        throw new ValidationError('New password does not meet security requirements', {
+          reason: 'password_policy_violation',
+          details: passwordValidation.errors
+        });
+      }
+
+      // Hash new password
+      const newPasswordHash = await hashPassword(newPassword);
+
+      // Update password and increment token version (invalidates all existing tokens)
+      const now = new Date().toISOString();
+      const query = `
+        UPDATE users 
+        SET password_hash = $1, token_version = $2, updated_at = $3
+        WHERE id = $4
+      `;
+      
+      await databaseManager.query(query, [newPasswordHash, this.token_version + 1, now, this.id]);
+      
+      // Update local instance
+      this.password_hash = newPasswordHash;
+      this.token_version += 1;
+      this.updated_at = now;
+
+      manufacturingLogger.info('Password changed successfully', {
+        userId: this.id,
+        username: this.username,
+        category: 'user_management'
+      });
+
+      return true;
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        throw error;
+      }
+
+      manufacturingLogger.error('Failed to change password', {
+        userId: this.id,
+        error: error.message,
+        category: 'user_management'
+      });
+
+      throw new DatabaseError('Failed to change password', 'password_change', {
+        userId: this.id,
+        originalError: error.message
+      });
+    }
+  }
+
+  /**
+   * Update token version to invalidate all existing sessions
+   */
+  async updateTokenVersion() {
+    try {
+      const now = new Date().toISOString();
+      const query = `
+        UPDATE users 
+        SET token_version = $1, updated_at = $2
+        WHERE id = $3
+      `;
+      
+      await databaseManager.query(query, [this.token_version + 1, now, this.id]);
+      
+      // Update local instance
+      this.token_version += 1;
+      this.updated_at = now;
+
+      manufacturingLogger.info('Token version updated', {
+        userId: this.id,
+        username: this.username,
+        newTokenVersion: this.token_version,
+        category: 'user_management'
+      });
+
+      return this.token_version;
+    } catch (error) {
+      manufacturingLogger.error('Failed to update token version', {
+        userId: this.id,
+        error: error.message,
+        category: 'user_management'
+      });
+
+      throw new DatabaseError('Failed to update token version', 'token_version_update', {
+        userId: this.id,
+        originalError: error.message
+      });
+    }
+  }
+
+  /**
+   * Find all users with filtering and pagination
+   */
+  static async findAllWithFilters(options = {}) {
+    try {
+      const {
+        page = 1,
+        limit = 20,
+        role,
+        isActive,
+        search,
+        sortBy = 'created_at',
+        sortOrder = 'desc'
+      } = options;
+
+      let whereConditions = [];
+      let queryParams = [];
+      let paramIndex = 1;
+
+      // Build WHERE conditions
+      if (role) {
+        whereConditions.push(`role = $${paramIndex}`);
+        queryParams.push(role);
+        paramIndex++;
+      }
+
+      if (isActive !== undefined) {
+        whereConditions.push(`is_active = $${paramIndex}`);
+        queryParams.push(isActive);
+        paramIndex++;
+      }
+
+      if (search) {
+        whereConditions.push(`(username ILIKE $${paramIndex} OR email ILIKE $${paramIndex})`);
+        queryParams.push(`%${search}%`);
+        paramIndex++;
+      }
+
+      const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+
+      // Count total records
+      const countQuery = `SELECT COUNT(*) as total FROM users ${whereClause}`;
+      const countResult = await databaseManager.query(countQuery, queryParams);
+      const total = parseInt(countResult.rows[0].total);
+
+      // Get paginated results
+      const offset = (page - 1) * limit;
+      const dataQuery = `
+        SELECT * FROM users 
+        ${whereClause}
+        ORDER BY ${sortBy} ${sortOrder.toUpperCase()}
+        LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+      `;
+      
+      queryParams.push(limit, offset);
+      const dataResult = await databaseManager.query(dataQuery, queryParams);
+
+      // Parse JSON fields and create User instances
+      const users = dataResult.rows.map(row => {
+        if (row.station_assignments) {
+          row.station_assignments = JSON.parse(row.station_assignments);
+        }
+        return new User(row);
+      });
+
+      return {
+        users: users.map(user => user.toPublicJSON()),
+        total
+      };
+
+    } catch (error) {
+      manufacturingLogger.error('Failed to find users with filters', {
+        error: error.message,
+        options,
+        category: 'user_management'
+      });
+      throw new DatabaseError('Failed to retrieve users', 'user_filtering', {
+        options,
+        originalError: error.message
+      });
+    }
+  }
+
+  /**
+   * Count users by role
+   */
+  static async countByRole(role) {
+    try {
+      const query = 'SELECT COUNT(*) as count FROM users WHERE role = $1 AND is_active = true';
+      const result = await databaseManager.query(query, [role]);
+      return parseInt(result.rows[0].count);
+    } catch (error) {
+      manufacturingLogger.error('Failed to count users by role', {
+        error: error.message,
+        role,
+        category: 'user_management'
+      });
+      throw new DatabaseError('Failed to count users by role', 'user_counting', {
+        role,
+        originalError: error.message
+      });
+    }
+  }
+
+  /**
+   * Get user statistics
+   */
+  static async getStatistics() {
+    try {
+      const queries = {
+        totalUsers: 'SELECT COUNT(*) as count FROM users',
+        activeUsers: 'SELECT COUNT(*) as count FROM users WHERE is_active = true',
+        usersByRole: `
+          SELECT role, COUNT(*) as count 
+          FROM users 
+          WHERE is_active = true 
+          GROUP BY role
+        `,
+        recentUsers: `
+          SELECT COUNT(*) as count 
+          FROM users 
+          WHERE created_at > CURRENT_TIMESTAMP - INTERVAL '30 days'
+        `
+      };
+
+      const results = {};
+      for (const [key, query] of Object.entries(queries)) {
+        const result = await databaseManager.query(query);
+        if (key === 'usersByRole') {
+          results[key] = result.rows.reduce((acc, row) => {
+            acc[row.role] = parseInt(row.count);
+            return acc;
+          }, {});
+        } else {
+          results[key] = parseInt(result.rows[0].count);
+        }
+      }
+
+      return results;
+
+    } catch (error) {
+      manufacturingLogger.error('Failed to get user statistics', {
+        error: error.message,
+        category: 'user_management'
+      });
+      throw new DatabaseError('Failed to get user statistics', 'user_statistics', {
+        originalError: error.message
+      });
+    }
+  }
+
+  /**
+   * Update user information
+   */
+  async update(updateData) {
+    try {
+      const {
+        username,
+        email,
+        role,
+        stationAssignments,
+        isActive
+      } = updateData;
+
+      const updates = [];
+      const values = [];
+      let paramIndex = 1;
+
+      if (username !== undefined) {
+        updates.push(`username = $${paramIndex}`);
+        values.push(username);
+        paramIndex++;
+      }
+
+      if (email !== undefined) {
+        updates.push(`email = $${paramIndex}`);
+        values.push(email);
+        paramIndex++;
+      }
+
+      if (role !== undefined) {
+        updates.push(`role = $${paramIndex}`);
+        values.push(role);
+        paramIndex++;
+      }
+
+      if (stationAssignments !== undefined) {
+        updates.push(`station_assignments = $${paramIndex}`);
+        values.push(JSON.stringify(stationAssignments));
+        paramIndex++;
+      }
+
+      if (isActive !== undefined) {
+        updates.push(`is_active = $${paramIndex}`);
+        values.push(isActive);
+        paramIndex++;
+      }
+
+      if (updates.length === 0) {
+        throw new ValidationError('No update data provided', {
+          reason: 'no_update_data'
+        });
+      }
+
+      updates.push(`updated_at = $${paramIndex}`);
+      values.push(new Date().toISOString());
+      paramIndex++;
+
+      values.push(this.id);
+
+      const query = `
+        UPDATE users 
+        SET ${updates.join(', ')}
+        WHERE id = $${paramIndex}
+        RETURNING *
+      `;
+
+      const result = await databaseManager.query(query, values);
+      const updatedData = result.rows[0];
+
+      // Parse JSON fields
+      if (updatedData.station_assignments) {
+        updatedData.station_assignments = JSON.parse(updatedData.station_assignments);
+      }
+
+      // Update local instance
+      Object.assign(this, updatedData);
+
+      return this;
+
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        throw error;
+      }
+
+      manufacturingLogger.error('Failed to update user', {
+        error: error.message,
+        userId: this.id,
+        updateData,
+        category: 'user_management'
+      });
+
+      throw new DatabaseError('Failed to update user', 'user_update', {
+        userId: this.id,
+        updateData,
+        originalError: error.message
+      });
+    }
+  }
+
+  /**
+   * Delete user (soft delete by default)
+   */
+  async delete(hardDelete = false) {
+    try {
+      if (hardDelete) {
+        // Hard delete - remove from database
+        const query = 'DELETE FROM users WHERE id = $1';
+        await databaseManager.query(query, [this.id]);
+      } else {
+        // Soft delete - mark as inactive
+        const query = `
+          UPDATE users 
+          SET is_active = false, updated_at = $1
+          WHERE id = $2
+        `;
+        await databaseManager.query(query, [new Date().toISOString(), this.id]);
+        this.is_active = false;
+      }
+
+      manufacturingLogger.info('User deleted', {
+        userId: this.id,
+        username: this.username,
+        hardDelete,
+        category: 'user_management'
+      });
+
+      return true;
+
+    } catch (error) {
+      manufacturingLogger.error('Failed to delete user', {
+        error: error.message,
+        userId: this.id,
+        hardDelete,
+        category: 'user_management'
+      });
+
+      throw new DatabaseError('Failed to delete user', 'user_delete', {
+        userId: this.id,
+        hardDelete,
+        originalError: error.message
+      });
+    }
+  }
+
+  /**
+   * Update last login timestamp
+   */
+  async updateLastLogin() {
+    try {
+      const now = new Date().toISOString();
+      const query = `
+        UPDATE users 
+        SET last_login = $1, updated_at = $2
+        WHERE id = $3
+      `;
+      
+      await databaseManager.query(query, [now, now, this.id]);
+      this.last_login = now;
+      this.updated_at = now;
+
+      manufacturingLogger.info('User last login updated', {
+        userId: this.id,
+        username: this.username,
+        lastLogin: now,
+        category: 'user_management'
+      });
+
+      return true;
+    } catch (error) {
+      manufacturingLogger.error('Failed to update last login', {
+        error: error.message,
+        userId: this.id,
+        category: 'user_management'
+      });
+
+      throw new DatabaseError('Failed to update last login', 'last_login_update', {
+        userId: this.id,
+        originalError: error.message
+      });
+    }
   }
 
   /**

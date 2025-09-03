@@ -3,7 +3,6 @@
 
 export { 
   User, 
-  USER_ROLES,
   default as UserModel 
 } from './User.js';
 

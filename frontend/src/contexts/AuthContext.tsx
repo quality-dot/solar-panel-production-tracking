@@ -115,6 +115,9 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 // Create context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Resolve API base URL for backend server (Vite env or fallback)
+const apiBaseUrl: string = (import.meta as any)?.env?.VITE_API_URL || 'http://localhost:3000';
+
 // Provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
@@ -134,7 +137,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // Check if user has specific role
-  const hasRole = useCallback((requiredRole: User['role']): boolean => {
+  const hasRole = React.useCallback((requiredRole: User['role']): boolean => {
     if (!state.user) return false;
     
     const roleHierarchy = {
@@ -142,13 +145,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       'PRODUCTION_SUPERVISOR': 2,
       'QC_MANAGER': 3,
       'SYSTEM_ADMIN': 4,
-    };
+    } as const;
     
     return roleHierarchy[state.user.role] >= roleHierarchy[requiredRole];
   }, [state.user]);
 
   // Check if user has access to specific station
-  const hasStationAccess = useCallback((stationId: number): boolean => {
+  const hasStationAccess = React.useCallback((stationId: number): boolean => {
     if (!state.user) return false;
     
     // System admins and supervisors have access to all stations
@@ -166,7 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [state.user]);
 
   // Check if user has specific permission
-  const hasPermission = useCallback((permission: string): boolean => {
+  const hasPermission = React.useCallback((permission: string): boolean => {
     if (!state.user) return false;
     
     // Define permission matrix
@@ -209,17 +212,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         'system_configuration',
         'database_management'
       ]
-    };
+    } as const;
     
-    return permissions[state.user.role]?.includes(permission) || false;
+    return (permissions as any)[state.user.role]?.includes(permission) || false;
   }, [state.user]);
 
   // Login function
-  const login = useCallback(async (username: string, password: string, stationId?: string): Promise<void> => {
+  const login = React.useCallback(async (username: string, password: string, stationId?: string): Promise<void> => {
     try {
       dispatch({ type: 'AUTH_START' });
       
-      const response = await fetch('/api/v1/auth/login', {
+      const response = await fetch(`${apiBaseUrl}/api/v1/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -229,8 +232,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
+        // Try to parse error JSON, fallback to text
+        let message = 'Login failed';
+        try {
+          const errorData = await response.json();
+          message = errorData.message || message;
+        } catch {
+          try {
+            message = await response.text();
+          } catch { /* ignore */ }
+        }
+        throw new Error(message);
       }
 
       const data = await response.json();
@@ -238,7 +250,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!isMountedRef.current) return;
 
       // Extract user and tokens from response
-      const { user, tokens, permissions } = data.data;
+      const { user, tokens } = data.data;
       
       // Create tokens object with expiration
       const authTokens: AuthTokens = {
@@ -264,11 +276,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // Logout function
-  const logout = useCallback(async (): Promise<void> => {
+  const logout = React.useCallback(async (): Promise<void> => {
     try {
       if (state.tokens?.accessToken) {
         // Call logout endpoint to invalidate token
-        await fetch('/api/v1/auth/logout', {
+        await fetch(`${apiBaseUrl}/api/v1/auth/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${state.tokens.accessToken}`,
@@ -292,13 +304,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [state.tokens]);
 
   // Refresh token function
-  const refreshToken = useCallback(async (): Promise<void> => {
+  const refreshToken = React.useCallback(async (): Promise<void> => {
     try {
       if (!state.tokens?.refreshToken) {
         throw new Error('No refresh token available');
       }
 
-      const response = await fetch('/api/v1/auth/refresh', {
+      const response = await fetch(`${apiBaseUrl}/api/v1/auth/refresh`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -338,7 +350,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [state.tokens]);
 
   // Schedule token refresh
-  const scheduleTokenRefresh = useCallback((expiresAt: Date) => {
+  const scheduleTokenRefresh = React.useCallback((expiresAt: Date) => {
     if (refreshTimeoutRef.current) {
       clearTimeout(refreshTimeoutRef.current);
     }
@@ -358,7 +370,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [refreshToken]);
 
   // Clear error
-  const clearError = useCallback(() => {
+  const clearError = React.useCallback(() => {
     dispatch({ type: 'CLEAR_ERROR' });
   }, []);
 
@@ -369,7 +381,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Check if we have a valid token in memory
         if (state.tokens?.accessToken) {
           // Verify token with backend
-          const response = await fetch('/api/v1/auth/me', {
+          const response = await fetch(`${apiBaseUrl}/api/v1/auth/me`, {
             headers: {
               'Authorization': `Bearer ${state.tokens.accessToken}`,
             },

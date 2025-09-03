@@ -143,10 +143,11 @@ const stationRoutes = await import('./stations.js');
 const panelRoutes = await import('./panels.js');
 const manufacturingOrderRoutes = await import('./manufacturingOrders.js');
 const inspectionRoutes = await import('./inspections.js');
-  const palletRoutes = await import('./pallets.js');
-  const performanceRoutes = await import('./performance.js');
-  const errorHandlingRoutes = await import('./errorHandling.js');
-  const metricsRoutes = await import('./metrics.js');
+const palletRoutes = await import('./pallets.js');
+const performanceRoutes = await import('./performance.js');
+const errorHandlingRoutes = await import('./errorHandling.js');
+const securityEventsRoutes = await import('./securityEvents.js');
+const complianceRoutes = await import('./compliance.js');
 
 // API v1 base route with available endpoints info
 router.get('/api/v1', (req, res) => {
@@ -163,7 +164,8 @@ router.get('/api/v1', (req, res) => {
       pallets: '/api/v1/pallets',
       performance: '/api/v1/performance',
       errorHandling: '/api/v1/error-handling',
-      metrics: '/api/v1/metrics'
+      securityEvents: '/api/v1/security-events',
+      compliance: '/api/v1/compliance'
     },
     documentation: 'Each endpoint provides detailed documentation in 501 responses until implemented',
     features: {
@@ -185,6 +187,8 @@ router.use('/api/v1/manufacturing-orders', manufacturingOrderRoutes.default);
 router.use('/api/v1/inspections', inspectionRoutes.default);
 router.use('/api/v1/pallets', palletRoutes.default);
 router.use('/api/v1/performance', performanceRoutes.default);
+router.use('/api/v1/security-events', securityEventsRoutes.default);
+router.use('/api/v1/compliance', complianceRoutes.default);
 router.use('/api/v1/error-handling', errorHandlingRoutes.default);
 router.use('/api/v1/metrics', metricsRoutes.default);
 

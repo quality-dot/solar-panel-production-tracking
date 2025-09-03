@@ -9,3 +9,29 @@ Create Station 1 workflow for Assembly & EL with pass/fail criteria: solder join
 
 # Test Strategy:
 Station-specific workflow tests, line-specific criteria tests, N/A handling tests
+
+# Subtasks:
+## 1. MO Creation and Configuration [pending]
+### Dependencies: None
+### Description: Implement manufacturing order creation system
+### Details:
+Create MO creation interface for admins with panel type, quantity, start date, and configuration options. Implement BOM verification against barcode templates.
+
+## 2. MO Progress Tracking [pending]
+### Dependencies: 6.1
+### Description: Implement real-time MO progress monitoring
+### Details:
+Track panel completion progress, remaining quantity, completion percentage, and estimated completion time. Implement alerts at 50 panels remaining.
+
+## 3. MO Status Management [pending]
+### Dependencies: 6.2
+### Description: Implement MO lifecycle management
+### Details:
+Manage MO status transitions: active, paused, completed, cancelled. Implement status change validation and audit logging.
+
+## 4. MO Reporting and Analytics [pending]
+### Dependencies: 6.3
+### Description: Create comprehensive MO reporting system
+### Details:
+Generate reports for F/B panel lists per MO, completion statistics, quality metrics, and production efficiency. Implement export functionality.
+

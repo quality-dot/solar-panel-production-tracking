@@ -130,3 +130,24 @@ The PWA is configured in `vite.config.ts` with:
 ## License
 
 MIT License - see LICENSE file for details
+
+## Security Dashboard (Task 22.6)
+
+- Dev credentials (no DB required):
+  - admin1 / password123 (SYSTEM_ADMIN)
+  - supervisor1 / password123
+  - inspector1 / password123
+  - qcmanager1 / password123
+
+- Frontend env:
+  - Create `.env` with `VITE_API_URL=http://localhost:3000`
+  - Restart `npm run dev`
+
+- Live indicator meanings:
+  - Green • "Live": SSE connected
+  - Yellow • "Connecting…": attempting to connect/reconnect
+  - Red • "Error": connection dropped; auto-retrying with backoff
+
+- Troubleshooting:
+  - Ensure backend running on port 3000
+  - Check Network: `/api/v1/security-events` (200 JSON), `/api/v1/security-events/stream` (pending)

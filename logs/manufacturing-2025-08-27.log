@@ -4933,3 +4933,141 @@
 {"timestamp":"2025-08-27T22:52:27.762Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
 {"timestamp":"2025-08-27T22:52:27.762Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
 {"timestamp":"2025-08-27T22:52:27.762Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:52:52.315Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-27T22:52:52.315Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-27T22:52:52.315Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-27T22:52:52.315Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-27T22:52:52.316Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-27T22:52:52.316Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.316Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-27T22:52:52.316Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.316Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-27T22:52:52.316Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.316Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-27T22:52:52.316Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"36"}
+{"timestamp":"2025-08-27T22:52:52.316Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-27T22:52:52.316Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-27T22:52:52.316Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"40"}
+{"timestamp":"2025-08-27T22:52:52.316Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"60"}
+{"timestamp":"2025-08-27T22:52:52.316Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.317Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"72"}
+{"timestamp":"2025-08-27T22:52:52.317Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.317Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.317Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached line assignment","panelType":"144"}
+{"timestamp":"2025-08-27T22:52:52.317Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.317Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.317Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.317Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.317Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.317Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.317Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.317Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-27T22:52:52.317Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.317Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.318Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"36","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.318Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.318Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.318Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.318Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"40","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.318Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.318Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.318Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.318Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.318Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.318Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"60","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.318Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.318Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-27T22:52:52.318Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"72","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.319Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"monofacial"}
+{"timestamp":"2025-08-27T22:52:52.319Z","level":"DEBUG","logger":"PerformanceCache","message":"Cached panel specs","panelType":"144","constructionType":"bifacial"}
+{"timestamp":"2025-08-27T22:52:52.319Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"cacheFailure"}
+{"timestamp":"2025-08-27T22:52:52.319Z","level":"INFO","logger":"PerformanceCache","message":"Critical data preloaded into cache","lineAssignments":5,"panelSpecs":10}
+{"timestamp":"2025-08-27T22:52:52.320Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"databaseFailure"}
+{"timestamp":"2025-08-27T22:52:52.322Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"cacheFailure"}
+{"timestamp":"2025-08-27T22:52:52.323Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"databaseFailure"}
+{"timestamp":"2025-08-27T22:52:52.323Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"cacheFailure"}
+{"timestamp":"2025-08-27T22:52:52.323Z","level":"INFO","logger":"ErrorHandling","message":"Fallback strategy registered","name":"databaseFailure"}
+{"timestamp":"2025-08-27T22:53:22.324Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:22.327Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:22.328Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:22.326Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:22.329Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:22.326Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:22.329Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:22.329Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:22.330Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:22.330Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:22.331Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:22.331Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:52.323Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:52.329Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:52.329Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:52.331Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:52.330Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:52.330Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:52.335Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:52.336Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:52.336Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:52.337Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:52.338Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:53:52.338Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:22.325Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:22.329Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:22.332Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:22.333Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:22.334Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:22.336Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:22.336Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:22.341Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:22.336Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:22.343Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:22.343Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:22.344Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:52.325Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:52.328Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:52.328Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:52.329Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:52.330Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:52.333Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:52.333Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:52.334Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:52.332Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:52.335Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:52.336Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:54:52.336Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:22.326Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:22.329Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:22.329Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:22.329Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:22.337Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:22.338Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:22.337Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:22.339Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:22.339Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:22.339Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:22.339Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:22.340Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:52.322Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:52.323Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:52.323Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:52.323Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:52.332Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:52.332Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:52.332Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:52.333Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:52.333Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:52.333Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:52.333Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:55:52.333Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:56:22.323Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:56:22.325Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:56:22.325Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:56:22.325Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:56:22.333Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:56:22.333Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:56:22.335Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:56:22.335Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:56:22.335Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:56:22.335Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:56:22.335Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}
+{"timestamp":"2025-08-27T22:56:22.335Z","level":"INFO","logger":"GracefulDegradation","message":"Overall health status updated","overallStatus":"FULL_SERVICE","failingServices":0,"unstableServices":0,"slowServices":0}

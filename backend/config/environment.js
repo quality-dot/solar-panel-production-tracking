@@ -44,6 +44,18 @@ const baseConfig = {
     rateLimitMax: 1000, // High limit for manufacturing operations
   },
 
+  // Redis configuration for session management and caching
+  redis: {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT) || 6379,
+    password: process.env.REDIS_PASSWORD || null,
+    db: parseInt(process.env.REDIS_DB) || 0,
+    maxMemory: process.env.REDIS_MAX_MEMORY || '256mb',
+    sessionTTL: parseInt(process.env.REDIS_SESSION_TTL) || 86400, // 24 hours
+    permissionCacheTTL: parseInt(process.env.REDIS_PERMISSION_CACHE_TTL) || 900, // 15 minutes
+    blacklistTTL: parseInt(process.env.REDIS_BLACKLIST_TTL) || 604800, // 7 days
+  },
+
   // CORS settings for PWA tablets
   cors: {
     origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173'],
@@ -156,7 +168,8 @@ export const validateEnvironment = () => {
       'DB_NAME', 
       'DB_USER',
       'DB_PASSWORD',
-      'JWT_SECRET'
+      'JWT_SECRET',
+      'REDIS_HOST'
     ];
 
     requiredVars.forEach(varName => {

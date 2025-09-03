@@ -1,0 +1,140 @@
+{
+  "id": 3,
+  "title": "Authentication and Authorization System",
+  "description": "Implement user authentication and role-based access control",
+  "details": "Create JWT-based authentication system with role-based authorization for Station Inspectors, Production Supervisors, Quality Control Managers, and System Administrators. Include session management and security features.",
+  "priority": "high",
+  "status": "done",
+  "dependencies": [
+    "2"
+  ],
+  "testStrategy": "Authentication flow tests, authorization permission tests, security vulnerability tests",
+  "subtasks": [
+    {
+      "id": 1,
+      "title": "Setup JWT Libraries and Configuration",
+      "description": "Install and configure JWT dependencies and environment setup",
+      "details": "Install jsonwebtoken and bcryptjs packages, configure JWT secrets in environment variables, set up token expiration times (access: 15min, refresh: 7days), and create JWT utility functions for sign/verify operations.",
+      "status": "done",
+      "dependencies": [],
+      "parentTaskId": 3
+    },
+    {
+      "id": 2,
+      "title": "Create User Model and Password Hashing",
+      "description": "Implement user data model with secure password handling",
+      "details": "Create User model with fields (id, username, email, password_hash, role, station_assignments, created_at, last_login), implement bcrypt password hashing with salt rounds (12), and create password validation utilities.",
+      "status": "done",
+      "dependencies": [],
+      "parentTaskId": 3
+    },
+    {
+      "id": 3,
+      "title": "Build Login/Logout API Endpoints",
+      "description": "Create authentication endpoints with proper validation",
+      "details": "Implement POST /auth/login with username/password validation, create logout endpoint that invalidates tokens, implement refresh token endpoint, add input validation and sanitization, and return appropriate HTTP status codes and error messages.",
+      "status": "done",
+      "dependencies": [],
+      "parentTaskId": 3
+    },
+    {
+      "id": 4,
+      "title": "Define Role System and Permissions Matrix",
+      "description": "Create comprehensive role definitions and permission structure",
+      "details": "Define 4 roles: STATION_INSPECTOR (station operations), PRODUCTION_SUPERVISOR (monitoring, basic admin), QC_MANAGER (quality reports, advanced admin), SYSTEM_ADMIN (full access). Create permissions matrix for API endpoints, UI components, and data access levels.",
+      "status": "done",
+      "dependencies": [],
+      "parentTaskId": 3
+    },
+    {
+      "id": 5,
+      "title": "Create Authorization Middleware",
+      "description": "Build middleware for route protection and permission checking",
+      "details": "Create JWT verification middleware, role-based route protection middleware, permission checking functions, station assignment validation for inspectors, and authorization error handling with proper HTTP responses.",
+      "status": "done",
+      "dependencies": [],
+      "parentTaskId": 3
+    },
+    {
+      "id": 6,
+      "title": "Implement Station Assignment Logic",
+      "description": "Create station assignment system for inspector users",
+      "details": "Build station assignment model linking users to specific stations/lines, implement assignment validation (inspector can only access assigned stations), create assignment management API endpoints, and add assignment checking in station workflows.",
+      "status": "done",
+      "dependencies": [],
+      "parentTaskId": 3
+    },
+    {
+      "id": 7,
+      "title": "Implement Security Protection Features",
+      "description": "Add rate limiting, brute force protection, and security headers",
+      "details": "Implement rate limiting (10 login attempts per 15 minutes), brute force protection with account lockout, secure HTTP headers with helmet.js, CSRF protection for state-changing operations, and IP-based blocking for repeated failed attempts.",
+      "status": "done",
+      "dependencies": [],
+      "parentTaskId": 3
+    },
+    {
+      "id": 8,
+      "title": "Build Session Management and Audit Logging",
+      "description": "Create comprehensive session handling and security audit trail",
+      "details": "Implement session timeout handling (4 hours idle), multi-device session management, session invalidation on password change, security audit logging (login/logout/failed attempts), and session monitoring dashboard for admins.",
+      "status": "done",
+      "dependencies": [],
+      "parentTaskId": 3
+    },
+    {
+      "id": 9,
+      "title": "Create Frontend Authentication Components",
+      "description": "Build React components for authentication and role-based UI",
+      "details": "Create login form component with validation, implement token storage in localStorage/sessionStorage, build role-based component rendering, create authentication context/hooks, implement automatic token refresh, and add logout functionality with session cleanup.",
+      "status": "done",
+      "dependencies": [],
+      "parentTaskId": 3
+    },
+    {
+      "id": 10,
+      "title": "Implement Password Reset Functionality",
+      "description": "Create secure password reset flow with token generation",
+      "details": "Create POST /auth/forgot-password endpoint that generates secure reset tokens, implement POST /auth/reset-password endpoint with token validation, add email notification system for reset links, implement token expiration (1 hour) and cleanup, and add rate limiting for reset attempts.",
+      "status": "pending",
+      "dependencies": [],
+      "parentTaskId": 3
+    },
+    {
+      "id": 11,
+      "title": "Create User Management Endpoints",
+      "description": "Build admin endpoints for user CRUD operations",
+      "details": "Create GET /users endpoint for listing users (admin only), implement POST /users for creating new users with validation, create PUT /users/:id for updating user information, implement DELETE /users/:id for user deletion, add proper authorization checks, and include user search and filtering capabilities.",
+      "status": "pending",
+      "dependencies": [],
+      "parentTaskId": 3
+    },
+    {
+      "id": 12,
+      "title": "Implement Account Lockout and Recovery",
+      "description": "Create account unlock and recovery mechanisms",
+      "details": "Create POST /auth/unlock-account endpoint for administrators, implement recovery flow for locked accounts with admin approval, add notification system for lockout events, create admin dashboard for monitoring locked accounts, and implement automatic unlock after lockout period expires.",
+      "status": "pending",
+      "dependencies": [],
+      "parentTaskId": 3
+    },
+    {
+      "id": 13,
+      "title": "Enhance Session Invalidation and Cleanup",
+      "description": "Implement comprehensive session cleanup and token blacklisting",
+      "details": "Enhance logout endpoint to blacklist tokens in Redis, implement periodic cleanup job for expired sessions and blacklisted tokens, add session invalidation on password change, create admin endpoint for force logout of specific users, and implement session monitoring and cleanup jobs.",
+      "status": "pending",
+      "dependencies": [],
+      "parentTaskId": 3
+    },
+    {
+      "id": 14,
+      "title": "Create Frontend Authentication Components",
+      "description": "Build React components for authentication and role-based UI",
+      "details": "Create login form component with validation and error handling, implement token storage in localStorage/sessionStorage with automatic refresh, build role-based component rendering and route protection, create authentication context/hooks for state management, implement automatic token refresh, and add logout functionality with session cleanup.",
+      "status": "pending",
+      "dependencies": [],
+      "parentTaskId": 3
+    }
+  ]
+}

@@ -92,14 +92,14 @@ export default function Settings() {
           </div>
         </div>
       )}
-
+      
       {/* Station Configuration */}
       <div className="card">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Station Configuration</h3>
         <div className="space-y-4">
           <div className="form-group">
-            <label htmlFor="stationId" className="label">Station ID</label>
-            <select id="stationId" className="input">
+            <label htmlFor="settingsStationId" className="label">Station ID</label>
+            <select id="settingsStationId" className="input">
               <option value="">Select Station</option>
               <option value="1">Line 1 - Station 1: Assembly & EL</option>
               <option value="2">Line 1 - Station 2: Framing</option>

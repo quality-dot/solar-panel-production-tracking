@@ -9,3 +9,41 @@ Create Station 4 workflow with manual Wattage (Pmax) entry and comprehensive pas
 COMMENT
 # Test Strategy:
 Manual entry validation tests, comprehensive criteria tests, sticker printing tests
+
+# Subtasks:
+## 1. Dashboard Layout and Navigation [pending]
+### Dependencies: None
+### Description: Create admin dashboard foundation
+### Details:
+Design responsive dashboard layout with navigation menu, role-based access control, and mobile-friendly interface. Implement dashboard routing and state management.
+
+## 2. Real-Time Production Monitoring [pending]
+### Dependencies: 9.1
+### Description: Implement live production status display
+### Details:
+Create real-time production monitoring with station status, panel progress, quality metrics, and alert system. Implement WebSocket connections for live updates.
+
+## 3. MO Management Interface [pending]
+### Dependencies: 9.2
+### Description: Build manufacturing order management UI
+### Details:
+Create comprehensive MO management interface with creation, editing, monitoring, and reporting capabilities. Implement role-based access control.
+
+## 4. Station Configuration Controls [pending]
+### Dependencies: 9.3
+### Description: Implement station management interface
+### Details:
+Create station configuration interface for admins to manage station settings, criteria, and operator assignments. Implement validation and error handling.
+
+## 5. User Management Interface [pending]
+### Dependencies: 9.4
+### Description: Build user administration system
+### Details:
+Create user management interface for creating, editing, and managing user accounts. Implement role assignment, station assignment, and account status management.
+
+## 6. Analytics and Reporting Dashboard [pending]
+### Dependencies: 9.5
+### Description: Implement comprehensive reporting system
+### Details:
+Create analytics dashboard with production metrics, quality trends, efficiency analysis, and custom report generation. Implement data visualization and export capabilities.
+

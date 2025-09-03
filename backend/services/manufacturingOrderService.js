@@ -1,950 +1,618 @@
 // Manufacturing Order Service
-// Handles MO creation, validation, progress tracking, and barcode integration
+// Core business logic for MO creation, validation, and management
 
-import { databaseManager } from '../config/database.js';
-import { ManufacturingLogger } from '../middleware/logger.js';
-import { errorRecoverySystem, ManufacturingError } from '../utils/errorHandling.js';
-import { 
-  processBarcodeComplete,
-  validateBarcodeComponents,
-  parseBarcode,
-  BarcodeError 
-} from '../utils/barcodeProcessor.js';
-import { BarcodeGenerator } from '../utils/barcodeGenerator.js';
-import { metricsService } from './metricsService.js';
+import db from '../config/database.js';
+import { v4 as uuidv4 } from 'uuid';
+import { manufacturingLogger } from '../middleware/logger.js';
+import moProgressTrackingService from './moProgressTrackingService.js';
+import moAlertService from './moAlertService.js';
 
-const logger = new ManufacturingLogger('ManufacturingOrderService');
-
-/**
- * Custom error class for manufacturing order operations
- */
-export class MOServiceError extends Error {
-  constructor(message, code, details = null) {
-    super(message);
-    this.name = 'MOServiceError';
-    this.code = code;
-    this.details = details;
-    this.timestamp = new Date().toISOString();
-  }
-}
-
-/**
- * Manufacturing Order Service Class
- * Handles all MO-related operations with barcode integration
- */
-export class ManufacturingOrderService {
+class ManufacturingOrderService {
   constructor() {
-    this.db = databaseManager;
-    this.barcodeGenerator = new BarcodeGenerator();
+    this.logger = manufacturingLogger;
   }
 
   /**
-   * Create a new manufacturing order with barcode generation parameters
+   * Create a new manufacturing order with validation
+   * @param {Object} moData - Manufacturing order data
+   * @param {string} moData.panel_type - Type of panels to manufacture
+   * @param {number} moData.target_quantity - Number of panels to manufacture
+   * @param {string} moData.year_code - Year code for barcode generation (YY format)
+   * @param {string} moData.frame_type - Frame type (SILVER/BLACK)
+   * @param {string} moData.backsheet_type - Backsheet type (TRANSPARENT/WHITE/BLACK)
+   * @param {string} moData.created_by - User ID who created the order
+   * @param {Object} moData.additional - Additional optional fields
+   * @returns {Promise<Object>} Created manufacturing order
    */
-  async createManufacturingOrder(orderData, metadata = {}) {
-    return await errorRecoverySystem.executeWithRecovery(
-      async () => this._createManufacturingOrderInternal(orderData, metadata),
-      {
-        serviceName: 'database',
-        fallbackStrategy: 'databaseFailure',
-        retryEnabled: true,
-        circuitBreakerEnabled: true,
-        context: { 
-          operation: 'createManufacturingOrder',
-          orderNumber: orderData.orderNumber,
-          userId: metadata.userId 
-        }
-      }
-    );
-  }
-
-  async _createManufacturingOrderInternal(orderData, metadata = {}) {
+  async createManufacturingOrder(moData) {
     const {
-      orderNumber,
-      panelType,
-      targetQuantity,
-      customerName,
-      customerPo,
+      panel_type,
+      target_quantity,
+      year_code,
+      frame_type,
+      backsheet_type,
+      created_by,
+      customer_name,
+      customer_po,
       notes,
+      estimated_completion_date,
       priority = 0,
-      yearCode,
-      frameType,
-      backsheetType,
-      estimatedCompletionDate
-    } = orderData;
+      ...additional
+    } = moData;
 
     try {
-      const client = await this.db.getClient();
-      await client.query('BEGIN');
+      // Validate required fields
+      this.validateMOData(moData);
 
-      try {
-        // Validate order number uniqueness
-        await this.validateOrderNumberUniqueness(orderNumber, client);
+      // Generate unique order number
+      const order_number = await this.generateOrderNumber();
 
-        // Validate panel type
-        this.validatePanelType(panelType);
-
-        // Set default barcode generation parameters
-        const defaultYearCode = yearCode || new Date().getFullYear().toString().slice(-2);
-        const defaultFrameType = frameType || 'SILVER';
-        const defaultBacksheetType = backsheetType || 'WHITE';
-
-        // Insert manufacturing order
-        const insertQuery = `
-          INSERT INTO manufacturing_orders (
-            order_number, panel_type, target_quantity, completed_quantity, 
-            failed_quantity, in_progress_quantity, status, priority,
-            year_code, frame_type, backsheet_type, next_sequence_number,
-            created_by, customer_name, customer_po, notes, estimated_completion_date,
-            created_at, updated_at
-          ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
-          ) RETURNING *
-        `;
-
-        const insertValues = [
-          orderNumber,
-          this.mapPanelTypeToEnum(panelType),
-          targetQuantity,
-          0, // completed_quantity
-          0, // failed_quantity
-          0, // in_progress_quantity
-          'DRAFT', // status
-          priority,
-          defaultYearCode,
-          defaultFrameType,
-          defaultBacksheetType,
-          1, // next_sequence_number (starting sequence)
-          metadata.userId || null,
-          customerName || null,
-          customerPo || null,
-          notes || null,
-          estimatedCompletionDate || null,
-          new Date().toISOString(),
-          new Date().toISOString()
-        ];
-
-        const result = await client.query(insertQuery, insertValues);
-        const createdMO = result.rows[0];
-
-        // Generate barcode range for this MO
-        const barcodeRange = await this.generateBarcodeRange(createdMO, client);
-
-        // Log MO creation
-        await this.logMOCreation(createdMO, metadata, client);
-
-        // Record MO creation metrics
-        try {
-          metricsService.recordMOEvent({
-            moId: createdMO.id,
-            orderNumber: createdMO.order_number,
-            eventType: 'created',
-            details: {
-              panelType: createdMO.panel_type,
-              targetQuantity: createdMO.target_quantity,
-              yearCode: createdMO.year_code
-            },
-            userId: metadata.userId
-          });
-        } catch (metricsError) {
-          logger.warn('Failed to record MO creation metrics', {
-            moId: createdMO.id,
-            error: metricsError.message
-          });
-        }
-
-        await client.query('COMMIT');
-
-        logger.info('Manufacturing Order created successfully', {
-          moId: createdMO.id,
-          orderNumber: createdMO.order_number,
-          panelType: createdMO.panel_type,
-          targetQuantity: createdMO.target_quantity,
-          barcodeRange: {
-            startSequence: barcodeRange.startSequence,
-            endSequence: barcodeRange.endSequence
-          }
-        });
-
-        return {
-          success: true,
-          manufacturingOrder: createdMO,
-          barcodeRange,
-          createdAt: new Date().toISOString()
-        };
-
-      } catch (error) {
-        await client.query('ROLLBACK');
-        throw error;
-      } finally {
-        client.release();
-      }
-
-    } catch (error) {
-      logger.error('Manufacturing Order creation failed', {
-        orderNumber,
-        error: error.message,
-        code: error.code
+      // Validate BOM components
+      await this.validateBOMComponents({
+        panel_type,
+        frame_type,
+        backsheet_type,
+        year_code
       });
 
-      if (error instanceof MOServiceError || error instanceof BarcodeError) {
-        throw error;
-      }
-
-      throw new MOServiceError(
-        'Database operation failed during MO creation',
-        'DATABASE_ERROR',
-        { originalError: error.message }
-      );
-    }
-  }
-
-  /**
-   * Validate barcode against active manufacturing order
-   */
-  async validateBarcodeAgainstMO(barcodeString, moId = null) {
-    try {
-      // First, process the barcode normally
-      const barcodeResult = processBarcodeComplete(barcodeString);
-      
-      if (!barcodeResult.success) {
-        throw new MOServiceError(
-          'Invalid barcode format',
-          'INVALID_BARCODE',
-          barcodeResult.error
-        );
-      }
-
-      const components = barcodeResult.components;
-
-      // Find relevant manufacturing orders
-      let moQuery = `
-        SELECT mo.*, 
-               COUNT(p.id) as panels_created,
-               COUNT(CASE WHEN p.status = 'PASSED' THEN 1 END) as panels_completed
-        FROM manufacturing_orders mo
-        LEFT JOIN panels p ON p.mo_id = mo.id
-        WHERE mo.status IN ('DRAFT', 'ACTIVE', 'PAUSED')
-          AND mo.panel_type = $1
-      `;
-      
-      const params = [this.mapPanelTypeToEnum(components.panelType)];
-
-      if (moId) {
-        moQuery += ' AND mo.id = $2';
-        params.push(moId);
-      }
-
-      moQuery += ` 
-        GROUP BY mo.id
-        ORDER BY mo.priority DESC, mo.created_at ASC
+      // Create the manufacturing order
+      const query = `
+        INSERT INTO manufacturing_orders (
+          order_number,
+          panel_type,
+          target_quantity,
+          year_code,
+          frame_type,
+          backsheet_type,
+          created_by,
+          customer_name,
+          customer_po,
+          notes,
+          estimated_completion_date,
+          priority,
+          status
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        RETURNING *
       `;
 
-      const moResult = await this.db.query(moQuery, params);
+      const values = [
+        order_number,
+        panel_type,
+        target_quantity,
+        year_code,
+        frame_type,
+        backsheet_type,
+        created_by,
+        customer_name || null,
+        customer_po || null,
+        notes || null,
+        estimated_completion_date || null,
+        priority,
+        'DRAFT'
+      ];
 
-      if (moResult.rows.length === 0) {
-        throw new MOServiceError(
-          `No active manufacturing orders found for panel type ${components.panelType}`,
-          'NO_ACTIVE_MO',
-          { panelType: components.panelType, moId }
-        );
-      }
+      const result = await db.query(query, values);
+      const newMO = result.rows[0];
 
-      // Find the best matching MO
-      let selectedMO = null;
-      let validationResult = null;
+      this.logger.info('Manufacturing order created successfully', {
+        order_number: newMO.order_number,
+        panel_type: newMO.panel_type,
+        target_quantity: newMO.target_quantity,
+        created_by
+      });
 
-      for (const mo of moResult.rows) {
-        const validation = this.validateBarcodeForMO(components, mo);
-        if (validation.isValid) {
-          selectedMO = mo;
-          validationResult = validation;
-          break;
-        }
-      }
-
-      if (!selectedMO) {
-        throw new MOServiceError(
-          'Barcode does not match any active manufacturing order specifications',
-          'BARCODE_MO_MISMATCH',
-          { 
-            barcode: barcodeString,
-            availableMOs: moResult.rows.map(mo => ({
-              id: mo.id,
-              orderNumber: mo.order_number,
-              panelType: mo.panel_type,
-              yearCode: mo.year_code
-            }))
-          }
-        );
-      }
-
-      // Check if sequence is within valid range
-      const sequenceValidation = await this.validateSequenceRange(
-        components, 
-        selectedMO
-      );
-
-      if (!sequenceValidation.isValid) {
-        throw new MOServiceError(
-          sequenceValidation.error,
-          'SEQUENCE_OUT_OF_RANGE',
-          sequenceValidation.details
-        );
-      }
-
-      // Check for duplicate barcode
-      const duplicateCheck = await this.checkBarcodeUniqueness(barcodeString);
-      if (!duplicateCheck.isUnique) {
-        throw new MOServiceError(
-          'Barcode already exists in system',
-          'BARCODE_DUPLICATE',
-          duplicateCheck.details
-        );
-      }
-
-      return {
-        isValid: true,
-        manufacturingOrder: selectedMO,
-        barcodeResult,
-        validation: validationResult,
-        sequenceValidation,
-        duplicateCheck,
-        validatedAt: new Date().toISOString()
-      };
+      return newMO;
 
     } catch (error) {
-      if (error instanceof MOServiceError || error instanceof BarcodeError) {
-        throw error;
-      }
-
-      throw new MOServiceError(
-        'Barcode validation against MO failed',
-        'VALIDATION_ERROR',
-        { originalError: error.message }
-      );
+      this.logger.error('Failed to create manufacturing order', {
+        error: error.message,
+        moData: { panel_type, target_quantity, created_by }
+      });
+      throw error;
     }
   }
 
   /**
-   * Update MO progress when panels are completed/failed
+   * Get manufacturing order by ID
+   * @param {number} moId - Manufacturing order ID
+   * @returns {Promise<Object|null>} Manufacturing order or null if not found
    */
-  async updateMOProgress(moId, statusChange, metadata = {}) {
-    try {
-      const client = await this.db.getClient();
-      await client.query('BEGIN');
-
-      try {
-        // Get current MO state
-        const moQuery = 'SELECT * FROM manufacturing_orders WHERE id = $1';
-        const moResult = await client.query(moQuery, [moId]);
-
-        if (moResult.rows.length === 0) {
-          throw new MOServiceError(
-            `Manufacturing Order not found: ${moId}`,
-            'MO_NOT_FOUND'
-          );
-        }
-
-        const mo = moResult.rows[0];
-
-        // Calculate new quantities
-        const newQuantities = this.calculateUpdatedQuantities(mo, statusChange);
-
-        // Update MO with new quantities
-        const updateQuery = `
-          UPDATE manufacturing_orders 
-          SET completed_quantity = $1,
-              failed_quantity = $2,
-              in_progress_quantity = $3,
-              updated_at = $4
-          WHERE id = $5
-          RETURNING *
-        `;
-
-        const updateValues = [
-          newQuantities.completed,
-          newQuantities.failed,
-          newQuantities.inProgress,
-          new Date().toISOString(),
-          moId
-        ];
-
-        const updateResult = await client.query(updateQuery, updateValues);
-        const updatedMO = updateResult.rows[0];
-
-        // Log progress update
-        await this.logProgressUpdate(mo, updatedMO, statusChange, metadata, client);
-
-        await client.query('COMMIT');
-
-        logger.info('MO progress updated', {
-          moId,
-          orderNumber: mo.order_number,
-          statusChange,
-          oldQuantities: {
-            completed: mo.completed_quantity,
-            failed: mo.failed_quantity,
-            inProgress: mo.in_progress_quantity
-          },
-          newQuantities
-        });
-
-        return {
-          success: true,
-          manufacturingOrder: updatedMO,
-          progressChange: statusChange,
-          updatedAt: new Date().toISOString()
-        };
-
-      } catch (error) {
-        await client.query('ROLLBACK');
-        throw error;
-      } finally {
-        client.release();
-      }
-
-    } catch (error) {
-      if (error instanceof MOServiceError) {
-        throw error;
-      }
-
-      throw new MOServiceError(
-        'MO progress update failed',
-        'UPDATE_ERROR',
-        { originalError: error.message }
-      );
-    }
-  }
-
-  /**
-   * Generate next barcode for a manufacturing order
-   */
-  async generateNextBarcode(moId) {
-    try {
-      const client = await this.db.getClient();
-      await client.query('BEGIN');
-
-      try {
-        // Get MO with current sequence number
-        const moQuery = `
-          SELECT * FROM manufacturing_orders 
-          WHERE id = $1 AND status IN ('DRAFT', 'ACTIVE', 'PAUSED')
-          FOR UPDATE
-        `;
-        
-        const moResult = await client.query(moQuery, [moId]);
-
-        if (moResult.rows.length === 0) {
-          throw new MOServiceError(
-            `Active Manufacturing Order not found: ${moId}`,
-            'MO_NOT_FOUND'
-          );
-        }
-
-        const mo = moResult.rows[0];
-
-        // Check if we've reached the target quantity
-        const totalProduced = mo.completed_quantity + mo.failed_quantity + mo.in_progress_quantity;
-        
-        if (totalProduced >= mo.target_quantity) {
-          throw new MOServiceError(
-            `Manufacturing Order ${mo.order_number} has reached target quantity`,
-            'MO_TARGET_REACHED',
-            {
-              targetQuantity: mo.target_quantity,
-              totalProduced
-            }
-          );
-        }
-
-        // Generate barcode using MO specifications
-        const barcode = this.constructBarcode({
-          yearCode: mo.year_code,
-          frameType: mo.frame_type,
-          backsheetType: mo.backsheet_type,
-          panelType: mo.panel_type,
-          sequenceNumber: mo.next_sequence_number
-        });
-
-        // Increment sequence number
-        const updateQuery = `
-          UPDATE manufacturing_orders 
-          SET next_sequence_number = next_sequence_number + 1,
-              updated_at = $1
-          WHERE id = $2
-          RETURNING next_sequence_number
-        `;
-
-        await client.query(updateQuery, [new Date().toISOString(), moId]);
-
-        await client.query('COMMIT');
-
-        logger.info('Next barcode generated for MO', {
-          moId,
-          orderNumber: mo.order_number,
-          barcode,
-          sequenceNumber: mo.next_sequence_number
-        });
-
-        return {
-          success: true,
-          barcode,
-          manufacturingOrder: {
-            id: mo.id,
-            orderNumber: mo.order_number,
-            panelType: mo.panel_type
-          },
-          sequenceNumber: mo.next_sequence_number,
-          generatedAt: new Date().toISOString()
-        };
-
-      } catch (error) {
-        await client.query('ROLLBACK');
-        throw error;
-      } finally {
-        client.release();
-      }
-
-    } catch (error) {
-      if (error instanceof MOServiceError) {
-        throw error;
-      }
-
-      throw new MOServiceError(
-        'Barcode generation failed',
-        'GENERATION_ERROR',
-        { originalError: error.message }
-      );
-    }
-  }
-
-  /**
-   * Get MO progress and statistics
-   */
-  async getMOProgress(moId) {
+  async getManufacturingOrderById(moId) {
     try {
       const query = `
-        SELECT mo.*,
-               COUNT(p.id) as total_panels_created,
-               COUNT(CASE WHEN p.status = 'PASSED' THEN 1 END) as panels_passed,
-               COUNT(CASE WHEN p.status = 'FAILED' THEN 1 END) as panels_failed,
-               COUNT(CASE WHEN p.status = 'IN_PROGRESS' THEN 1 END) as panels_in_progress,
-               COUNT(CASE WHEN p.status = 'REWORK' THEN 1 END) as panels_rework,
-               ROUND(
-                 (mo.completed_quantity::float / NULLIF(mo.target_quantity, 0)) * 100, 2
-               ) as completion_percentage
+        SELECT 
+          mo.*,
+          u.username as created_by_username,
+          u.email as created_by_email
         FROM manufacturing_orders mo
-        LEFT JOIN panels p ON p.mo_id = mo.id
+        LEFT JOIN users u ON mo.created_by = u.id
+        WHERE mo.id = $1
+      `;
+
+      const result = await db.query(query, [moId]);
+      return result.rows[0] || null;
+
+    } catch (error) {
+      this.logger.error('Failed to get manufacturing order by ID', {
+        error: error.message,
+        moId
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get manufacturing order by order number
+   * @param {string} orderNumber - Order number
+   * @returns {Promise<Object|null>} Manufacturing order or null if not found
+   */
+  async getManufacturingOrderByNumber(orderNumber) {
+    try {
+      const query = `
+        SELECT 
+          mo.*,
+          u.username as created_by_username,
+          u.email as created_by_email
+        FROM manufacturing_orders mo
+        LEFT JOIN users u ON mo.created_by = u.id
+        WHERE mo.order_number = $1
+      `;
+
+      const result = await db.query(query, [orderNumber]);
+      return result.rows[0] || null;
+
+    } catch (error) {
+      this.logger.error('Failed to get manufacturing order by number', {
+        error: error.message,
+        orderNumber
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get all manufacturing orders with optional filtering
+   * @param {Object} filters - Optional filters
+   * @param {string} filters.status - Filter by status
+   * @param {string} filters.panel_type - Filter by panel type
+   * @param {number} filters.limit - Limit results
+   * @param {number} filters.offset - Offset for pagination
+   * @returns {Promise<Array>} Array of manufacturing orders
+   */
+  async getManufacturingOrders(filters = {}) {
+    try {
+      const {
+        status,
+        panel_type,
+        limit = 50,
+        offset = 0,
+        order_by = 'created_at',
+        order_direction = 'DESC'
+      } = filters;
+
+      let query = `
+        SELECT 
+          mo.*,
+          u.username as created_by_username,
+          u.email as created_by_email
+        FROM manufacturing_orders mo
+        LEFT JOIN users u ON mo.created_by = u.id
+      `;
+
+      const conditions = [];
+      const values = [];
+      let paramCount = 0;
+
+      if (status) {
+        paramCount++;
+        conditions.push(`mo.status = $${paramCount}`);
+        values.push(status);
+      }
+
+      if (panel_type) {
+        paramCount++;
+        conditions.push(`mo.panel_type = $${paramCount}`);
+        values.push(panel_type);
+      }
+
+      if (conditions.length > 0) {
+        query += ` WHERE ${conditions.join(' AND ')}`;
+      }
+
+      query += ` ORDER BY mo.${order_by} ${order_direction}`;
+      query += ` LIMIT $${++paramCount} OFFSET $${++paramCount}`;
+      values.push(limit, offset);
+
+      const result = await db.query(query, values);
+      return result.rows;
+
+    } catch (error) {
+      this.logger.error('Failed to get manufacturing orders', {
+        error: error.message,
+        filters
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Update manufacturing order
+   * @param {number} moId - Manufacturing order ID
+   * @param {Object} updateData - Data to update
+   * @returns {Promise<Object>} Updated manufacturing order
+   */
+  async updateManufacturingOrder(moId, updateData) {
+    try {
+      const allowedFields = [
+        'panel_type',
+        'target_quantity',
+        'year_code',
+        'frame_type',
+        'backsheet_type',
+        'customer_name',
+        'customer_po',
+        'notes',
+        'estimated_completion_date',
+        'priority',
+        'status'
+      ];
+
+      const updateFields = [];
+      const values = [];
+      let paramCount = 0;
+
+      // Build dynamic update query
+      for (const [key, value] of Object.entries(updateData)) {
+        if (allowedFields.includes(key) && value !== undefined) {
+          paramCount++;
+          updateFields.push(`${key} = $${paramCount}`);
+          values.push(value);
+        }
+      }
+
+      if (updateFields.length === 0) {
+        throw new Error('No valid fields to update');
+      }
+
+      // Add updated_at
+      paramCount++;
+      updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
+
+      // Add WHERE clause
+      paramCount++;
+      values.push(moId);
+
+      const query = `
+        UPDATE manufacturing_orders 
+        SET ${updateFields.join(', ')}
+        WHERE id = $${paramCount}
+        RETURNING *
+      `;
+
+      const result = await db.query(query, values);
+      
+      if (result.rows.length === 0) {
+        throw new Error('Manufacturing order not found');
+      }
+
+      const updatedMO = result.rows[0];
+
+      this.logger.info('Manufacturing order updated successfully', {
+        moId,
+        order_number: updatedMO.order_number,
+        updatedFields: Object.keys(updateData)
+      });
+
+      return updatedMO;
+
+    } catch (error) {
+      this.logger.error('Failed to update manufacturing order', {
+        error: error.message,
+        moId,
+        updateData
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Delete manufacturing order (soft delete by setting status to CANCELLED)
+   * @param {number} moId - Manufacturing order ID
+   * @returns {Promise<Object>} Updated manufacturing order
+   */
+  async deleteManufacturingOrder(moId) {
+    try {
+      const query = `
+        UPDATE manufacturing_orders 
+        SET status = 'CANCELLED', updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1 AND status != 'COMPLETED'
+        RETURNING *
+      `;
+
+      const result = await db.query(query, [moId]);
+      
+      if (result.rows.length === 0) {
+        throw new Error('Manufacturing order not found or cannot be cancelled');
+      }
+
+      const cancelledMO = result.rows[0];
+
+      this.logger.info('Manufacturing order cancelled successfully', {
+        moId,
+        order_number: cancelledMO.order_number
+      });
+
+      return cancelledMO;
+
+    } catch (error) {
+      this.logger.error('Failed to delete manufacturing order', {
+        error: error.message,
+        moId
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Validate manufacturing order data
+   * @param {Object} moData - Manufacturing order data to validate
+   * @throws {Error} If validation fails
+   */
+  validateMOData(moData) {
+    const {
+      panel_type,
+      target_quantity,
+      year_code,
+      frame_type,
+      backsheet_type,
+      created_by
+    } = moData;
+
+    // Required fields validation
+    if (!panel_type) {
+      throw new Error('Panel type is required');
+    }
+
+    if (!target_quantity || target_quantity <= 0) {
+      throw new Error('Target quantity must be a positive number');
+    }
+
+    if (!year_code) {
+      throw new Error('Year code is required');
+    }
+
+    if (!frame_type) {
+      throw new Error('Frame type is required');
+    }
+
+    if (!backsheet_type) {
+      throw new Error('Backsheet type is required');
+    }
+
+    if (!created_by) {
+      throw new Error('Created by user ID is required');
+    }
+
+    // Validate panel type enum
+    const validPanelTypes = ['TYPE_36', 'TYPE_40', 'TYPE_60', 'TYPE_72', 'TYPE_144'];
+    if (!validPanelTypes.includes(panel_type)) {
+      throw new Error(`Invalid panel type: ${panel_type}`);
+    }
+
+    // Validate frame type enum
+    const validFrameTypes = ['SILVER', 'BLACK'];
+    if (!validFrameTypes.includes(frame_type)) {
+      throw new Error(`Invalid frame type: ${frame_type}`);
+    }
+
+    // Validate backsheet type enum
+    const validBacksheetTypes = ['TRANSPARENT', 'WHITE', 'BLACK'];
+    if (!validBacksheetTypes.includes(backsheet_type)) {
+      throw new Error(`Invalid backsheet type: ${backsheet_type}`);
+    }
+
+    // Validate year code format (YY)
+    if (!/^[0-9]{2}$/.test(year_code)) {
+      throw new Error('Year code must be 2 digits (YY format)');
+    }
+
+    // Validate quantity range
+    if (target_quantity < 1 || target_quantity > 10000) {
+      throw new Error('Target quantity must be between 1 and 10,000');
+    }
+
+    // Validate UUID format for created_by
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(created_by)) {
+      throw new Error('Invalid user ID format');
+    }
+  }
+
+  /**
+   * Validate BOM components for consistency
+   * @param {Object} bomData - BOM component data
+   * @throws {Error} If BOM validation fails
+   */
+  async validateBOMComponents(bomData) {
+    const { panel_type, frame_type, backsheet_type, year_code } = bomData;
+
+    // Validate panel type and line assignment
+    const line1PanelTypes = ['TYPE_36', 'TYPE_40', 'TYPE_60', 'TYPE_72'];
+    const line2PanelTypes = ['TYPE_144'];
+
+    if (line1PanelTypes.includes(panel_type)) {
+      // Line 1 panels - validate frame and backsheet combinations
+      this.logger.debug('Validating Line 1 panel BOM', { panel_type, frame_type, backsheet_type });
+    } else if (line2PanelTypes.includes(panel_type)) {
+      // Line 2 panels - validate frame and backsheet combinations
+      this.logger.debug('Validating Line 2 panel BOM', { panel_type, frame_type, backsheet_type });
+    } else {
+      throw new Error(`Invalid panel type: ${panel_type}`);
+    }
+
+    // Additional BOM validation logic can be added here
+    // For example, checking if certain frame/backsheet combinations are valid
+    // or if there are any business rules about component compatibility
+  }
+
+  /**
+   * Generate unique order number
+   * @returns {Promise<string>} Unique order number
+   */
+  async generateOrderNumber() {
+    try {
+      const currentYear = new Date().getFullYear().toString().slice(-2);
+      const prefix = `MO${currentYear}`;
+
+      // Get the highest order number for this year
+      const query = `
+        SELECT order_number 
+        FROM manufacturing_orders 
+        WHERE order_number LIKE $1
+        ORDER BY order_number DESC 
+        LIMIT 1
+      `;
+
+      const result = await db.query(query, [`${prefix}%`]);
+      
+      let nextNumber = 1;
+      if (result.rows.length > 0) {
+        const lastOrderNumber = result.rows[0].order_number;
+        const lastNumber = parseInt(lastOrderNumber.replace(prefix, ''));
+        nextNumber = lastNumber + 1;
+      }
+
+      const orderNumber = `${prefix}${nextNumber.toString().padStart(4, '0')}`;
+
+      this.logger.debug('Generated order number', { orderNumber });
+      return orderNumber;
+
+    } catch (error) {
+      this.logger.error('Failed to generate order number', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Get MO statistics and progress
+   * @param {number} moId - Manufacturing order ID
+   * @returns {Promise<Object>} MO statistics
+   */
+  async getMOStatistics(moId) {
+    try {
+      const query = `
+        SELECT 
+          mo.*,
+          COUNT(p.id) as total_panels,
+          COUNT(CASE WHEN p.status = 'COMPLETED' THEN 1 END) as completed_panels,
+          COUNT(CASE WHEN p.status = 'FAILED' THEN 1 END) as failed_panels,
+          COUNT(CASE WHEN p.status = 'IN_PROGRESS' THEN 1 END) as in_progress_panels,
+          ROUND(
+            (COUNT(CASE WHEN p.status = 'COMPLETED' THEN 1 END)::DECIMAL / 
+             NULLIF(mo.target_quantity, 0)) * 100, 2
+          ) as completion_percentage
+        FROM manufacturing_orders mo
+        LEFT JOIN panels p ON mo.id = p.manufacturing_order_id
         WHERE mo.id = $1
         GROUP BY mo.id
       `;
 
-      const result = await this.db.query(query, [moId]);
-
-      if (result.rows.length === 0) {
-        throw new MOServiceError(
-          `Manufacturing Order not found: ${moId}`,
-          'MO_NOT_FOUND'
-        );
-      }
-
-      const mo = result.rows[0];
-
-      // Calculate additional metrics
-      const metrics = {
-        totalTargeted: mo.target_quantity,
-        totalCompleted: mo.completed_quantity,
-        totalFailed: mo.failed_quantity,
-        totalInProgress: mo.in_progress_quantity,
-        totalCreated: mo.total_panels_created,
-        completionPercentage: mo.completion_percentage || 0,
-        remainingToTarget: Math.max(0, mo.target_quantity - mo.completed_quantity - mo.failed_quantity),
-        efficiency: mo.completed_quantity > 0 ? 
-          ((mo.completed_quantity / (mo.completed_quantity + mo.failed_quantity)) * 100).toFixed(2) : 0,
-        estimatedCompletion: this.calculateEstimatedCompletion(mo)
-      };
-
-      return {
-        manufacturingOrder: mo,
-        progress: metrics,
-        queriedAt: new Date().toISOString()
-      };
-
-    } catch (error) {
-      if (error instanceof MOServiceError) {
-        throw error;
-      }
-
-      throw new MOServiceError(
-        'MO progress lookup failed',
-        'LOOKUP_ERROR',
-        { originalError: error.message }
-      );
-    }
-  }
-
-  // Private helper methods
-
-  /**
-   * Validate barcode components against specific MO
-   */
-  validateBarcodeForMO(components, mo) {
-    const errors = [];
-
-    // Check year code
-    if (mo.year_code && components.year !== mo.year_code) {
-      errors.push(`Year mismatch: barcode has ${components.year}, MO expects ${mo.year_code}`);
-    }
-
-    // Check panel type
-    const expectedPanelType = mo.panel_type.replace('TYPE_', '');
-    if (components.panelType !== expectedPanelType) {
-      errors.push(`Panel type mismatch: barcode has ${components.panelType}, MO expects ${expectedPanelType}`);
-    }
-
-    // Check frame type (if specified in MO)
-    if (mo.frame_type) {
-      const expectedFrameCode = mo.frame_type === 'SILVER' ? 'W' : 'B';
-      if (components.factory !== expectedFrameCode) {
-        errors.push(`Frame type mismatch: barcode has ${components.factory}, MO expects ${expectedFrameCode}`);
-      }
-    }
-
-    // Check backsheet type (if specified in MO)
-    if (mo.backsheet_type) {
-      const expectedBacksheetCode = {
-        'TRANSPARENT': 'T',
-        'WHITE': 'W',
-        'BLACK': 'B'
-      }[mo.backsheet_type];
+      const result = await db.query(query, [moId]);
       
-      if (expectedBacksheetCode && components.batch !== expectedBacksheetCode) {
-        errors.push(`Backsheet type mismatch: barcode has ${components.batch}, MO expects ${expectedBacksheetCode}`);
-      }
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      moId: mo.id,
-      orderNumber: mo.order_number
-    };
-  }
-
-  /**
-   * Validate sequence number is within MO range
-   */
-  async validateSequenceRange(components, mo) {
-    const sequenceNumber = parseInt(components.sequence);
-    const currentSequence = mo.next_sequence_number;
-    const maxSequence = currentSequence + (mo.target_quantity - mo.completed_quantity - mo.failed_quantity);
-
-    if (sequenceNumber < 1) {
-      return {
-        isValid: false,
-        error: 'Sequence number must be greater than 0',
-        details: { sequenceNumber, minSequence: 1 }
-      };
-    }
-
-    if (sequenceNumber >= currentSequence && sequenceNumber <= maxSequence) {
-      return { isValid: true };
-    }
-
-    // Check if sequence is too low (already used)
-    if (sequenceNumber < currentSequence) {
-      return {
-        isValid: false,
-        error: `Sequence number ${sequenceNumber} has already been used for this MO`,
-        details: { 
-          sequenceNumber, 
-          currentSequence, 
-          status: 'SEQUENCE_ALREADY_USED' 
-        }
-      };
-    }
-
-    // Check if sequence is too high (beyond target)
-    return {
-      isValid: false,
-      error: `Sequence number ${sequenceNumber} exceeds MO target range`,
-      details: { 
-        sequenceNumber, 
-        maxSequence, 
-        targetQuantity: mo.target_quantity,
-        status: 'SEQUENCE_EXCEEDS_TARGET' 
-      }
-    };
-  }
-
-  /**
-   * Check if barcode already exists in system
-   */
-  async checkBarcodeUniqueness(barcode) {
-    try {
-      const query = 'SELECT id, barcode, mo_id FROM panels WHERE barcode = $1';
-      const result = await this.db.query(query, [barcode]);
-
-      if (result.rows.length > 0) {
-        return {
-          isUnique: false,
-          details: {
-            existingPanelId: result.rows[0].id,
-            existingMoId: result.rows[0].mo_id
-          }
-        };
+      if (result.rows.length === 0) {
+        throw new Error('Manufacturing order not found');
       }
 
-      return { isUnique: true };
+      return result.rows[0];
 
     } catch (error) {
-      throw new MOServiceError(
-        'Barcode uniqueness check failed',
-        'DATABASE_ERROR',
-        { originalError: error.message }
-      );
+      this.logger.error('Failed to get MO statistics', {
+        error: error.message,
+        moId
+      });
+      throw error;
     }
   }
 
   /**
-   * Generate barcode range for MO
+   * Trigger progress update and alert generation for a manufacturing order
+   * @param {number} moId - Manufacturing order ID
+   * @returns {Promise<Object>} Updated progress data
    */
-  async generateBarcodeRange(mo, client) {
-    const startSequence = mo.next_sequence_number;
-    const endSequence = startSequence + mo.target_quantity - 1;
+  async triggerProgressUpdate(moId) {
+    try {
+      // Clear cache to force fresh calculation
+      moProgressTrackingService.clearProgressCache(moId);
 
-    // Generate sample barcodes for validation
-    const sampleBarcodes = [];
-    const samplePositions = [0, Math.floor(mo.target_quantity / 4), Math.floor(mo.target_quantity / 2), mo.target_quantity - 1];
+      // Calculate fresh progress
+      const progressData = await moProgressTrackingService.calculateMOProgress(moId);
 
-    for (const position of samplePositions) {
-      const sequenceNumber = startSequence + position;
-      const barcode = this.constructBarcode({
-        yearCode: mo.year_code,
-        frameType: mo.frame_type,
-        backsheetType: mo.backsheet_type,
-        panelType: mo.panel_type,
-        sequenceNumber
+      // Auto-resolve alerts that are no longer relevant
+      await moAlertService.autoResolveAlerts(moId, progressData);
+
+      // Create new alerts based on current progress
+      for (const alert of progressData.alerts) {
+        await moAlertService.createAlert({
+          mo_id: moId,
+          alert_type: alert.type,
+          severity: alert.severity,
+          title: alert.message,
+          message: alert.message,
+          threshold_value: alert.threshold,
+          current_value: alert.current_value,
+          station_id: alert.station_id || null
+        });
+      }
+
+      // Broadcast progress update
+      await moProgressTrackingService.broadcastProgressUpdate(moId, progressData);
+
+      this.logger.info('Progress update triggered', {
+        moId,
+        order_number: progressData.order_number,
+        progress_percentage: progressData.progress_percentage,
+        alerts_generated: progressData.alerts.length
       });
 
-      sampleBarcodes.push({
-        position: position + 1,
-        sequenceNumber,
-        barcode
+      return progressData;
+
+    } catch (error) {
+      this.logger.error('Failed to trigger progress update', {
+        error: error.message,
+        moId
       });
+      throw error;
     }
-
-    return {
-      moId: mo.id,
-      startSequence,
-      endSequence,
-      totalCapacity: mo.target_quantity,
-      sampleBarcodes,
-      createdAt: new Date().toISOString()
-    };
   }
 
   /**
-   * Construct barcode from MO specifications
+   * Update manufacturing order and trigger progress update
+   * @param {number} moId - Manufacturing order ID
+   * @param {Object} updateData - Data to update
+   * @returns {Promise<Object>} Updated manufacturing order with progress
    */
-  constructBarcode(specs) {
-    const {
-      yearCode,
-      frameType,
-      backsheetType,
-      panelType,
-      sequenceNumber
-    } = specs;
+  async updateManufacturingOrderWithProgress(moId, updateData) {
+    try {
+      // Update the manufacturing order
+      const updatedMO = await this.updateManufacturingOrder(moId, updateData);
 
-    const frameCode = frameType === 'SILVER' ? 'W' : 'B';
-    const backsheetCode = {
-      'TRANSPARENT': 'T',
-      'WHITE': 'W',
-      'BLACK': 'B'
-    }[backsheetType] || 'W';
+      // Trigger progress update
+      const progressData = await this.triggerProgressUpdate(moId);
 
-    const panelTypeCode = panelType.replace('TYPE_', '');
-    const paddedSequence = sequenceNumber.toString().padStart(5, '0');
+      return {
+        ...updatedMO,
+        progress: progressData
+      };
 
-    return `CRS${yearCode}${frameCode}${backsheetCode}${panelTypeCode}${paddedSequence}`;
-  }
-
-  /**
-   * Calculate updated quantities based on status change
-   */
-  calculateUpdatedQuantities(mo, statusChange) {
-    const quantities = {
-      completed: mo.completed_quantity,
-      failed: mo.failed_quantity,
-      inProgress: mo.in_progress_quantity
-    };
-
-    switch (statusChange.type) {
-      case 'PANEL_COMPLETED':
-        quantities.completed += statusChange.count || 1;
-        quantities.inProgress = Math.max(0, quantities.inProgress - (statusChange.count || 1));
-        break;
-      case 'PANEL_FAILED':
-        quantities.failed += statusChange.count || 1;
-        quantities.inProgress = Math.max(0, quantities.inProgress - (statusChange.count || 1));
-        break;
-      case 'PANEL_STARTED':
-        quantities.inProgress += statusChange.count || 1;
-        break;
-      case 'PANEL_REWORK':
-        // Rework doesn't change MO quantities directly
-        break;
-      default:
-        throw new MOServiceError(
-          `Unknown status change type: ${statusChange.type}`,
-          'INVALID_STATUS_CHANGE'
-        );
+    } catch (error) {
+      this.logger.error('Failed to update MO with progress', {
+        error: error.message,
+        moId,
+        updateData
+      });
+      throw error;
     }
-
-    return quantities;
-  }
-
-  /**
-   * Calculate estimated completion time
-   */
-  calculateEstimatedCompletion(mo) {
-    if (!mo.completed_quantity || mo.completed_quantity === 0) {
-      return null;
-    }
-
-    const createdAt = new Date(mo.created_at);
-    const now = new Date();
-    const timeElapsed = now - createdAt; // milliseconds
-    const completionRate = mo.completed_quantity / timeElapsed; // panels per millisecond
-    const remainingPanels = mo.target_quantity - mo.completed_quantity;
-    
-    if (remainingPanels <= 0) {
-      return new Date().toISOString();
-    }
-
-    const estimatedTimeRemaining = remainingPanels / completionRate;
-    const estimatedCompletion = new Date(now.getTime() + estimatedTimeRemaining);
-
-    return estimatedCompletion.toISOString();
-  }
-
-  /**
-   * Validate order number uniqueness
-   */
-  async validateOrderNumberUniqueness(orderNumber, client) {
-    const query = 'SELECT id, order_number FROM manufacturing_orders WHERE order_number = $1';
-    const result = await client.query(query, [orderNumber]);
-
-    if (result.rows.length > 0) {
-      throw new MOServiceError(
-        `Order number already exists: ${orderNumber}`,
-        'ORDER_NUMBER_DUPLICATE',
-        { existingMoId: result.rows[0].id }
-      );
-    }
-
-    return true;
-  }
-
-  /**
-   * Validate panel type
-   */
-  validatePanelType(panelType) {
-    const validTypes = ['36', '40', '60', '72', '144'];
-    
-    if (!validTypes.includes(panelType)) {
-      throw new MOServiceError(
-        `Invalid panel type: ${panelType}. Valid types: ${validTypes.join(', ')}`,
-        'INVALID_PANEL_TYPE'
-      );
-    }
-
-    return true;
-  }
-
-  /**
-   * Map panel type to database enum
-   */
-  mapPanelTypeToEnum(panelType) {
-    return `TYPE_${panelType}`;
-  }
-
-  /**
-   * Log MO creation for audit trail
-   */
-  async logMOCreation(mo, metadata, client) {
-    const logQuery = `
-      INSERT INTO audit_log (
-        entity_type, entity_id, action, user_id, new_values, 
-        ip_address, user_agent, session_id, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-    `;
-
-    const logValues = [
-      'MANUFACTURING_ORDER',
-      mo.id,
-      'CREATE',
-      metadata.userId || null,
-      JSON.stringify({
-        order_number: mo.order_number,
-        panel_type: mo.panel_type,
-        target_quantity: mo.target_quantity,
-        year_code: mo.year_code,
-        frame_type: mo.frame_type,
-        backsheet_type: mo.backsheet_type
-      }),
-      metadata.ipAddress || null,
-      metadata.userAgent || null,
-      metadata.sessionId || null,
-      new Date().toISOString()
-    ];
-
-    await client.query(logQuery, logValues);
-  }
-
-  /**
-   * Log progress updates for audit trail
-   */
-  async logProgressUpdate(oldMO, newMO, statusChange, metadata, client) {
-    const logQuery = `
-      INSERT INTO audit_log (
-        entity_type, entity_id, action, user_id, old_values, new_values,
-        ip_address, user_agent, session_id, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-    `;
-
-    const logValues = [
-      'MANUFACTURING_ORDER',
-      newMO.id,
-      'UPDATE_PROGRESS',
-      metadata.userId || null,
-      JSON.stringify({
-        completed_quantity: oldMO.completed_quantity,
-        failed_quantity: oldMO.failed_quantity,
-        in_progress_quantity: oldMO.in_progress_quantity
-      }),
-      JSON.stringify({
-        completed_quantity: newMO.completed_quantity,
-        failed_quantity: newMO.failed_quantity,
-        in_progress_quantity: newMO.in_progress_quantity,
-        status_change: statusChange
-      }),
-      metadata.ipAddress || null,
-      metadata.userAgent || null,
-      metadata.sessionId || null,
-      new Date().toISOString()
-    ];
-
-    await client.query(logQuery, logValues);
   }
 }
 
-// Export singleton instance
-export const manufacturingOrderService = new ManufacturingOrderService();
-
-export default {
-  ManufacturingOrderService,
-  MOServiceError,
-  manufacturingOrderService
-};
+export default new ManufacturingOrderService();

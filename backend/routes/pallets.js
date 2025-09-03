@@ -171,12 +171,12 @@ router.post('/:palletNumber/complete', asyncHandler(async (req, res) => {
  * @query   ?format=pdf|xlsx&includeWattage=true
  */
 router.get('/:palletNumber/sheet', asyncHandler(async (req, res) => {
-  // TODO: Implement in Task 18 - Data Export System
+  // TODO: Implement Data Export System
   res.status(501).json({
     success: false,
     error: 'Pallet sheet generation not yet implemented',
     code: 'NOT_IMPLEMENTED',
-    message: 'Pallet sheet generation will be implemented in Task 18',
+    message: 'Pallet sheet generation will be implemented in future development',
     requestedPalletNumber: req.params.palletNumber
   });
 }));

@@ -6,264 +6,147 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   plugins: [
     react(),
-    // Temporarily disabled PWA for development to fix routing issues
-    // VitePWA({
-    //   registerType: 'autoUpdate',
-    //   includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'logo.svg'],
-    //   strategies: 'generateSW',
-    //   manifest: {
-    //     name: 'Solar Panel Production Tracking',
-    //     short_name: 'SolarTracker',
-    //     description: 'Solar Panel Production Tracking System for Manufacturing',
-    //     theme_color: '#10B981',
-    //     background_color: '#ffffff',
-    //     display: 'standalone',
-    //     orientation: 'portrait',
-    //     scope: '/',
-    //     start_url: '/',
-    //     categories: ['productivity', 'business', 'utilities'],
-    //     lang: 'en',
-    //     dir: 'ltr',
-    //     icons: [
-    //       {
-    //         src: 'pwa-64x64.png',
-    //         sizes: '64x64',
-    //         type: 'image/png'
-    //       },
-    //       {
-    //         src: 'pwa-192x192.png',
-    //         sizes: '192x192',
-    //         type: 'image/png'
-    //       },
-    //       {
-    //         src: 'pwa-512x512.png',
-    //         sizes: '512x512',
-    //         type: 'image/png'
-    //       },
-    //       {
-    //         src: 'maskable-icon-512x512.png',
-    //         sizes: '512x512',
-    //         type: 'image/png',
-    //         purpose: 'maskable'
-    //       }
-    //     ],
-    //     screenshots: [
-    //       {
-    //         src: 'pwa-512x512.png',
-    //         sizes: '512x512',
-    //         type: 'image/png',
-    //         form_factor: 'wide',
-    //         label: 'Dashboard View'
-    //       }
-    //     ],
-    //     shortcuts: [
-    //       {
-    //         name: 'Scan Panel',
-    //         short_name: 'Scan',
-    //         description: 'Quickly scan a solar panel',
-    //         url: '/scan',
-    //         icons: [
-    //           {
-    //             src: 'pwa-64x64.png',
-    //             sizes: '64x64'
-    //           }
-    //         ]
-    //       },
-    //       {
-    //         name: 'View Inspections',
-    //         short_name: 'Inspections',
-    //         description: 'Check inspection history',
-    //         url: '/inspections',
-    //         icons: [
-    //           {
-    //             src: 'pwa-64x64.png',
-    //             sizes: '64x64'
-    //           }
-    //         ]
-    //       }
-    //     ]
-    //   },
-    //   workbox: {
-    //     globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-    //     cleanupOutdatedCaches: true,
-    //     skipWaiting: true,
-    //     clientsClaim: true,
-    //     // Remove conflicting offline.html entry to prevent cache conflicts
-    //     runtimeCaching: [
-    //       // API calls - NetworkFirst for real-time data
-    //       {
-    //         urlPattern: /^https:\/\/api\.*/i,
-    //         handler: 'NetworkFirst',
-    //         options: {
-    //           cacheName: 'api-cache',
-    //           expiration: {
-    //             maxEntries: 100,
-    //             maxAgeSeconds: 60 * 60 * 24 // 24 hours
-    //           },
-    //           cacheableResponse: {
-    //             statuses: [0, 200]
-    //           },
-    //           networkTimeoutSeconds: 10 // Fallback to cache after 10 seconds
-    //         }
-    //       },
-    //       // Static assets - CacheFirst for performance
-    //       {
-    //         urlPattern: /\.(?:js|css)$/,
-    //         handler: 'CacheFirst',
-    //         options: {
-    //           cacheName: 'static-assets-cache',
-    //           expiration: {
-    //             maxEntries: 200,
-    //             maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-    //           }
-    //         }
-    //       },
-    //       // Images - StaleWhileRevalidate for balance of performance and freshness
-    //       {
-    //         urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/,
-    //         handler: 'StaleWhileRevalidate',
-    //         options: {
-    //           cacheName: 'images-cache',
-    //           expiration: {
-    //             maxEntries: 100,
-    //             maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-    //           }
-    //         }
-    //       },
-    //       // Fonts - CacheFirst for performance
-    //       {
-    //         urlPattern: /\.(?:woff|woff2|eot|ttf|otf)$/,
-    //         handler: 'CacheFirst',
-    //         options: {
-    //           cacheName: 'fonts-cache',
-    //           expiration: {
-    //             maxEntries: 50,
-    //             maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
-    //           }
-    //         }
-    //       },
-    //       // HTML pages - NetworkFirst for navigation
-    //       {
-    //         urlPattern: /\.html$/,
-    //         handler: 'NetworkFirst',
-    //         options: {
-    //           cacheName: 'html-cache',
-    //           expiration: {
-    //             maxEntries: 50,
-    //             maxAgeSeconds: 60 * 60 * 24 // 24 hours
-    //           },
-    //           networkTimeoutSeconds: 5
-    //         }
-    //       },
-    //       // Offline fallback for navigation
-    //       {
-    //         urlPattern: /^https?:\/\/.*$/,
-    //         handler: 'NetworkFirst',
-    //         options: {
-    //           cacheName: 'offline-cache',
-    //           expiration: {
-    //             maxEntries: 200,
-    //             maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
-    //           },
-    //           networkTimeoutSeconds: 3
-    //         }
-    //       }
-    //     ]
-    //   },
-    //   devOptions: {
-    //     enabled: true
-    //   }
-    // })
+    VitePWA({
+      registerType: 'autoUpdate',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        cleanupOutdatedCaches: true,
+        sourcemap: true,
+        maximumFileSizeToCacheInBytes: 3000000, // 3MB limit for large assets
+        // Enhanced caching strategies for 2024-2025
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/api\./,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache-v2',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24, // 24 hours
+                purgeOnQuotaError: true
+              },
+              networkTimeoutSeconds: 10
+            }
+          },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache-v2',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                purgeOnQuotaError: true
+              }
+            }
+          }
+        ],
+        // Enhanced service worker features
+        skipWaiting: true,
+        clientsClaim: true,
+        // Add custom service worker logic
+        additionalManifestEntries: [
+          { url: '/offline.html', revision: '1' }
+        ]
+      },
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      manifest: {
+        name: 'Crossroads Solar Panel Production Tracker',
+        short_name: 'Production Tracker',
+        description: 'Industrial solar panel production tracking system with offline capabilities',
+        theme_color: '#10B981',
+        background_color: '#FFFFFF',
+        display: 'standalone',
+        orientation: 'portrait',
+        scope: '/',
+        start_url: '/?utm_source=pwa',
+        // Enhanced 2024-2025 manifest features
+        categories: ['productivity', 'business', 'utilities'],
+        lang: 'en-US',
+        display_override: ['window-controls-overlay', 'standalone', 'minimal-ui'],
+        edge_side_panel: {
+          preferred_width: 400
+        },
+        shortcuts: [
+          {
+            name: "Scan Panel",
+            short_name: "Scan",
+            description: "Quick barcode scan entry",
+            url: "/scan?utm_source=pwa_shortcut",
+            icons: [
+              {
+                src: "/crossroads-solar-logo-192.png",
+                sizes: "192x192"
+              }
+            ]
+          },
+          {
+            name: "Dashboard",
+            short_name: "Dashboard",
+            description: "View production dashboard",
+            url: "/dashboard?utm_source=pwa_shortcut",
+            icons: [
+              {
+                src: "/crossroads-solar-logo-192.png",
+                sizes: "192x192"
+              }
+            ]
+          }
+        ],
+        // Improved installation experience
+        prefer_related_applications: false,
+        // Better protocol handling for production environment
+        protocol_handlers: [
+          {
+            protocol: "web+solar",
+            url: "/scan?barcode=%s"
+          }
+        ],
+        file_handlers: [
+          {
+            action: "/import",
+            accept: {
+              "text/csv": [".csv"]
+            }
+          }
+        ],
+        icons: [
+          {
+            src: '/crossroads-solar-logo.svg?v=3',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any'
+          },
+          {
+            src: '/crossroads-solar-logo-64.png?v=3',
+            sizes: '64x64',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: '/crossroads-solar-logo-192.png?v=3',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable'
+          },
+          {
+            src: '/crossroads-solar-logo-512.png?v=3',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
+        ]
+      },
+      // Enhanced development and deployment features
+      devOptions: {
+        enabled: true,
+        type: 'module',
+        navigateFallback: 'index.html'
+      }
+    })
   ],
   server: {
     port: 3001,
-    host: true,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false,
-        ws: true
-      }
-    }
-  },
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn']
-      },
-      mangle: {
-        safari10: true
-      }
-    },
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // Core React libraries
-          'react-vendor': ['react', 'react-dom'],
-          
-          // Routing
-          'router': ['react-router-dom'],
-          
-          // UI Libraries
-          'ui-components': ['@headlessui/react', '@heroicons/react'],
-          
-          // Database
-          'database': ['dexie', 'dexie-react-hooks'],
-          
-          // Utilities
-          'utils': ['class-variance-authority', 'clsx', 'tailwind-merge'],
-          
-          // PWA
-          'pwa': ['workbox-window']
-        },
-        // Optimize chunk naming for better caching
-        chunkFileNames: (chunkInfo) => {
-          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
-          return `js/[name]-[hash].js`;
-        },
-        entryFileNames: 'js/[name]-[hash].js',
-        assetFileNames: (assetInfo) => {
-          const info = assetInfo.name.split('.');
-          const ext = info[info.length - 1];
-          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
-            return `images/[name]-[hash][extname]`;
-          }
-          if (/css/i.test(ext)) {
-            return `css/[name]-[hash][extname]`;
-          }
-          return `assets/[name]-[hash][extname]`;
-        }
-      }
-    },
-    // Performance optimizations
-    target: 'es2015',
-    cssCodeSplit: true,
-    reportCompressedSize: true,
-    chunkSizeWarningLimit: 1000
-  },
-  optimizeDeps: {
-    include: [
-      'react', 
-      'react-dom', 
-      'react-router-dom',
-      '@headlessui/react',
-      '@heroicons/react',
-      'dexie',
-      'dexie-react-hooks'
-    ],
-    exclude: ['workbox-window']
-  },
-  // Performance optimizations
-  esbuild: {
-    target: 'es2015',
-    minifyIdentifiers: true,
-    minifySyntax: true,
-    minifyWhitespace: true
+    host: true
   }
 })

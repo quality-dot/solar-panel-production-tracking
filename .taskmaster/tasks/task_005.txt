@@ -35,3 +35,57 @@ Implement station criteria configuration supporting Station 1-4 specific require
 ### Details:
 Create routing logic for normal workflow progression (Station 1→2→3→4), rework routing to failure point, queue management for each station, automatic line assignment based on panel type, and workflow completion handling.
 
+## 5. Station Configuration and Setup [pending]
+### Dependencies: None
+### Description: Implement station configuration and initialization
+### Details:
+Create station configuration system for 8 stations (4 per line). Implement station types: Assembly & EL, Framing, Junction Box, Performance & Final. Configure station-specific criteria and workflow rules.
+
+## 6. Station State Management [pending]
+### Dependencies: 5.1
+### Description: Implement station status tracking and state management
+### Details:
+Create station state management system tracking current panel, operator, status (idle, busy, maintenance), and workflow progress. Implement real-time status updates.
+
+## 7. Panel Workflow Routing Engine [pending]
+### Dependencies: 5.2
+### Description: Implement panel routing logic between stations
+### Details:
+Create workflow engine that routes panels through stations based on completion status. Implement station progression logic, rework routing, and completion tracking.
+
+## 8. Station-Specific Criteria Implementation [pending]
+### Dependencies: 5.3
+### Description: Implement pass/fail criteria for each station type
+### Details:
+Implement station-specific inspection criteria: Station 1 (Assembly & EL): solder joints, string spacing, polarity, nubs trimmed, insulation, mirror examination (Line 1 only). Station 2 (Framing): panel trimmed, cleaned, barcode verified, no visible flaws. Station 3 (Junction Box): potting gel, j-box soldered/capped, EL tested, barcode verified, EVA alignment. Station 4 (Performance): wattage verification, high pot test, second EL test (Line 2 only), sticker applied, labeling, cell integrity, frame inspection, continuity, glass clean, spacing, insulation, lamination.
+
+## 9. One-Touch Pass/Fail Interface [pending]
+### Dependencies: 5.4
+### Description: Implement touch-friendly pass/fail interface
+### Details:
+Create large touch buttons for Pass (auto-checks all criteria) and Fail (opens criteria selection). Implement visual feedback, audio confirmation, and error handling.
+
+## 10. Manual Entry Fields Implementation [pending]
+### Dependencies: 5.5
+### Description: Implement manual entry for electrical measurements
+### Details:
+Create manual entry fields for Station 4: Wattage (Pmax), Vmp, Imp. Implement input validation, numeric formatting, and data persistence. Include virtual keyboard for tablet use.
+
+## 11. Line-Specific Test Handling [pending]
+### Dependencies: 5.6
+### Description: Implement N/A handling for line-specific tests
+### Details:
+Implement N/A handling for line-specific tests: mirror examination (Line 1 only), second EL test (Line 2 only). Grey out N/A tests and handle in criteria validation.
+
+## 12. Rework Flow Integration [pending]
+### Dependencies: 5.7
+### Description: Integrate rework routing with station workflow
+### Details:
+Implement rework routing for failed panels, re-entry at point of failure (not Station 1), automatic queue reinsertion, and failure reason tracking.
+
+## 13. Station Performance Monitoring [pending]
+### Dependencies: 5.8
+### Description: Implement station performance tracking and metrics
+### Details:
+Track inspection duration, throughput, error rates, and operator performance. Implement real-time metrics display and historical reporting.
+
