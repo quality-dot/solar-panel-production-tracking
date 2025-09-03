@@ -1663,6 +1663,87 @@
             "status": "done",
             "dependencies": [],
             "parentTaskId": 14
+          },
+          {
+            "id": 8,
+            "title": "Add ProtectedRoute to barcode scanning endpoint",
+            "description": "Implement access control protection for the barcode scanning page to prevent unauthorized access",
+            "details": "Wrap the PanelScan component with ProtectedRoute to ensure only authenticated users can access barcode scanning functionality. This addresses the critical security gap where unauthenticated users could access the scanning interface.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 14
+          },
+          {
+            "id": 9,
+            "title": "Implement barcode-specific rate limiting",
+            "description": "Add dedicated rate limiting for barcode scanning operations to prevent abuse",
+            "details": "Create barcode-specific rate limiting middleware that restricts the number of barcode processing requests per user/station. This should be more restrictive than general manufacturing rate limits to prevent abuse of the barcode processing endpoints.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 14
+          },
+          {
+            "id": 10,
+            "title": "Add encryption for offline barcode data storage",
+            "description": "Implement encryption for offline barcode data to protect sensitive manufacturing information",
+            "details": "Encrypt barcode data stored in localStorage for offline functionality. Use AES-256 encryption to protect sensitive manufacturing data from unauthorized access in browser storage.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 14
+          },
+          {
+            "id": 11,
+            "title": "Add server-side barcode validation middleware",
+            "description": "Implement server-side barcode format validation to prevent client-side bypass",
+            "details": "Create middleware that validates barcode format on the server side before processing. This prevents malicious clients from bypassing frontend validation and ensures all barcodes meet the CRSYYFBPP##### format requirements.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 14
+          },
+          {
+            "id": 12,
+            "title": "Implement comprehensive audit logging for barcode operations",
+            "description": "Add detailed audit logging for all barcode scanning operations",
+            "details": "Create comprehensive audit logging that tracks who scanned what barcodes, when, from which station, and the results. This provides a complete audit trail for manufacturing operations and security monitoring.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 14
+          },
+          {
+            "id": 13,
+            "title": "Add duplicate barcode scan detection and prevention",
+            "description": "Implement duplicate scan detection to prevent double-processing of the same panel",
+            "details": "Create a system to detect and prevent duplicate barcode scans within a configurable time window. This prevents accidental double-processing of the same panel and maintains data integrity in the manufacturing process.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 14
+          },
+          {
+            "id": 14,
+            "title": "Add barcode scanning performance monitoring and metrics",
+            "description": "Implement comprehensive performance monitoring for barcode scanning operations",
+            "details": "Create monitoring system to track barcode scan success rates, processing times, error patterns, and system performance. Include dashboards for production floor monitoring and troubleshooting tools.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 14
+          },
+          {
+            "id": 15,
+            "title": "Implement camera permission validation and device fingerprinting",
+            "description": "Add security measures for camera access and device validation",
+            "details": "Implement camera permission validation, device fingerprinting, and security monitoring for barcode scanning operations. This prevents unauthorized camera access and device spoofing attacks.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 14
+          },
+          {
+            "id": 16,
+            "title": "Enhance camera error handling and graceful degradation",
+            "description": "Improve error handling for camera failures and provide better user experience",
+            "details": "Enhance camera error handling with detailed error messages, retry mechanisms, and graceful degradation when camera access fails. Provide clear user guidance and fallback options for different failure scenarios.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 14
           }
         ]
       },
@@ -1918,7 +1999,12 @@
             "description": "Implement real-time security event monitoring and collection system",
             "details": "PENDING: Create SecurityEventEmitter class, define security event types, implement event emission with correlation IDs, create security_events database table, add event retrieval functions, test event system, integrate with existing security frameworks.",
             "status": "pending",
-            "dependencies": [1, 2, 3, 4],
+            "dependencies": [
+              1,
+              2,
+              3,
+              4
+            ],
             "parentTaskId": 22,
             "estimatedDuration": "2 days"
           },
@@ -1928,7 +2014,9 @@
             "description": "Create React-based security dashboard with real-time monitoring",
             "details": "PENDING: Create React security dashboard component, add real-time security metrics display, implement WebSocket updates, create alert system with configurable thresholds, add alert generation logic, implement alert display, test dashboard functionality, add role-based access control.",
             "status": "pending",
-            "dependencies": [5],
+            "dependencies": [
+              5
+            ],
             "parentTaskId": 22,
             "estimatedDuration": "2 days"
           },
@@ -1938,7 +2026,9 @@
             "description": "Implement manufacturing-specific anomaly detection and threat intelligence",
             "details": "PENDING: Create StatisticalAnalyzer class, add statistical functions, implement threshold-based security rule engine, create manufacturing-specific security rules, add AbuseIPDB integration, implement IP blocking system, create ThreatAggregator service, test anomaly detection system.",
             "status": "pending",
-            "dependencies": [5],
+            "dependencies": [
+              5
+            ],
             "parentTaskId": 22,
             "estimatedDuration": "2 days"
           },
@@ -1948,7 +2038,11 @@
             "description": "Establish compliance framework and implement advanced logging",
             "details": "PENDING: Create ComplianceService class, implement compliance monitoring, add compliance validation, replace basic logging with Winston.js, add structured logging with correlation IDs, implement log context utilities, test compliance system and logging, document procedures.",
             "status": "pending",
-            "dependencies": [5, 6, 7],
+            "dependencies": [
+              5,
+              6,
+              7
+            ],
             "parentTaskId": 22,
             "estimatedDuration": "2 days"
           }
@@ -2001,7 +2095,7 @@
     ],
     "metadata": {
       "created": "2025-08-14T19:23:36.047Z",
-      "updated": "2025-08-28T17:58:04.667Z",
+      "updated": "2025-09-03T20:00:48.174Z",
       "description": "Tasks for master context"
     }
   }

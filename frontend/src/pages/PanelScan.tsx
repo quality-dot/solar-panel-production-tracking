@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import { CheckCircleIcon, XCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+import { CheckCircleIcon, XCircleIcon, InformationCircleIcon, CloudArrowUpIcon, WifiIcon } from '@heroicons/react/24/outline'
 import BarcodeScanner from '../components/BarcodeScanner'
+import barcodeScanningService, { BarcodeScanningError } from '../services/barcodeScanningService'
 
 interface PanelData {
   barcode: string;
@@ -17,6 +18,9 @@ export default function PanelScan() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [processingStatus, setProcessingStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle')
   const [statusMessage, setStatusMessage] = useState('')
+  const [isOnline, setIsOnline] = useState(barcodeScanningService.isCurrentlyOnline())
+  const [offlineScanStatus, setOfflineScanStatus] = useState({ total: 0, synced: 0, pending: 0 })
+  const [isSyncing, setIsSyncing] = useState(false)
 
   const handleScanSuccess = async (barcode: string) => {
     setIsProcessing(true)
@@ -24,34 +28,35 @@ export default function PanelScan() {
     setStatusMessage('Processing scanned barcode...')
 
     try {
-      // Simulate API call to backend for panel validation
-      // In real implementation, this would call the backend BarcodeScannerService
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // Call backend barcode processing service
+      const panelData = await barcodeScanningService.processBarcode(barcode)
       
-      // Parse barcode components (CRSYYFBPP#####)
-      const barcodeData = parseBarcodeComponents(barcode)
-      
-      if (barcodeData) {
-        const panelData: PanelData = {
-          barcode,
-          panelType: barcodeData.panelType,
-          powerRating: barcodeData.powerRating,
-          status: 'Ready for Inspection',
-          manufacturingOrder: barcodeData.moNumber,
-          lineNumber: barcodeData.lineNumber,
-          stationNumber: barcodeData.stationNumber
-        }
-        
-        setScannedPanel(panelData)
-        setProcessingStatus('success')
-        setStatusMessage('Panel validated successfully!')
-      } else {
-        throw new Error('Invalid barcode format')
-      }
+      setScannedPanel(panelData)
+      setProcessingStatus('success')
+      setStatusMessage('Panel validated successfully!')
     } catch (error) {
       console.error('Panel processing error:', error)
+      
+      let errorMessage = 'Failed to process panel. Please try again.'
+      
+      if (error instanceof BarcodeScanningError) {
+        switch (error.code) {
+          case 'VALIDATION_FAILED':
+            errorMessage = 'Invalid barcode format or validation failed.'
+            break
+          case 'NETWORK_ERROR':
+            errorMessage = 'Unable to connect to backend. Please check your connection.'
+            break
+          case 'PROCESSING_ERROR':
+            errorMessage = error.message || 'Barcode processing failed.'
+            break
+          default:
+            errorMessage = error.message || errorMessage
+        }
+      }
+      
       setProcessingStatus('error')
-      setStatusMessage('Failed to process panel. Please try again.')
+      setStatusMessage(errorMessage)
     } finally {
       setIsProcessing(false)
     }
@@ -66,31 +71,67 @@ export default function PanelScan() {
     await handleScanSuccess(barcode)
   }
 
-  const parseBarcodeComponents = (barcode: string) => {
-    // Parse CRSYYFBPP##### format
-    const match = barcode.match(/^CRS(\d{2})YF(\d{2})PP(\d{5})$/);
-    if (!match) return null;
-
-    const [, lineNum, stationNum, moNum] = match;
+  // Monitor online/offline status
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true)
+      // Auto-sync when back online
+      syncOfflineScans()
+    }
     
-    // Map line numbers to panel types and power ratings
-    const lineConfigs: Record<string, { type: string; power: string }> = {
-      '01': { type: 'Monocrystalline', power: '400W' },
-      '02': { type: 'Polycrystalline', power: '380W' },
-      '03': { type: 'Thin Film', power: '350W' },
-      '04': { type: 'Bifacial', power: '450W' }
-    };
+    const handleOffline = () => {
+      setIsOnline(false)
+    }
 
-    const config = lineConfigs[lineNum] || { type: 'Standard', power: '400W' };
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
 
-    return {
-      lineNumber: lineNum,
-      stationNumber: stationNum,
-      moNumber: moNum,
-      panelType: config.type,
-      powerRating: config.power
-    };
+    // Load initial offline scan status
+    loadOfflineScanStatus()
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
+
+  // Load offline scan status
+  const loadOfflineScanStatus = async () => {
+    try {
+      const status = await barcodeScanningService.getOfflineScanStatus()
+      setOfflineScanStatus(status)
+    } catch (error) {
+      console.error('Failed to load offline scan status:', error)
+    }
   }
+
+  // Sync offline scans
+  const syncOfflineScans = async () => {
+    if (!isOnline || isSyncing) return
+
+    try {
+      setIsSyncing(true)
+      setStatusMessage('Syncing offline scans...')
+      
+      const result = await barcodeScanningService.syncOfflineScans()
+      
+      if (result.synced > 0) {
+        setStatusMessage(`Successfully synced ${result.synced} offline scans`)
+        await loadOfflineScanStatus()
+      } else if (result.failed > 0) {
+        setStatusMessage(`Failed to sync ${result.failed} offline scans`)
+      } else {
+        setStatusMessage('No offline scans to sync')
+      }
+    } catch (error) {
+      console.error('Failed to sync offline scans:', error)
+      setStatusMessage('Failed to sync offline scans')
+    } finally {
+      setIsSyncing(false)
+    }
+  }
+
+
 
   const beginInspection = () => {
     if (scannedPanel) {
@@ -112,6 +153,59 @@ export default function PanelScan() {
       <div className="lg:hidden">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Panel Scan</h1>
         <p className="text-gray-600">Scan panel barcode to begin inspection</p>
+      </div>
+
+      {/* Connection Status */}
+      <div className="card">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            {isOnline ? (
+              <WifiIcon className="h-5 w-5 text-success-600" />
+            ) : (
+              <XCircleIcon className="h-5 w-5 text-error-600" />
+            )}
+            <div>
+              <p className="font-medium text-gray-900">
+                {isOnline ? 'Online' : 'Offline'}
+              </p>
+              <p className="text-sm text-gray-600">
+                {isOnline ? 'Connected to backend' : 'Working offline - scans will sync when online'}
+              </p>
+            </div>
+          </div>
+          
+          {offlineScanStatus.pending > 0 && (
+            <div className="flex items-center space-x-3">
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-900">
+                  {offlineScanStatus.pending} pending sync
+                </p>
+                <p className="text-xs text-gray-600">
+                  {offlineScanStatus.synced} synced
+                </p>
+              </div>
+              {isOnline && (
+                <button
+                  onClick={syncOfflineScans}
+                  disabled={isSyncing}
+                  className="touch-button btn-primary btn-sm"
+                >
+                  {isSyncing ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Syncing...
+                    </div>
+                  ) : (
+                    <>
+                      <CloudArrowUpIcon className="h-4 w-4 mr-1" />
+                      Sync
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Barcode Scanner Component */}

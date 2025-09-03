@@ -116,6 +116,65 @@ export const authRateLimit = rateLimit({
 });
 
 /**
+ * Barcode-specific rate limiting
+ * More restrictive than general manufacturing limits to prevent abuse
+ */
+export const barcodeRateLimit = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes (shorter window for barcode operations)
+  max: 100, // 100 barcode scans per 5 minutes (more restrictive than general manufacturing)
+  
+  // Custom message for barcode context
+  message: {
+    success: false,
+    error: 'Too many barcode scan requests',
+    retryAfter: '{{retryAfter}}',
+    context: 'barcode_rate_limit',
+    timestamp: new Date().toISOString(),
+    details: 'Barcode scanning rate limit exceeded. Please wait before scanning again.'
+  },
+
+  // Rate limit headers
+  standardHeaders: true,
+  legacyHeaders: false,
+
+  // Custom key generator for barcode operations
+  keyGenerator: (req, res) => {
+    const userId = req.user?.id;
+    const stationId = req.headers['x-station-id'];
+    
+    // Use user ID if available (authenticated requests)
+    if (userId) {
+      return `barcode-user-${userId}`;
+    }
+    
+    // Use station ID if available
+    if (stationId) {
+      return `barcode-station-${stationId}`;
+    }
+    
+    // Fall back to IP address
+    return `barcode-ip-${ipKeyGenerator(req)}`;
+  },
+
+  // Skip rate limiting for health checks
+  skip: (req) => {
+    return req.path === '/health' || req.path === '/status' || req.path === '/ready';
+  },
+
+  // Custom handler for rate limit exceeded
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      error: 'Barcode scanning rate limit exceeded',
+      message: 'Too many barcode scan requests. Please wait before scanning again.',
+      retryAfter: Math.ceil(req.rateLimit.resetTime / 1000),
+      context: 'barcode_rate_limit',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
  * Station identification middleware
  * Validates and tracks station IDs from tablets
  */

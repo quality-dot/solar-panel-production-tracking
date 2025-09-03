@@ -29,6 +29,8 @@ import {
 import { enhancedMOIntegration } from '../services/enhancedMOIntegration.js';
 import { databaseService } from '../services/databaseService.js';
 import { createValidationMiddleware } from '../middleware/validation.js';
+import { barcodeRateLimit } from '../middleware/security.js';
+import { barcodeFormatValidation, barcodeSanitization } from '../middleware/barcodeValidation.js';
 
 const router = express.Router();
 
@@ -106,7 +108,9 @@ const barcodeValidation = {
  * Process a complete barcode through parsing, validation, and line assignment
  */
 router.post('/process', 
-  createValidationMiddleware(barcodeValidation.process),
+  barcodeRateLimit,
+  barcodeSanitization,
+  barcodeFormatValidation,
   asyncHandler(async (req, res) => {
     const { barcode } = req.body;
     
@@ -141,7 +145,9 @@ router.post('/process',
  * Parse barcode components without validation
  */
 router.post('/parse',
-  createValidationMiddleware(barcodeValidation.process),
+  barcodeRateLimit,
+  barcodeSanitization,
+  barcodeFormatValidation,
   asyncHandler(async (req, res) => {
     const { barcode } = req.body;
     
@@ -167,7 +173,9 @@ router.post('/parse',
  * Validate barcode components
  */
 router.post('/validate',
-  createValidationMiddleware(barcodeValidation.process),
+  barcodeRateLimit,
+  barcodeSanitization,
+  barcodeFormatValidation,
   asyncHandler(async (req, res) => {
     const { barcode } = req.body;
     

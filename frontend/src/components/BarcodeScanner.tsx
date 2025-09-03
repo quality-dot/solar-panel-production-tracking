@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { QrCodeIcon, CameraIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import audioFeedbackService from '../services/audioFeedbackService';
+import barcodeScanningService from '../services/barcodeScanningService';
 
 interface BarcodeScannerProps {
   onScanSuccess: (barcode: string) => void;
@@ -103,7 +104,8 @@ export default function BarcodeScanner({
             stopScanning();
           } else {
             setScanStatus('error');
-            setErrorMessage('Invalid barcode format. Expected: CRSYYFBPP#####');
+            const validation = barcodeScanningService.validateBarcodeFormat(decodedText);
+            setErrorMessage(validation.error || 'Invalid barcode format. Expected: CRSYYFBPP#####');
             audioFeedbackService.playError();
           }
         },
@@ -134,22 +136,22 @@ export default function BarcodeScanner({
     }
   }, [isScanning]);
 
-  // Validate barcode format
+  // Validate barcode format using backend service
   const isValidBarcode = (barcode: string): boolean => {
-    // CRSYYFBPP##### format validation
-    const barcodePattern = /^CRS\d{2}YF\d{2}PP\d{5}$/;
-    return barcodePattern.test(barcode);
+    const validation = barcodeScanningService.validateBarcodeFormat(barcode);
+    return validation.isValid;
   };
 
   // Handle manual barcode submission
   const handleManualSubmit = () => {
     if (manualBarcode.trim()) {
-      if (isValidBarcode(manualBarcode.trim())) {
+      const validation = barcodeScanningService.validateBarcodeFormat(manualBarcode.trim());
+      if (validation.isValid) {
         audioFeedbackService.playSuccess();
         onManualEntry(manualBarcode.trim());
         setManualBarcode('');
       } else {
-        setErrorMessage('Invalid barcode format. Expected: CRSYYFBPP#####');
+        setErrorMessage(validation.error || 'Invalid barcode format. Expected: CRSYYFBPP#####');
         audioFeedbackService.playError();
       }
     }
