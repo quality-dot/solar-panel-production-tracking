@@ -3,179 +3,91 @@
 
 import express from 'express';
 import { asyncHandler } from '../middleware/errorHandler.js';
-// import { moController } from '../controllers/index.js'; // Will be implemented in Task 10
+import manufacturingOrderController from '../controllers/manufacturing-orders/index.js';
+import { authenticateToken } from '../middleware/auth.js';
+import { validateRole } from '../middleware/authorization.js';
 
 const router = express.Router();
+
+// Apply authentication to all routes
+router.use(authenticateToken);
 
 /**
  * @route   GET /api/v1/manufacturing-orders
  * @desc    Get manufacturing orders with filtering and pagination
- * @access  Private (Supervisor+ roles)
+ * @access  Private (All roles)
  * @query   ?status=active|completed|cancelled&panelType=36|40|60|72|144&limit=50&offset=0
  */
-router.get('/', asyncHandler(async (req, res) => {
-  // TODO: Implement in Task 10 - MO Management System
-  res.status(501).json({
-    success: false,
-    error: 'Manufacturing Order routes not yet implemented',
-    code: 'NOT_IMPLEMENTED',
-    message: 'MO listing will be implemented in Task 10',
-    queryParams: {
-      status: 'active | completed | cancelled | paused (optional)',
-      panelType: '36 | 40 | 60 | 72 | 144 (optional)',
-      limit: 'Results per page (default: 50, max: 100)',
-      offset: 'Pagination offset (default: 0)',
-      createdBy: 'Filter by creator user ID (optional)',
-      dateRange: 'ISO date range filter (optional)'
-    },
-    expectedResponse: {
-      manufacturingOrders: ['array of MO objects'],
-      pagination: {
-        total: 'number',
-        limit: 'number',
-        offset: 'number',
-        hasMore: 'boolean'
-      }
-    }
-  });
-}));
+router.get('/', 
+  validateRole(['STATION_INSPECTOR', 'PRODUCTION_SUPERVISOR', 'QC_MANAGER', 'SYSTEM_ADMIN']),
+  asyncHandler(manufacturingOrderController.getManufacturingOrders)
+);
 
 /**
  * @route   POST /api/v1/manufacturing-orders
  * @desc    Create new manufacturing order
  * @access  Private (Supervisor+ roles)
- * @body    { orderNumber: string, panelType: string, targetQuantity: number, notes?: string }
+ * @body    { panel_type: string, target_quantity: number, year_code: string, frame_type: string, backsheet_type: string, notes?: string }
  */
-router.post('/', asyncHandler(async (req, res) => {
-  // TODO: Implement in Task 10 - MO Management System
-  res.status(501).json({
-    success: false,
-    error: 'MO creation not yet implemented',
-    code: 'NOT_IMPLEMENTED',
-    message: 'MO creation will be implemented in Task 10',
-    expectedBody: {
-      orderNumber: 'string (required) - Unique MO identifier',
-      panelType: '36 | 40 | 60 | 72 | 144 (required)',
-      targetQuantity: 'number (required) - Target panel count',
-      notes: 'string (optional) - Additional notes',
-      createdBy: 'string (from JWT token)'
-    },
-    expectedResponse: {
-      manufacturingOrder: {
-        id: 'number',
-        orderNumber: 'string',
-        panelType: 'string',
-        targetQuantity: 'number',
-        completedQuantity: 0,
-        failedQuantity: 0,
-        status: 'active',
-        createdAt: 'ISO timestamp'
-      }
-    }
-  });
-}));
+router.post('/', 
+  validateRole(['PRODUCTION_SUPERVISOR', 'QC_MANAGER', 'SYSTEM_ADMIN']),
+  asyncHandler(manufacturingOrderController.createManufacturingOrder)
+);
 
 /**
- * @route   GET /api/v1/manufacturing-orders/:moNumber
+ * @route   GET /api/v1/manufacturing-orders/:id
  * @desc    Get specific MO details and progress
  * @access  Private (All roles)
- * @param   moNumber - Manufacturing Order number
+ * @param   id - Manufacturing Order ID
  */
-router.get('/:moNumber', asyncHandler(async (req, res) => {
-  // TODO: Implement in Task 10 - MO Management System
-  res.status(501).json({
-    success: false,
-    error: 'MO details not yet implemented',
-    code: 'NOT_IMPLEMENTED',
-    message: 'MO details will be implemented in Task 10',
-    requestedMoNumber: req.params.moNumber,
-    expectedResponse: {
-      manufacturingOrder: {
-        id: 'number',
-        orderNumber: 'string',
-        panelType: 'string',
-        targetQuantity: 'number',
-        completedQuantity: 'number',
-        failedQuantity: 'number',
-        status: 'string',
-        progress: 'percentage',
-        estimatedCompletion: 'ISO timestamp',
-        panels: ['array of associated panels'],
-        alerts: ['array of alerts (e.g., 50 panels remaining)']
-      }
-    }
-  });
-}));
+router.get('/:id', 
+  validateRole(['STATION_INSPECTOR', 'PRODUCTION_SUPERVISOR', 'QC_MANAGER', 'SYSTEM_ADMIN']),
+  asyncHandler(manufacturingOrderController.getManufacturingOrderById)
+);
 
 /**
- * @route   PATCH /api/v1/manufacturing-orders/:moNumber
+ * @route   PUT /api/v1/manufacturing-orders/:id
  * @desc    Update MO status or details
  * @access  Private (Supervisor+ roles)
- * @param   moNumber - Manufacturing Order number
- * @body    { status?: string, notes?: string, targetQuantity?: number }
+ * @param   id - Manufacturing Order ID
+ * @body    { status?: string, notes?: string, target_quantity?: number, panel_type?: string, etc. }
  */
-router.patch('/:moNumber', asyncHandler(async (req, res) => {
-  // TODO: Implement in Task 10 - MO Management System
-  res.status(501).json({
-    success: false,
-    error: 'MO updates not yet implemented',
-    code: 'NOT_IMPLEMENTED',
-    message: 'MO updates will be implemented in Task 10',
-    requestedMoNumber: req.params.moNumber
-  });
-}));
+router.put('/:id', 
+  validateRole(['PRODUCTION_SUPERVISOR', 'QC_MANAGER', 'SYSTEM_ADMIN']),
+  asyncHandler(manufacturingOrderController.updateManufacturingOrder)
+);
 
 /**
- * @route   POST /api/v1/manufacturing-orders/:moNumber/close
- * @desc    Close/complete manufacturing order
- * @access  Private (Supervisor+ roles)
- * @param   moNumber - Manufacturing Order number
- * @body    { reason?: string, generateReport?: boolean }
+ * @route   DELETE /api/v1/manufacturing-orders/:id
+ * @desc    Cancel manufacturing order (soft delete)
+ * @access  Private (QC Manager+ roles)
+ * @param   id - Manufacturing Order ID
  */
-router.post('/:moNumber/close', asyncHandler(async (req, res) => {
-  // TODO: Implement in Task 10 - MO Management System
-  res.status(501).json({
-    success: false,
-    error: 'MO closure not yet implemented',
-    code: 'NOT_IMPLEMENTED',
-    message: 'MO closure will be implemented in Task 10',
-    requestedMoNumber: req.params.moNumber
-  });
-}));
+router.delete('/:id', 
+  validateRole(['QC_MANAGER', 'SYSTEM_ADMIN']),
+  asyncHandler(manufacturingOrderController.deleteManufacturingOrder)
+);
 
 /**
- * @route   GET /api/v1/manufacturing-orders/:moNumber/progress
+ * @route   GET /api/v1/manufacturing-orders/:id/statistics
  * @desc    Get real-time MO progress and statistics
- * @access  Private (All roles)
- * @param   moNumber - Manufacturing Order number
+ * @access  Private (Supervisor+ roles)
+ * @param   id - Manufacturing Order ID
  */
-router.get('/:moNumber/progress', asyncHandler(async (req, res) => {
-  // TODO: Implement in Task 10 - MO Management System
-  res.status(501).json({
-    success: false,
-    error: 'MO progress tracking not yet implemented',
-    code: 'NOT_IMPLEMENTED',
-    message: 'MO progress tracking will be implemented in Task 10',
-    requestedMoNumber: req.params.moNumber
-  });
-}));
+router.get('/:id/statistics', 
+  validateRole(['PRODUCTION_SUPERVISOR', 'QC_MANAGER', 'SYSTEM_ADMIN']),
+  asyncHandler(manufacturingOrderController.getMOStatistics)
+);
 
 /**
- * @route   GET /api/v1/manufacturing-orders/:moNumber/report
- * @desc    Generate and download MO completion report
- * @access  Private (Supervisor+ roles)
- * @param   moNumber - Manufacturing Order number
- * @query   ?format=pdf|csv|xlsx
+ * @route   GET /api/v1/manufacturing-orders/number/:orderNumber
+ * @desc    Get manufacturing order by order number
+ * @access  Private (All roles)
+ * @param   orderNumber - Manufacturing Order number
  */
-router.get('/:moNumber/report', asyncHandler(async (req, res) => {
-  // TODO: Implement Data Export System
-  res.status(501).json({
-    success: false,
-    error: 'MO reporting not yet implemented',
-    code: 'NOT_IMPLEMENTED',
-    message: 'MO reporting will be implemented in future development',
-    requestedMoNumber: req.params.moNumber
-  });
-}));
+router.get('/number/:orderNumber', 
+  validateRole(['STATION_INSPECTOR', 'PRODUCTION_SUPERVISOR', 'QC_MANAGER', 'SYSTEM_ADMIN']),
+  asyncHandler(manufacturingOrderController.getManufacturingOrderByNumber)
+);
 
 export default router;
